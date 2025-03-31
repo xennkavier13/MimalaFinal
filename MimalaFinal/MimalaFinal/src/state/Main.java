@@ -1,6 +1,7 @@
 package state;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -9,7 +10,11 @@ public class Main {
             MainMenu mainMenu = new MainMenu();
 
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(800, 600); // Adjust as needed
+            frame.setUndecorated(true); // Remove window borders
+
+            GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+            gd.setFullScreenWindow(frame); // Set full-screen mode (responsive for different sizes of screens)
+
             frame.setContentPane(mainMenu);
             frame.setVisible(true);
         });
