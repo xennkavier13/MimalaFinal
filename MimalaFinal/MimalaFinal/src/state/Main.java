@@ -2,6 +2,7 @@ package state;
 
 public class Main {
     public static void main(String[] args) {
-        new MainMenu();
+        // Create and show the main menu
+        javax.swing.SwingUtilities.invokeLater(MainMenu::new);
     }
 }

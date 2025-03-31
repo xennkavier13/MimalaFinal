@@ -8,31 +8,33 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class Pause extends JPanel {
-    private ImageIcon pauseBackground;
-    private JLabel resumeButton, exitButton;
-    private JFrame frame;
+    private final ImageIcon pauseBackground;
+    private final JFrame frame;
     private boolean isPaused = false;
-    private int yOffset = -1080; // Start off-screen
 
     public Pause(JFrame gameFrame) {
         this.frame = gameFrame;
         pauseBackground = new ImageIcon("C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\PauseScreen\\PauseBGwithText.png");
         setLayout(null);
+        setFocusable(true); // Make sure the panel is focusable
+        requestFocusInWindow(); // Request focus for key events
         setupButtons();
         setupKeyListener();
     }
 
     private void setupButtons() {
-        resumeButton = createButton(
+        // Adjust manually
+        JLabel resumeButton = createButton(
                 "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\PauseScreen\\Buttons\\Resume\\Resume_off.png",
                 "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\PauseScreen\\Buttons\\Resume\\Resume_on.png",
-                800, 450 // Adjust manually
+                450 // Adjust manually
         );
 
-        exitButton = createButton(
+        // Adjust manually
+        JLabel exitButton = createButton(
                 "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\PauseScreen\\Buttons\\Exit\\Exit_off.png",
                 "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\PauseScreen\\Buttons\\Exit\\Exit_on.png",
-                800, 550 // Adjust manually
+                550 // Adjust manually
         );
 
         exitButton.addMouseListener(new MouseAdapter() {
@@ -47,11 +49,11 @@ public class Pause extends JPanel {
         add(exitButton);
     }
 
-    private JLabel createButton(String offPath, String hoverPath, int x, int y) {
+    private JLabel createButton(String offPath, String hoverPath, int y) {
         ImageIcon offIcon = new ImageIcon(offPath);
         ImageIcon hoverIcon = new ImageIcon(hoverPath);
         JLabel button = new JLabel(offIcon);
-        button.setBounds(x, y, offIcon.getIconWidth(), offIcon.getIconHeight());
+        button.setBounds(800, y, offIcon.getIconWidth(), offIcon.getIconHeight());
 
         button.addMouseListener(new MouseAdapter() {
             @Override
@@ -67,7 +69,10 @@ public class Pause extends JPanel {
     }
 
     private void setupKeyListener() {
-        frame.addKeyListener(new KeyAdapter() {
+        setFocusable(true); // Ensures the panel can receive key events
+        requestFocusInWindow(); // Requests focus so key events are captured
+
+        addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
@@ -80,24 +85,19 @@ public class Pause extends JPanel {
     private void togglePause() {
         isPaused = !isPaused;
         if (isPaused) {
-            new Thread(() -> {
-                for (int i = -1080; i <= 0; i += 20) { // Sliding animation
-                    yOffset = i;
-                    repaint();
-                    try { Thread.sleep(5); } catch (InterruptedException ignored) {}
-                }
-            }).start();
             frame.setContentPane(this);
-            frame.revalidate();
         } else {
-            frame.setContentPane(new MainMenu()); // Resume = return to game
-            frame.revalidate();
+            frame.setContentPane(new MainMenu()); // Change to game panel if needed
         }
+        frame.revalidate();
+        frame.repaint();
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        // Start off-screen
+        int yOffset = -1080;
         g.drawImage(pauseBackground.getImage(), 0, yOffset, getWidth(), getHeight(), this);
     }
 }

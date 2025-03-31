@@ -2,82 +2,78 @@ package state;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public class MainMenu extends JPanel {
-    private ImageIcon mainMenuGif;
-    private JLabel startButton, endButton, creditsButton;
+    private final ImageIcon mainMenuGif;
+    private final JFrame frame;
 
     public MainMenu() {
-        mainMenuGif = new ImageIcon("C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\MainMenu.gif");
-        setLayout(null); // Allows manual positioning of buttons
+        frame = new JFrame("Game");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setUndecorated(true); // Make the window without decoration
+        frame.setSize(1920, 1080);
+        frame.setContentPane(this); // Set this panel as the content pane
+        frame.setVisible(true); // Make the frame visible
 
+        mainMenuGif = new ImageIcon("C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\MainMenu.gif");
+        setLayout(null);
+        setFocusable(true); // Make the panel focusable
+        requestFocusInWindow(); // Request focus for key events
+        setPreferredSize(new Dimension(1920, 1080));  // Explicitly setting the panel size
         setupButtons();
-        setupFrame();
     }
 
     private void setupButtons() {
-        startButton = createButton(
+        // Transition to ModeSelection
+        JLabel startButton = createButton(
                 "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\Buttons\\Start\\Start_Off.png",
                 "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\Buttons\\Start\\Start_On.png",
-                970, 450 // Adjust these coordinates manually
+                450, () -> {
+                    // Transition to ModeSelection
+                    frame.setContentPane(new ModeSelection(frame));
+                    frame.revalidate();
+                    frame.repaint();
+                }
         );
 
-        endButton = createButton(
+        JLabel endButton = createButton(
                 "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\Buttons\\End\\End_Off.png",
                 "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\Buttons\\End\\End_On.png",
-                970, 530 // Adjust these coordinates manually
+                530, () -> System.exit(0)
         );
 
-        creditsButton = createButton(
+        JLabel creditsButton = createButton(
                 "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\Buttons\\Credits\\Credits_Off.png",
                 "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\Buttons\\Credits\\Credits_On.png",
-                970, 600 // Adjust these coordinates manually
+                600, () -> System.out.println("Credits Clicked")
         );
-
-        endButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                System.exit(0); // Exit when End Game is clicked
-            }
-        });
 
         add(startButton);
         add(endButton);
         add(creditsButton);
     }
 
-    private JLabel createButton(String offPath, String hoverPath, int x, int y) {
+    private JLabel createButton(String offPath, String hoverPath, int y, Runnable action) {
         ImageIcon offIcon = new ImageIcon(offPath);
         ImageIcon hoverIcon = new ImageIcon(hoverPath);
         JLabel button = new JLabel(offIcon);
-        button.setBounds(x, y, offIcon.getIconWidth(), offIcon.getIconHeight());
+        button.setBounds(970, y, offIcon.getIconWidth(), offIcon.getIconHeight());
 
-        button.addMouseListener(new MouseAdapter() {
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
-            public void mouseEntered(MouseEvent e) {
+            public void mouseEntered(java.awt.event.MouseEvent e) {
                 button.setIcon(hoverIcon);
             }
-
             @Override
-            public void mouseExited(MouseEvent e) {
+            public void mouseExited(java.awt.event.MouseEvent e) {
                 button.setIcon(offIcon);
+            }
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                action.run();
             }
         });
         return button;
-    }
-
-    private void setupFrame() {
-        JFrame frame = new JFrame("Game");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setUndecorated(true);
-
-        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        gd.setFullScreenWindow(frame);
-
-        frame.setContentPane(this);
-        frame.setVisible(true);
     }
 
     @Override
