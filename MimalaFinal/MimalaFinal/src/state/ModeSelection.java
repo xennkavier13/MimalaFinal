@@ -18,8 +18,8 @@ public class ModeSelection extends JPanel {
     private void setupButtons() {
         // Redirect to Character Selection
         JLabel pvpButton = createButton(
-                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\Buttons\\PvP or PVC\\PVP\\PVP_off.png",
-                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\Buttons\\PvP or PVC\\PVP\\PVP_on.png",
+                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\ModeSelectionScreen\\Buttons\\PVP\\PVP_off.png",
+                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\ModeSelectionScreen\\Buttons\\PVP\\PVP_on.png",
                 450, () -> {
                     frame.setContentPane(new CharacterSelection()); // Redirect to Character Selection
                     frame.revalidate();
@@ -29,8 +29,8 @@ public class ModeSelection extends JPanel {
 
         // Redirect to Character Selection
         JLabel pvcButton = createButton(
-                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\Buttons\\PvP or PVC\\PVC\\PVC_off.png",
-                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\Buttons\\PvP or PVC\\PVC\\PVC_on.png",
+                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\ModeSelectionScreen\\Buttons\\PVC\\PVC_off.png",
+                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\ModeSelectionScreen\\Buttons\\PVC\\PVC_on.png",
                 530, () -> {
                     frame.setContentPane(new CharacterSelection()); // Redirect to Character Selection
                     frame.revalidate();
