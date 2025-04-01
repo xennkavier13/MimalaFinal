@@ -105,5 +105,4 @@ public class MainMenu extends JPanel {
             e.printStackTrace();
         }
     }
-
 }

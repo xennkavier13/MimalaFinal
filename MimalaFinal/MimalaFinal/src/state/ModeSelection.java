@@ -9,7 +9,7 @@ public class ModeSelection extends JPanel {
 
     public ModeSelection(JFrame gameFrame) {
         this.frame = gameFrame;
-        modeSelectionBg = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\ModeSelectionScreen\\ModeSelection.gif");
+        modeSelectionBg = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\ModeSelectionScreen\\ModeSelectionPixelated.gif");
         setLayout(null);
         setPreferredSize(new Dimension(1920, 1080));
         setupButtons();
@@ -21,7 +21,7 @@ public class ModeSelection extends JPanel {
                 "MimalaFinal\\MimalaFinal\\src\\assets\\ModeSelectionScreen\\Buttons\\PVP\\PVP_off.png",
                 "MimalaFinal\\MimalaFinal\\src\\assets\\ModeSelectionScreen\\Buttons\\PVP\\PVP_on.png",
                 450, () -> {
-                    frame.setContentPane(new CharacterSelection()); // Redirect to Character Selection
+                    frame.setContentPane(new CharacterSelection(frame)); // Redirect to Character Selection
                     frame.revalidate();
                     frame.repaint();
                 }
@@ -32,7 +32,7 @@ public class ModeSelection extends JPanel {
                 "MimalaFinal\\MimalaFinal\\src\\assets\\ModeSelectionScreen\\Buttons\\PVC\\PVC_off.png",
                 "MimalaFinal\\MimalaFinal\\src\\assets\\ModeSelectionScreen\\Buttons\\PVC\\PVC_on.png",
                 530, () -> {
-                    frame.setContentPane(new CharacterSelection()); // Redirect to Character Selection
+                    frame.setContentPane(new CharacterSelection(frame)); // Redirect to Character Selection
                     frame.revalidate();
                     frame.repaint();
                 }
