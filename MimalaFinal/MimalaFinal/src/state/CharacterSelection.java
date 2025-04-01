@@ -19,39 +19,36 @@ public class CharacterSelection extends JPanel {
     public CharacterSelection(JFrame frame, String mode) {
         this.frame = frame;
         this.mode = mode;
-        characterSelectionBg = loadIcon("assets/CharacterSelectionScreen/CharacterSelect_BG.png");
+        characterSelectionBg = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_off\\Characters_off.png");
 
-        setLayout(new BorderLayout());
+        setLayout(null);  // Absolute layout
         setPreferredSize(new Dimension(1920, 1080));
-
-        JLayeredPane layeredPane = new JLayeredPane();
-        layeredPane.setPreferredSize(new Dimension(1920, 1080));
-
-        JLabel backgroundLabel = new JLabel(loadIcon("assets/CharacterSelectionScreen/Character_off/Characters_off.png"));
-        backgroundLabel.setBounds(0, 0, 1920, 1080);
-        layeredPane.add(backgroundLabel, JLayeredPane.DEFAULT_LAYER);
-
-        JPanel characterGrid = new JPanel(new GridLayout(2, 4, 25, 25));
-        characterGrid.setOpaque(false);
-        characterGrid.setBounds(300, 250, 1200, 500); // Positioning of grid
-
-        for (String characterName : characterNames) {
-            JLabel characterButton = createCharacterButton(characterName);
-            characterGrid.add(characterButton);
-        }
-
-        layeredPane.add(characterGrid, JLayeredPane.PALETTE_LAYER);
-        add(layeredPane, BorderLayout.CENTER);
+        setupButtons();
     }
 
-    private JLabel createCharacterButton(String characterName) {
-        String basePath = "assets/CharacterSelectionScreen/";
-        ImageIcon hoverIcon = resizeIcon(loadIcon(basePath + "Character_hover/" + characterName + "_hover.png"), 386, 456);
+    private void setupButtons() {
+        // Add the off (background) button first, as it is static and common for all characters
+        JLabel offButton = createOffButton();
+        add(offButton);
 
-        JLabel button = new JLabel("", JLabel.CENTER);
-        button.setOpaque(false);
-        button.setPreferredSize(new Dimension(386, 456));
+        // Create hover buttons for each character
+        createCharacterButton("Pyrothar", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Pyrothar_hover.png", 280, 205);
+        createCharacterButton("Azurox", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Azurox_hover.png", 590, 205);
+        createCharacterButton("Zenfang", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Zenfang_hover.png", 905, 205);
+        createCharacterButton("Aurelix", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Aurelix_hover.png", 1220, 205);
+        createCharacterButton("Vexmorth", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Vexmorth_hover.png", 280, 555);
+        createCharacterButton("Astrida", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Astrida_hover.png", 603, 555);
+        createCharacterButton("Varkos", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Varkos_hover.png", 925, 548);
+        createCharacterButton("Ignisveil", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Ignisveil_hover.png", 1240, 553);
+    }
 
+    private void createCharacterButton(String characterName, String hoverImagePath, int x, int y) {
+        ImageIcon hoverIcon = new ImageIcon(hoverImagePath);
+
+        JLabel button = new JLabel();
+        button.setBounds(x, y, hoverIcon.getIconWidth(), hoverIcon.getIconHeight());
+
+        // Mouse listener for hover effects
         button.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -84,7 +81,7 @@ public class CharacterSelection extends JPanel {
             }
         });
 
-        return button;
+        add(button);
     }
 
     private String selectRandomCharacter() {
@@ -92,17 +89,12 @@ public class CharacterSelection extends JPanel {
         return characterNames[random.nextInt(characterNames.length)];
     }
 
-    private ImageIcon resizeIcon(ImageIcon icon, int width, int height) {
-        if (icon.getImage() == null) return new ImageIcon();
-        Image resizedImg = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
-        return new ImageIcon(resizedImg);
-    }
-
-    private ImageIcon loadIcon(String path) {
-        java.net.URL imgURL = getClass().getClassLoader().getResource(path);
-        if (imgURL != null) return new ImageIcon(imgURL);
-        System.err.println("Warning: Missing image at " + path);
-        return new ImageIcon();
+    private JLabel createOffButton() {
+        // Create and position the off button (background image)
+        ImageIcon offIcon = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_off\\Characters_off.png");
+        JLabel offButton = new JLabel(offIcon);
+        offButton.setBounds(0, 0, getWidth(), getHeight()); // Cover the entire screen with the off image
+        return offButton;
     }
 
     @Override
