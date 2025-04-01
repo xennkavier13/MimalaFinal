@@ -1,11 +1,15 @@
 package state;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 
 public class MainMenu extends JPanel {
     private final ImageIcon mainMenuGif;
     private final JFrame frame;
+    private Clip music;
 
     public MainMenu() {
         frame = new JFrame("Game");
@@ -20,6 +24,7 @@ public class MainMenu extends JPanel {
         setFocusable(true); // Make the panel focusable
         requestFocusInWindow(); // Request focus for key events
         setPreferredSize(new Dimension(1920, 1080));  // Explicitly setting the panel size
+        playMusic("MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Sounds\\MimalaMainMenuMusic.wav");
         setupButtons();
     }
 
@@ -81,4 +86,24 @@ public class MainMenu extends JPanel {
         super.paintComponent(g);
         g.drawImage(mainMenuGif.getImage(), 0, 0, getWidth(), getHeight(), this);
     }
+
+
+    private void playMusic(String filePath) {
+        try {
+            File musicFile = new File(filePath);
+            if (!musicFile.exists()) {
+                System.err.println("Music file not found: " + filePath);
+                return;
+            }
+
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(musicFile);
+            music = AudioSystem.getClip();
+            music.open(audioStream);
+            music.loop(Clip.LOOP_CONTINUOUSLY);
+            music.start();
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
