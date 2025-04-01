@@ -3,13 +3,13 @@ package state.CharacterScreen;
 import javax.swing.*;
 import java.awt.*;
 
-public class PyrotharScreen extends JPanel {
+public class ZenfangScreen extends JPanel{
 
-    public PyrotharScreen(JFrame frame) {
+    public ZenfangScreen(JFrame frame) {
         setLayout(new BorderLayout());
 
         // Load the looping GIF
-        ImageIcon pyrotharGif = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\CharacterScreen\\PyrotharSelection.gif");
+        ImageIcon pyrotharGif = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\CharacterScreen\\ZenfangSelection.gif");
         JLabel gifLabel = new JLabel(pyrotharGif);
         gifLabel.setHorizontalAlignment(JLabel.CENTER);
 

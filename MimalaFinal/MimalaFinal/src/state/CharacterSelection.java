@@ -1,5 +1,7 @@
 package state;
 
+import state.CharacterScreen.*;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -11,7 +13,7 @@ public class CharacterSelection extends JPanel {
     private final JFrame frame;
     private final String[] characterNames = {
             "Pyrothar", "Azurox", "Zenfang", "Aurelix",
-            "Vexmorth", "Astrida", "Varkos", "Ignisveil"
+            "Vexmorth", "Astridra", "Varkos", "Ignisveil"
     };
     private String firstPlayerSelection = null;
     private final String mode;
@@ -37,7 +39,7 @@ public class CharacterSelection extends JPanel {
         createCharacterButton("Zenfang", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Zenfang_hover.png", 905, 205);
         createCharacterButton("Aurelix", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Aurelix_hover.png", 1220, 205);
         createCharacterButton("Vexmorth", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Vexmorth_hover.png", 280, 555);
-        createCharacterButton("Astrida", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Astrida_hover.png", 603, 555);
+        createCharacterButton("Astridra", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Astrida_hover.png", 603, 555);
         createCharacterButton("Varkos", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Varkos_hover.png", 925, 548);
         createCharacterButton("Ignisveil", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Ignisveil_hover.png", 1240, 553);
     }
@@ -62,17 +64,34 @@ public class CharacterSelection extends JPanel {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (firstPlayerSelection == null) {
+                if (characterName.equals("Pyrothar")) {
+                    frame.setContentPane(new PyrotharScreen(frame));
+                    frame.revalidate();
+                    frame.repaint();
+                } else if(characterName.equals("Azurox")){
+                    frame.setContentPane(new AzuroxScreen(frame));
+                    frame.revalidate();
+                    frame.repaint();
+                } else if(characterName.equals("Astridra")){
+                    frame.setContentPane(new AstridraScreen(frame));
+                    frame.revalidate();
+                    frame.repaint();
+                } else if(characterName.equals("Vexmorth")){
+                    frame.setContentPane(new VexmorthScreen(frame));
+                    frame.revalidate();
+                    frame.repaint();
+                } else if(characterName.equals("Zenfang")){
+                    frame.setContentPane(new ZenfangScreen(frame));
+                    frame.revalidate();
+                    frame.repaint();
+                } else if (firstPlayerSelection == null) {
                     firstPlayerSelection = characterName;
                     System.out.println(firstPlayerSelection + " selected by Player 1!");
                     if (mode.equals("PVP")) {
-                        // Transition to second player's selection
                         frame.setContentPane(new SecondPlayerSelection(frame, firstPlayerSelection));
                     } else {
-                        // Randomly select a character for Player vs Computer
                         String secondPlayerSelection = selectRandomCharacter();
                         System.out.println(secondPlayerSelection + " selected for Player 2!");
-                        // Proceed to the game with both selections
                         frame.setContentPane(new GameScreen(frame, firstPlayerSelection, secondPlayerSelection));
                     }
                     frame.revalidate();

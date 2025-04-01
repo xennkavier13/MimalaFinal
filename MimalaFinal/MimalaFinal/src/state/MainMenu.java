@@ -18,7 +18,7 @@ public class MainMenu extends JPanel {
         setFocusable(true);
         requestFocusInWindow();
         setPreferredSize(new Dimension(1920, 1080));
-        playMusic("assets/MainMenuScreen/Sounds/MimalaMainMenuMusic.wav");
+        playMusic("MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Sounds\\MimalaMainMenuMusic.wav");
         setupButtons();
     }
 
