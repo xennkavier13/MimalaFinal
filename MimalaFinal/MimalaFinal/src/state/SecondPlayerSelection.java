@@ -49,15 +49,18 @@ public class SecondPlayerSelection extends JPanel {
         int y = 205 + (index / 4) * 300; // Adjust y position based on index
         button.setBounds(x, y, 386, 456); // Set bounds for the button
 
+        // Set the initial icon to null so that it's not visible by default
+        button.setIcon(null);
+
         button.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                button.setIcon(hoverIcon);
+                button.setIcon(hoverIcon);  // Show hover icon when the mouse enters
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                button.setIcon(null);
+                button.setIcon(null);  // Hide hover icon when the mouse exits
             }
 
             @Override
