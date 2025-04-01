@@ -1,5 +1,7 @@
 package state;
 
+import util.AudioManager;
+
 import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
@@ -18,7 +20,10 @@ public class MainMenu extends JPanel {
         setFocusable(true);
         requestFocusInWindow();
         setPreferredSize(new Dimension(1920, 1080));
-        playMusic("MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Sounds\\MimalaMainMenuMusic.wav");
+
+        // Play the music using AudioManager (ensuring it doesn't restart if already playing)
+        AudioManager.playMusic("MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Sounds\\MimalaMainMenuMusic.wav");
+
         setupButtons();
     }
 
@@ -28,17 +33,26 @@ public class MainMenu extends JPanel {
                 "assets/MainMenuScreen/Start/Start_Off.png",
                 "assets/MainMenuScreen/Start/Start_On.png",
                 450, () -> {
-                    stopMusic(); // Stop music when transitioning
-                    frame.setContentPane(new ModeSelection(frame));
-                    frame.revalidate();
-                    frame.repaint();
+                    // Create the new panel off-screen
+                    JPanel newScreen = new ModeSelection(frame);
+                    newScreen.setOpaque(true);
+                    newScreen.setBackground(Color.BLACK); // Force the background to black
+
+                    // Swap the content pane smoothly
+                    SwingUtilities.invokeLater(() -> {
+                        frame.getContentPane().removeAll();  // Clear old components first
+                        frame.setBackground(Color.BLACK);   // Prevent white flashing
+                        frame.setContentPane(newScreen);
+                        frame.revalidate();
+                        frame.repaint();
+                    });
                 }
         );
 
         JLabel endButton = createButton(
                 "assets/MainMenuScreen/End/End_Off.png",
                 "assets/MainMenuScreen/End/End_On.png",
-                530, () -> {
+                525, () -> {
                     stopMusic(); // Stop music when exiting
                     System.exit(0);
                 }
