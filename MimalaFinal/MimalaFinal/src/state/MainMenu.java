@@ -15,7 +15,7 @@ public class MainMenu extends JPanel {
         frame.setContentPane(this); // Set this panel as the content pane
         frame.setVisible(true); // Make the frame visible
 
-        mainMenuGif = new ImageIcon("C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\MainMenu.gif");
+        mainMenuGif = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\MainMenu.gif");
         setLayout(null);
         setFocusable(true); // Make the panel focusable
         requestFocusInWindow(); // Request focus for key events
@@ -26,8 +26,8 @@ public class MainMenu extends JPanel {
     private void setupButtons() {
         // Transition to ModeSelection
         JLabel startButton = createButton(
-                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Start\\Start_Off.png",
-                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Start\\Start_On.png",
+                "MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Start\\Start_Off.png",
+                "MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Start\\Start_On.png",
                 450, () -> {
                     // Transition to ModeSelection
                     frame.setContentPane(new ModeSelection(frame));
@@ -37,14 +37,14 @@ public class MainMenu extends JPanel {
         );
 
         JLabel endButton = createButton(
-                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\End\\End_Off.png",
-                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\End\\End_On.png",
+                "MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\End\\End_Off.png",
+                "MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\End\\End_On.png",
                 530, () -> System.exit(0)
         );
 
         JLabel creditsButton = createButton(
-                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Credits\\Credits_Off.png",
-                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Credits\\Credits_On.png",
+                "MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Credits\\Credits_Off.png",
+                "MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Credits\\Credits_On.png",
                 600, () -> System.out.println("Credits Clicked")
         );
 
