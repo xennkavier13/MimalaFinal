@@ -7,7 +7,7 @@ public class CharacterSelection extends JPanel {
     private final ImageIcon characterSelectionBg;
 
     public CharacterSelection() {
-        characterSelectionBg = new ImageIcon("C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\SampleCharacterSelection.png");
+        characterSelectionBg = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\SampleCharacterSelection.png");
         setLayout(null);
     }
 

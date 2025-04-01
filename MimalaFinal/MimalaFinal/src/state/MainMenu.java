@@ -19,7 +19,7 @@ public class MainMenu extends JPanel {
         frame.setContentPane(this); // Set this panel as the content pane
         frame.setVisible(true); // Make the frame visible
 
-        mainMenuGif = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\MainMenu.gif");
+        mainMenuGif = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\MainMenuPixelated.gif");
         setLayout(null);
         setFocusable(true); // Make the panel focusable
         requestFocusInWindow(); // Request focus for key events
