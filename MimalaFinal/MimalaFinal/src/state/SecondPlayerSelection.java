@@ -4,44 +4,35 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Random;
 
-public class CharacterSelection extends JPanel {
+public class SecondPlayerSelection extends JPanel {
     private final ImageIcon characterSelectionBg;
     private final JFrame frame;
     private final String[] characterNames = {
             "Pyrothar", "Azurox", "Zenfang", "Aurelix",
             "Vexmorth", "Astrida", "Varkos", "Ignisveil"
     };
-    private String firstPlayerSelection = null;
-    private final String mode;
+    private final String firstPlayerSelection;
 
-    public CharacterSelection(JFrame frame, String mode) {
+    public SecondPlayerSelection(JFrame frame, String firstPlayerSelection) {
         this.frame = frame;
-        this.mode = mode;
+        this.firstPlayerSelection = firstPlayerSelection;
         characterSelectionBg = loadIcon("assets/CharacterSelectionScreen/CharacterSelect_BG.png");
 
-        setLayout(new BorderLayout());
+        setLayout(null); // Use null layout for absolute positioning
         setPreferredSize(new Dimension(1920, 1080));
-
-        JLayeredPane layeredPane = new JLayeredPane();
-        layeredPane.setPreferredSize(new Dimension(1920, 1080));
 
         JLabel backgroundLabel = new JLabel(loadIcon("assets/CharacterSelectionScreen/Character_off/Characters_off.png"));
         backgroundLabel.setBounds(0, 0, 1920, 1080);
-        layeredPane.add(backgroundLabel, JLayeredPane.DEFAULT_LAYER);
+        add(backgroundLabel);
 
-        JPanel characterGrid = new JPanel(new GridLayout(2, 4, 25, 25));
-        characterGrid.setOpaque(false);
-        characterGrid.setBounds(300, 250, 1200, 500); // Positioning of grid
-
+        // Create and add character buttons
         for (String characterName : characterNames) {
-            JLabel characterButton = createCharacterButton(characterName);
-            characterGrid.add(characterButton);
+            if (!characterName.equals(firstPlayerSelection)) {
+                JLabel characterButton = createCharacterButton(characterName);
+                add(characterButton);
+            }
         }
-
-        layeredPane.add(characterGrid, JLayeredPane.PALETTE_LAYER);
-        add(layeredPane, BorderLayout.CENTER);
     }
 
     private JLabel createCharacterButton(String characterName) {
@@ -51,6 +42,12 @@ public class CharacterSelection extends JPanel {
         JLabel button = new JLabel("", JLabel.CENTER);
         button.setOpaque(false);
         button.setPreferredSize(new Dimension(386, 456));
+
+        // Set the position of the button based on its index
+        int index = java.util.Arrays.asList(characterNames).indexOf(characterName);
+        int x = 280 + (index % 4) * 320; // Adjust x position based on index
+        int y = 205 + (index / 4) * 300; // Adjust y position based on index
+        button.setBounds(x, y, 386, 456); // Set bounds for the button
 
         button.addMouseListener(new MouseAdapter() {
             @Override
@@ -65,31 +62,16 @@ public class CharacterSelection extends JPanel {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (firstPlayerSelection == null) {
-                    firstPlayerSelection = characterName;
-                    System.out.println(firstPlayerSelection + " selected by Player 1!");
-                    if (mode.equals("PVP")) {
-                        // Transition to second player's selection
-                        frame.setContentPane(new SecondPlayerSelection(frame, firstPlayerSelection));
-                    } else {
-                        // Randomly select a character for Player vs Computer
-                        String secondPlayerSelection = selectRandomCharacter();
-                        System.out.println(secondPlayerSelection + " selected for Player 2!");
-                        // Proceed to the game with both selections
-                        frame.setContentPane(new GameScreen(frame, firstPlayerSelection, secondPlayerSelection));
-                    }
-                    frame.revalidate();
-                    frame.repaint();
-                }
+                System.out.println(characterName + " selected by Player 2!");
+                System.out.println("Transitioning to GameScreen...");
+                frame.setContentPane(new GameScreen(frame, firstPlayerSelection, characterName));
+                frame.revalidate();
+                frame.repaint();
+                System.out.println("Transition complete.");
             }
         });
 
         return button;
-    }
-
-    private String selectRandomCharacter() {
-        Random random = new Random();
-        return characterNames[random.nextInt(characterNames.length)];
     }
 
     private ImageIcon resizeIcon(ImageIcon icon, int width, int height) {

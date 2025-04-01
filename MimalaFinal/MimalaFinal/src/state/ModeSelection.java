@@ -9,30 +9,28 @@ public class ModeSelection extends JPanel {
 
     public ModeSelection(JFrame gameFrame) {
         this.frame = gameFrame;
-        modeSelectionBg = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\ModeSelectionScreen\\ModeSelectionPixelated.gif");
+        modeSelectionBg = new ImageIcon("MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/ModeSelection.gif");
         setLayout(null);
         setPreferredSize(new Dimension(1920, 1080));
         setupButtons();
     }
 
     private void setupButtons() {
-        // Redirect to Character Selection
         JLabel pvpButton = createButton(
-                "MimalaFinal\\MimalaFinal\\src\\assets\\ModeSelectionScreen\\Buttons\\PVP\\PVP_off.png",
-                "MimalaFinal\\MimalaFinal\\src\\assets\\ModeSelectionScreen\\Buttons\\PVP\\PVP_on.png",
+                "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVP/PVP_off.png",
+                "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVP/PVP_on.png",
                 450, () -> {
-                    frame.setContentPane(new CharacterSelection(frame)); // Redirect to Character Selection
+                    frame.setContentPane(new CharacterSelection(frame, "PVP")); // Pass mode
                     frame.revalidate();
                     frame.repaint();
                 }
         );
 
-        // Redirect to Character Selection
         JLabel pvcButton = createButton(
-                "MimalaFinal\\MimalaFinal\\src\\assets\\ModeSelectionScreen\\Buttons\\PVC\\PVC_off.png",
-                "MimalaFinal\\MimalaFinal\\src\\assets\\ModeSelectionScreen\\Buttons\\PVC\\PVC_on.png",
+                "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVC/PVC_off.png",
+                "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVC/PVC_on.png",
                 530, () -> {
-                    frame.setContentPane(new CharacterSelection(frame)); // Redirect to Character Selection
+                    frame.setContentPane(new CharacterSelection(frame, "PVC")); // Pass mode
                     frame.revalidate();
                     frame.repaint();
                 }
@@ -53,10 +51,12 @@ public class ModeSelection extends JPanel {
             public void mouseEntered(java.awt.event.MouseEvent e) {
                 button.setIcon(hoverIcon);
             }
+
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
                 button.setIcon(offIcon);
             }
+
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 action.run();

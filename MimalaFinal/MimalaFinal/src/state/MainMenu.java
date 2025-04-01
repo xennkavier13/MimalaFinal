@@ -11,30 +11,24 @@ public class MainMenu extends JPanel {
     private final JFrame frame;
     private Clip music;
 
-    public MainMenu() {
-        frame = new JFrame("Game");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setUndecorated(true); // Make the window without decoration
-        frame.setSize(1920, 1080);
-        frame.setContentPane(this); // Set this panel as the content pane
-        frame.setVisible(true); // Make the frame visible
-
-        mainMenuGif = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\MainMenuPixelated.gif");
+    public MainMenu(JFrame frame) {
+        this.frame = frame;
+        mainMenuGif = loadIcon("assets/MainMenuScreen/MainMenuPixelated.gif");
         setLayout(null);
-        setFocusable(true); // Make the panel focusable
-        requestFocusInWindow(); // Request focus for key events
-        setPreferredSize(new Dimension(1920, 1080));  // Explicitly setting the panel size
-        playMusic("MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Sounds\\MimalaMainMenuMusic.wav");
+        setFocusable(true);
+        requestFocusInWindow();
+        setPreferredSize(new Dimension(1920, 1080));
+        playMusic("assets/MainMenuScreen/Sounds/MimalaMainMenuMusic.wav");
         setupButtons();
     }
 
     private void setupButtons() {
         // Transition to ModeSelection
         JLabel startButton = createButton(
-                "MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Start\\Start_Off.png",
-                "MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Start\\Start_On.png",
+                "assets/MainMenuScreen/Start/Start_Off.png",
+                "assets/MainMenuScreen/Start/Start_On.png",
                 450, () -> {
-                    // Transition to ModeSelection
+                    stopMusic(); // Stop music when transitioning
                     frame.setContentPane(new ModeSelection(frame));
                     frame.revalidate();
                     frame.repaint();
@@ -42,14 +36,17 @@ public class MainMenu extends JPanel {
         );
 
         JLabel endButton = createButton(
-                "MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\End\\End_Off.png",
-                "MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\End\\End_On.png",
-                530, () -> System.exit(0)
+                "assets/MainMenuScreen/End/End_Off.png",
+                "assets/MainMenuScreen/End/End_On.png",
+                530, () -> {
+                    stopMusic(); // Stop music when exiting
+                    System.exit(0);
+                }
         );
 
         JLabel creditsButton = createButton(
-                "MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Credits\\Credits_Off.png",
-                "MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Credits\\Credits_On.png",
+                "assets/MainMenuScreen/Credits/Credits_Off.png",
+                "assets/MainMenuScreen/Credits/Credits_On.png",
                 600, () -> System.out.println("Credits Clicked")
         );
 
@@ -59,8 +56,8 @@ public class MainMenu extends JPanel {
     }
 
     private JLabel createButton(String offPath, String hoverPath, int y, Runnable action) {
-        ImageIcon offIcon = new ImageIcon(offPath);
-        ImageIcon hoverIcon = new ImageIcon(hoverPath);
+        ImageIcon offIcon = loadIcon(offPath);
+        ImageIcon hoverIcon = loadIcon(hoverPath);
         JLabel button = new JLabel(offIcon);
         button.setBounds(970, y, offIcon.getIconWidth(), offIcon.getIconHeight());
 
@@ -87,7 +84,6 @@ public class MainMenu extends JPanel {
         g.drawImage(mainMenuGif.getImage(), 0, 0, getWidth(), getHeight(), this);
     }
 
-
     private void playMusic(String filePath) {
         try {
             File musicFile = new File(filePath);
@@ -104,5 +100,19 @@ public class MainMenu extends JPanel {
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             e.printStackTrace();
         }
+    }
+
+    private void stopMusic() {
+        if (music != null && music.isRunning()) {
+            music.stop();
+            music.close();
+        }
+    }
+
+    private ImageIcon loadIcon(String path) {
+        java.net.URL imgURL = getClass().getClassLoader().getResource(path);
+        if (imgURL != null) return new ImageIcon(imgURL);
+        System.err.println("Warning: Missing image at " + path);
+        return new ImageIcon();
     }
 }

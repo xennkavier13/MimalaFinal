@@ -10,11 +10,13 @@ import java.awt.event.MouseEvent;
 public class Pause extends JPanel {
     private final ImageIcon pauseBackground;
     private final JFrame frame;
+    private final JPanel gamePanel; // Reference to the game panel
     private boolean isPaused = false;
 
-    public Pause(JFrame gameFrame) {
+    public Pause(JFrame gameFrame, JPanel gamePanel) {
         this.frame = gameFrame;
-        pauseBackground = new ImageIcon("C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\PauseScreen\\PauseBGwithText.png");
+        this.gamePanel = gamePanel; // Store the reference to the game panel
+        pauseBackground = new ImageIcon("MimalaFinal/MimalaFinal/src/assets/PauseScreen/PauseBGwithText.png");
         setLayout(null);
         setFocusable(true); // Make sure the panel is focusable
         requestFocusInWindow(); // Request focus for key events
@@ -23,17 +25,17 @@ public class Pause extends JPanel {
     }
 
     private void setupButtons() {
-        // Adjust manually
+        // Resume button
         JLabel resumeButton = createButton(
-                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\PauseScreen\\Buttons\\Resume\\Resume_off.png",
-                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\PauseScreen\\Buttons\\Resume\\Resume_on.png",
+                "MimalaFinal/MimalaFinal/src/assets/PauseScreen/Buttons/Resume/Resume_off.png",
+                "MimalaFinal/MimalaFinal/src/assets/PauseScreen/Buttons/Resume/Resume_on.png",
                 450 // Adjust manually
         );
 
-        // Adjust manually
+        // Exit button
         JLabel exitButton = createButton(
-                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\PauseScreen\\Buttons\\Exit\\Exit_off.png",
-                "C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\PauseScreen\\Buttons\\Exit\\Exit_on.png",
+                "MimalaFinal/MimalaFinal/src/assets/PauseScreen/Buttons/Exit/Exit_off.png",
+                "MimalaFinal/MimalaFinal/src/assets/PauseScreen/Buttons/Exit/Exit_on.png",
                 550 // Adjust manually
         );
 
@@ -41,7 +43,14 @@ public class Pause extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 frame.dispose(); // Close game
-                new MainMenu(); // Redirect to main menu
+                new MainMenu(frame); // Redirect to main menu
+            }
+        });
+
+        resumeButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                togglePause(); // Resume the game
             }
         });
 
@@ -85,9 +94,9 @@ public class Pause extends JPanel {
     private void togglePause() {
         isPaused = !isPaused;
         if (isPaused) {
-            frame.setContentPane(this);
+            frame.setContentPane(this); // Show pause screen
         } else {
-            frame.setContentPane(new MainMenu()); // Change to game panel if needed
+            frame.setContentPane(gamePanel); // Return to the game panel
         }
         frame.revalidate();
         frame.repaint();
@@ -96,8 +105,6 @@ public class Pause extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        // Start off-screen
-        int yOffset = -1080;
-        g.drawImage(pauseBackground.getImage(), 0, yOffset, getWidth(), getHeight(), this);
+        g.drawImage(pauseBackground.getImage(), 0, 0, getWidth(), getHeight(), this); // Draw the background correctly
     }
 }
