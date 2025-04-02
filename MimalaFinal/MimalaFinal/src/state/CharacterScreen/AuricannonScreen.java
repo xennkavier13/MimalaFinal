@@ -70,71 +70,38 @@ public class AuricannonScreen extends JPanel {
 
 
     private void setupButtons() {
-        int panelWidth = getPreferredSize().width;
-        int panelHeight = getPreferredSize().height;
-        int bottomMargin = 70; // Increased margin from bottom
-        int sideMargin = 70;   // Increased margin from sides
-
-        // Define Resource Paths for buttons (MUST start with '/' assuming 'assets' is at classpath root)
+        // Define Resource Paths for buttons
         String backOffPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_off.png";
         String backHoverPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_hover.png";
-        String contOffPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Continue/Continue_off.png";
-        String contHoverPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Continue/Continue_hover.png";
+        String contOffPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/AuricannonButtons/offButton.png";
+        String contHoverPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/AuricannonButtons/hoverButton.png";
 
         // --- Back Button ---
-        // Attempt to load the icon first to get dimensions for positioning
-        ImageIcon backIcon = loadImage(backOffPath);
-        int backW = (backIcon != null) ? backIcon.getIconWidth() : 100; // Default width if load fails
-        int backH = (backIcon != null) ? backIcon.getIconHeight() : 40; // Default height
-        int backButtonX = sideMargin;
-        int backButtonY = panelHeight - bottomMargin - backH; // Position based on height
-
-        JLabel backButton = createButton(backOffPath, backHoverPath, backButtonX, backButtonY, () -> {
-            System.out.println("Back button clicked on AstridraScreen");
-            // Go back to Character Selection, passing the original mode
+        JLabel backButton = createButton(backOffPath, backHoverPath, 0, 30, () -> {
+            System.out.println("Back button clicked on AuricannonScreen");
             frame.setContentPane(new CharacterSelection(frame, this.mode));
             frame.revalidate();
             frame.repaint();
         });
-        add(backButton); // Add to panel
+        add(backButton);
 
         // --- Continue Button ---
-        ImageIcon contIcon = loadImage(contOffPath);
-        int contW = (contIcon != null) ? contIcon.getIconWidth() : 100; // Default width
-        int contH = (contIcon != null) ? contIcon.getIconHeight() : 40; // Default height
-        int continueButtonX = panelWidth - sideMargin - contW; // Position from right edge
-        int continueButtonY = panelHeight - bottomMargin - contH; // Align vertically with back button
+        JLabel continueButton = createButton(contOffPath, contHoverPath, 1200, 890, () -> {
+            System.out.println("Continue button clicked on AuricannonScreen. Mode: " + this.mode);
+            String player1Selection = this.characterName;
 
-        JLabel continueButton = createButton(contOffPath, contHoverPath, continueButtonX, continueButtonY, () -> {
-            System.out.println("Continue button clicked on AstridraScreen. Mode: " + this.mode);
-            String player1Selection = this.characterName; // "Astridra"
-
-            // Check mode and navigate accordingly
             if ("PVC".equalsIgnoreCase(this.mode)) {
-                System.out.println("Mode PVC detected. Selecting opponent and going to Map Selection.");
                 String player2Selection = selectRandomCharacterForPVE(player1Selection);
-                System.out.println("Player 2 (AI) selected: " + player2Selection);
-
-                // Navigate to MapSelection, passing P1 and P2 choices
-                // Ensure MapSelection constructor is: MapSelection(JFrame, String, String)
                 frame.setContentPane(new MapSelection(frame, player1Selection, player2Selection));
-                frame.revalidate();
-                frame.repaint();
-
             } else if ("PVP".equalsIgnoreCase(this.mode)) {
-                System.out.println("Mode PVP detected. Going to Second Player Selection.");
-                // Navigate to SecondPlayerSelection, passing P1 choice
-                // Ensure SecondPlayerSelection constructor is: SecondPlayerSelection(JFrame, String)
                 frame.setContentPane(new SecondPlayerSelection(frame, player1Selection));
-                frame.revalidate();
-                frame.repaint();
             } else {
-                // Handle unknown mode if necessary
-                System.err.println("Unknown mode encountered on AstridraScreen: " + this.mode);
                 JOptionPane.showMessageDialog(frame, "Cannot continue: Invalid game mode '" + this.mode + "'", "Mode Error", JOptionPane.ERROR_MESSAGE);
             }
+            frame.revalidate();
+            frame.repaint();
         });
-        add(continueButton); // Add to panel
+        add(continueButton);
     }
 
     // Updated button creation method using resource loading and proper bounds setting
