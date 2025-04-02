@@ -12,7 +12,7 @@ public class CharacterSelection extends JPanel {
     private final ImageIcon characterSelectionBg;
     private final JFrame frame;
     private final String[] characterNames = {
-            "Pyrothar", "Azurox", "Zenfang", "Aurelix",
+            "Pyrothar", "Azurox", "Zenfang", "Auricannon",
             "Vexmorth", "Astridra", "Varkos", "Ignisveil"
     };
     private String firstPlayerSelection = null;
@@ -37,7 +37,7 @@ public class CharacterSelection extends JPanel {
         createCharacterButton("Pyrothar", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Pyrothar_hover.png", 280, 205);
         createCharacterButton("Azurox", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Azurox_hover.png", 590, 205);
         createCharacterButton("Zenfang", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Zenfang_hover.png", 905, 205);
-        createCharacterButton("Aurelix", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Aurelix_hover.png", 1220, 205);
+        createCharacterButton("Auricannon", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Aurelix_hover.png", 1220, 205);
         createCharacterButton("Vexmorth", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Vexmorth_hover.png", 280, 555);
         createCharacterButton("Astridra", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Astrida_hover.png", 603, 555);
         createCharacterButton("Varkos", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Varkos_hover.png", 925, 548);
@@ -84,7 +84,19 @@ public class CharacterSelection extends JPanel {
                     frame.setContentPane(new ZenfangScreen(frame));
                     frame.revalidate();
                     frame.repaint();
-                } else if (firstPlayerSelection == null) {
+                } else if(characterName.equals("Auricannon")){
+                    frame.setContentPane(new AuricannonScreen(frame));
+                    frame.revalidate();
+                    frame.repaint();
+                } else if(characterName.equals("Varkos")){
+                    frame.setContentPane(new VarkosScreen(frame));
+                    frame.revalidate();
+                    frame.repaint();
+                } else if(characterName.equals("Ignisveil")){
+                    frame.setContentPane(new IgnisveilScreen(frame));
+                    frame.revalidate();
+                    frame.repaint();
+                }else if (firstPlayerSelection == null) {
                     firstPlayerSelection = characterName;
                     System.out.println(firstPlayerSelection + " selected by Player 1!");
                     if (mode.equals("PVP")) {

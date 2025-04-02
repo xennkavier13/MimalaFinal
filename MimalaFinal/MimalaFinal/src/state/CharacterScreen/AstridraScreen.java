@@ -16,3 +16,4 @@ public class AstridraScreen extends JPanel{
         add(gifLabel, BorderLayout.CENTER);
     }
 }
+

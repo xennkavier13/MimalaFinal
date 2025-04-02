@@ -3,13 +3,13 @@ package state.CharacterScreen;
 import javax.swing.*;
 import java.awt.*;
 
-public class VarkosScreen extends JPanel{
+public class AuricannonScreen extends JPanel{
 
-    public VarkosScreen(JFrame frame) {
+    public AuricannonScreen(JFrame frame) {
         setLayout(new BorderLayout());
 
         // Load the looping GIF
-        ImageIcon astridraGif = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\CharacterScreen\\VarkosSelection.gif");
+        ImageIcon astridraGif = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\CharacterScreen\\AuricannonSelection.gif");
         JLabel gifLabel = new JLabel(astridraGif);
         gifLabel.setHorizontalAlignment(JLabel.CENTER);
 
