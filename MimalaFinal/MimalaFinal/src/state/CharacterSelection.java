@@ -21,7 +21,7 @@ public class CharacterSelection extends JPanel {
     public CharacterSelection(JFrame frame, String mode) {
         this.frame = frame;
         this.mode = mode;
-        characterSelectionBg = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_off\\Characters_off.png");
+        characterSelectionBg = new ImageIcon("C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\CharacterSelectOff.png");
 
         setLayout(null);  // Absolute layout
         setPreferredSize(new Dimension(1920, 1080));
@@ -29,19 +29,15 @@ public class CharacterSelection extends JPanel {
     }
 
     private void setupButtons() {
-        // Add the off (background) button first, as it is static and common for all characters
-        JLabel offButton = createOffButton();
-        add(offButton);
-
         // Create hover buttons for each character
-        createCharacterButton("Pyrothar", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Pyrothar_hover.png", 280, 205);
-        createCharacterButton("Azurox", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Azurox_hover.png", 590, 205);
-        createCharacterButton("Zenfang", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Zenfang_hover.png", 905, 205);
-        createCharacterButton("Auricannon", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Aurelix_hover.png", 1220, 205);
-        createCharacterButton("Vexmorth", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Vexmorth_hover.png", 280, 555);
-        createCharacterButton("Astridra", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Astrida_hover.png", 603, 555);
-        createCharacterButton("Varkos", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Varkos_hover.png", 925, 548);
-        createCharacterButton("Ignisveil", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Ignisveil_hover.png", 1240, 553);
+        createCharacterButton("Pyrothar", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Pyrothar_hover.png", 273, 199);
+        createCharacterButton("Azurox", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Azurox_hover.png", 583, 197);
+        createCharacterButton("Zenfang", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Zenfang_hover.png", 902, 197);
+        createCharacterButton("Auricannon", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Auricannon_hover.png", 1145, 276);
+        createCharacterButton("Vexmorth", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Vexmorth_hover.png", 273, 545);
+        createCharacterButton("Astridra", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Astrida_hover.png", 599, 545);
+        createCharacterButton("Varkos", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Varkos_hover.png", 885, 598);
+        createCharacterButton("Ignisveil", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Ignisveil_hover.png", 1234, 545);
     }
 
     private void createCharacterButton(String characterName, String hoverImagePath, int x, int y) {
@@ -118,14 +114,6 @@ public class CharacterSelection extends JPanel {
     private String selectRandomCharacter() {
         Random random = new Random();
         return characterNames[random.nextInt(characterNames.length)];
-    }
-
-    private JLabel createOffButton() {
-        // Create and position the off button (background image)
-        ImageIcon offIcon = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_off\\Characters_off.png");
-        JLabel offButton = new JLabel(offIcon);
-        offButton.setBounds(0, 0, getWidth(), getHeight()); // Cover the entire screen with the off image
-        return offButton;
     }
 
     @Override
