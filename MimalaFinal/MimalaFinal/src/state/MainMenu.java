@@ -1,6 +1,5 @@
 package state;
 
-import util.AudioManager;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
@@ -22,7 +21,6 @@ public class MainMenu extends JPanel {
         setPreferredSize(new Dimension(1920, 1080));
 
         // Play the music using AudioManager (ensuring it doesn't restart if already playing)
-        AudioManager.playMusic("MimalaFinal\\MimalaFinal\\src\\assets\\MainMenuScreen\\Sounds\\MimalaMainMenuMusic.wav");
 
         setupButtons();
     }

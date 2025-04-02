@@ -21,7 +21,7 @@ public class CharacterSelection extends JPanel {
     public CharacterSelection(JFrame frame, String mode) {
         this.frame = frame;
         this.mode = mode;
-        characterSelectionBg = new ImageIcon("C:\\Users\\User\\IdeaProjects\\MimalaFinal\\MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\CharacterSelectOff.png");
+        characterSelectionBg = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\CharacterSelectOff.png");
 
         setLayout(null);  // Absolute layout
         setPreferredSize(new Dimension(1920, 1080));
@@ -61,35 +61,35 @@ public class CharacterSelection extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (characterName.equals("Pyrothar")) {
-                    frame.setContentPane(new PyrotharScreen(frame));
+                    frame.setContentPane(new PyrotharScreen(frame,mode));
                     frame.revalidate();
                     frame.repaint();
                 } else if(characterName.equals("Azurox")){
-                    frame.setContentPane(new AzuroxScreen(frame));
+                    frame.setContentPane(new AzuroxScreen(frame,mode));
                     frame.revalidate();
                     frame.repaint();
                 } else if(characterName.equals("Astridra")){
-                    frame.setContentPane(new AstridraScreen(frame));
+                    frame.setContentPane(new AstridraScreen(frame,mode));
                     frame.revalidate();
                     frame.repaint();
                 } else if(characterName.equals("Vexmorth")){
-                    frame.setContentPane(new VexmorthScreen(frame));
+                    frame.setContentPane(new VexmorthScreen(frame,mode));
                     frame.revalidate();
                     frame.repaint();
                 } else if(characterName.equals("Zenfang")){
-                    frame.setContentPane(new ZenfangScreen(frame));
+                    frame.setContentPane(new ZenfangScreen(frame,mode));
                     frame.revalidate();
                     frame.repaint();
                 } else if(characterName.equals("Auricannon")){
-                    frame.setContentPane(new AuricannonScreen(frame));
+                    frame.setContentPane(new AuricannonScreen(frame,mode));
                     frame.revalidate();
                     frame.repaint();
                 } else if(characterName.equals("Varkos")){
-                    frame.setContentPane(new VarkosScreen(frame));
+                    frame.setContentPane(new VarkosScreen(frame,mode));
                     frame.revalidate();
                     frame.repaint();
                 } else if(characterName.equals("Ignisveil")){
-                    frame.setContentPane(new IgnisveilScreen(frame));
+                    frame.setContentPane(new IgnisveilScreen(frame,mode));
                     frame.revalidate();
                     frame.repaint();
                 }else if (firstPlayerSelection == null) {
@@ -100,7 +100,7 @@ public class CharacterSelection extends JPanel {
                     } else {
                         String secondPlayerSelection = selectRandomCharacter();
                         System.out.println(secondPlayerSelection + " selected for Player 2!");
-                        frame.setContentPane(new GameScreen(frame, firstPlayerSelection, secondPlayerSelection));
+                        frame.setContentPane(new MapSelection(frame, firstPlayerSelection, secondPlayerSelection));
                     }
                     frame.revalidate();
                     frame.repaint();

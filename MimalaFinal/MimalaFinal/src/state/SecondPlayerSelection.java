@@ -9,7 +9,7 @@ public class SecondPlayerSelection extends JPanel {
     private final ImageIcon characterSelectionBg;
     private final JFrame frame;
     private final String[] characterNames = {
-            "Pyrothar", "Azurox", "Zenfang", "Aurelix",
+            "Pyrothar", "Azurox", "Zenfang", "Auricannon",
             "Vexmorth", "Astrida", "Varkos", "Ignisveil"
     };
     private final String firstPlayerSelection;
@@ -17,14 +17,11 @@ public class SecondPlayerSelection extends JPanel {
     public SecondPlayerSelection(JFrame frame, String firstPlayerSelection) {
         this.frame = frame;
         this.firstPlayerSelection = firstPlayerSelection;
-        characterSelectionBg = loadIcon("assets/CharacterSelectionScreen/CharacterSelect_BG.png");
+        characterSelectionBg = loadIcon("assets/CharacterSelectionScreen/CharacterSelectOff.png");
 
         setLayout(null); // Use null layout for absolute positioning
         setPreferredSize(new Dimension(1920, 1080));
 
-        JLabel backgroundLabel = new JLabel(loadIcon("assets/CharacterSelectionScreen/Character_off/Characters_off.png"));
-        backgroundLabel.setBounds(0, 0, 1920, 1080);
-        add(backgroundLabel);
 
         // Create and add character buttons
         for (String characterName : characterNames) {
@@ -37,7 +34,7 @@ public class SecondPlayerSelection extends JPanel {
 
     private JLabel createCharacterButton(String characterName) {
         String basePath = "assets/CharacterSelectionScreen/";
-        ImageIcon hoverIcon = resizeIcon(loadIcon(basePath + "Character_hover/" + characterName + "_hover.png"), 386, 456);
+        ImageIcon hoverIcon = loadIcon(basePath + "Character_hover/" + characterName + "_hover.png");
 
         JLabel button = new JLabel("", JLabel.CENTER);
         button.setOpaque(false);
@@ -67,7 +64,7 @@ public class SecondPlayerSelection extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 System.out.println(characterName + " selected by Player 2!");
                 System.out.println("Transitioning to GameScreen...");
-                frame.setContentPane(new GameScreen(frame, firstPlayerSelection, characterName));
+                frame.setContentPane(new MapSelection(frame, firstPlayerSelection, characterName));
                 frame.revalidate();
                 frame.repaint();
                 System.out.println("Transition complete.");

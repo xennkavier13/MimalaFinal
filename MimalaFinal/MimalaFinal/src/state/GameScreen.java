@@ -9,12 +9,13 @@ public class GameScreen extends JPanel {
     private final JFrame frame;
     private final String firstPlayerCharacter;
     private final String secondPlayerCharacter;
+    private ImageIcon mapImage;
 
-    public GameScreen(JFrame frame, String firstPlayerCharacter, String secondPlayerCharacter) {
+    public GameScreen(JFrame frame, String firstPlayerCharacter, String secondPlayerCharacter, String selectedMap) {
         this.frame = frame;
         this.firstPlayerCharacter = firstPlayerCharacter;
         this.secondPlayerCharacter = secondPlayerCharacter;
-
+        mapImage = new ImageIcon(selectedMap);
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(1920, 1080));
 
