@@ -67,7 +67,7 @@ public class SecondPlayerSelection extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 System.out.println(characterName + " selected by Player 2!");
                 System.out.println("Transitioning to GameScreen...");
-                frame.setContentPane(new GameScreen(frame, firstPlayerSelection, characterName));
+                frame.setContentPane(new MapSelection(frame, firstPlayerSelection, characterName));
                 frame.revalidate();
                 frame.repaint();
                 System.out.println("Transition complete.");
