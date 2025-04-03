@@ -73,11 +73,10 @@ public abstract class CharacterSelectionScreen extends JPanel {
         String backHoverPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_hover.png";
         // Assuming the continue buttons are character-specific, loaded via getContinueButtonPaths() maybe?
         // Using Astridra paths as placeholder:
-        String contOffPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/AstridraButtons/offButton.png";
-        String contHoverPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/AstridraButtons/hoverButton.png";
+        String chooseOffPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Choose/Choose_off.png";
+        String chooseHoverPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Choose/Choose_hover.png";
 
-
-        backButton = createButton(backOffPath, backHoverPath, 0, 30, () -> {
+        backButton = createButton(backOffPath, backHoverPath, 50, 57, () -> {
             if (confirmationPanel == null) {
                 // Go back to the correct previous screen
                 if (this.firstPlayerSelection != null) {
@@ -93,7 +92,7 @@ public abstract class CharacterSelectionScreen extends JPanel {
         });
         add(backButton);
 
-        continueButton = createButton(contOffPath, contHoverPath, 1200, 890, () -> {
+        continueButton = createButton(chooseOffPath, chooseHoverPath, 1220, 825, () -> {
             if (confirmationPanel == null) {
                 showConfirmationScreen();
             }
