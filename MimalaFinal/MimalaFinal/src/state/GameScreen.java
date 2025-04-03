@@ -2,6 +2,7 @@ package state;
 
 import javax.swing.*;
 import java.awt.*;
+import java.net.URL;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -15,9 +16,19 @@ public class GameScreen extends JPanel {
         this.frame = frame;
         this.firstPlayerCharacter = firstPlayerCharacter;
         this.secondPlayerCharacter = secondPlayerCharacter;
-        mapImage = new ImageIcon(selectedMap);
-        setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(1920, 1080));
+        try {
+            URL imageURL = getClass().getResource("/" + selectedMap); // Ensure correct path
+            if (imageURL != null) {
+                mapImage = new ImageIcon(imageURL);
+            } else {
+                System.err.println("Error: Map image resource not found: " + selectedMap);
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading map image: " + selectedMap);
+            e.printStackTrace();
+        }
+
+        setPreferredSize(new Dimension(1920, 1080)); // Adjust as needed
 
         // Create a panel for the game actions
         JPanel actionPanel = new JPanel();
@@ -73,7 +84,14 @@ public class GameScreen extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        // You can add background images or other graphics here
-        // g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+
+        if (mapImage != null) {
+            g.drawImage(mapImage.getImage(), 0, 0, getWidth(), getHeight(), this);
+        } else {
+            g.setColor(Color.BLACK);
+            g.fillRect(0, 0, getWidth(), getHeight());
+            g.setColor(Color.RED);
+            g.drawString("Map Image Not Found!", getWidth() / 2 - 50, getHeight() / 2);
+        }
     }
 }

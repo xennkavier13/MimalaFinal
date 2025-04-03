@@ -18,7 +18,7 @@ public class SecondPlayerSelection extends JPanel {
     // Use the same names as CharacterSelection for consistency
     private final String[] characterNames = {
             "Pyrothar", "Azurox", "Zenfang", "Auricannon", // Or Auricannon?
-            "Vexmorth", "Astrida", // Or Astrida?
+            "Vexmorth", "Astridra", // Or Astrida?
             "Varkos", "Ignisveil"
     };
     private final String[] characterHoverPaths = generateHoverPaths(); // Use helper
@@ -43,9 +43,6 @@ public class SecondPlayerSelection extends JPanel {
             // Apply same name corrections as in CharacterSelection if needed
             if (imageName.equals("Astridra")) {
                 // imageName = "Astrida";
-            }
-            if (imageName.equals("Aurelix")) {
-                // imageName = "Auricannon";
             }
             paths[i] = HOVER_PATH_BASE + imageName + "_hover.png";
         }
