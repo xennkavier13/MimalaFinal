@@ -22,29 +22,27 @@ public class SecondPlayerSelection extends JPanel {
         setLayout(null); // Use null layout for absolute positioning
         setPreferredSize(new Dimension(1920, 1080));
 
-
-        // Create and add character buttons
-        for (String characterName : characterNames) {
-            if (!characterName.equals(firstPlayerSelection)) {
-                JLabel characterButton = createCharacterButton(characterName);
-                add(characterButton);
-            }
-        }
+        // Manually position and add character buttons
+        createCharacterButton("Pyrothar", "assets/CharacterSelectionScreen/Character_hover/Pyrothar_hover.png", 273, 199);
+        createCharacterButton("Azurox", "assets/CharacterSelectionScreen/Character_hover/Azurox_hover.png", 583, 197);
+        createCharacterButton("Zenfang", "assets/CharacterSelectionScreen/Character_hover/Zenfang_hover.png", 902, 197);
+        createCharacterButton("Auricannon", "assets/CharacterSelectionScreen/Character_hover/Auricannon_hover.png", 1154, 199);
+        createCharacterButton("Vexmorth", "assets/CharacterSelectionScreen/Character_hover/Vexmorth_hover.png", 273, 545);
+        createCharacterButton("Astrida", "assets/CharacterSelectionScreen/Character_hover/Astrida_hover.png", 599, 545);
+        createCharacterButton("Varkos", "assets/CharacterSelectionScreen/Character_hover/Varkos_hover.png", 924, 549);
+        createCharacterButton("Ignisveil", "assets/CharacterSelectionScreen/Character_hover/Ignisveil_hover.png", 1234, 545);
     }
 
-    private JLabel createCharacterButton(String characterName) {
+    private void createCharacterButton(String characterName, String hoverImagePath, int x, int y) {
         String basePath = "assets/CharacterSelectionScreen/";
-        ImageIcon hoverIcon = loadIcon(basePath + "Character_hover/" + characterName + "_hover.png");
+        ImageIcon hoverIcon = loadIcon(hoverImagePath);
 
         JLabel button = new JLabel("", JLabel.CENTER);
         button.setOpaque(false);
         button.setPreferredSize(new Dimension(386, 456));
 
-        // Set the position of the button based on its index
-        int index = java.util.Arrays.asList(characterNames).indexOf(characterName);
-        int x = 280 + (index % 4) * 320; // Adjust x position based on index
-        int y = 205 + (index / 4) * 300; // Adjust y position based on index
-        button.setBounds(x, y, 386, 456); // Set bounds for the button
+        // Set position based on manual x and y
+        button.setBounds(x, y, 386, 456);
 
         // Set the initial icon to null so that it's not visible by default
         button.setIcon(null);
@@ -71,13 +69,7 @@ public class SecondPlayerSelection extends JPanel {
             }
         });
 
-        return button;
-    }
-
-    private ImageIcon resizeIcon(ImageIcon icon, int width, int height) {
-        if (icon.getImage() == null) return new ImageIcon();
-        Image resizedImg = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
-        return new ImageIcon(resizedImg);
+        add(button);
     }
 
     private ImageIcon loadIcon(String path) {
