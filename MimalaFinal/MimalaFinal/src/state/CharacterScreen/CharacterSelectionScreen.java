@@ -12,34 +12,48 @@ import java.net.URL;
 import java.util.Random;
 
 public abstract class CharacterSelectionScreen extends JPanel {
-    private final JFrame frame;
-    private final String mode;
+    protected final JFrame frame; // Make protected if needed by subclasses directly
+    protected final String mode;  // Make protected if needed by subclasses directly
     private JPanel confirmationPanel;
+    protected ImageIcon characterGif; // Keep protected
+
+    // *** NEW: Store Player 1's selection if this screen is for Player 2 ***
+    private final String firstPlayerSelection;
 
     private static final String[] ALL_CHARACTER_NAMES = {
-            "Pyrothar", "Azurox", "Zenfang", "Aurelix",
+            "Pyrothar", "Azurox", "Zenfang", "Aurelix", // Check if Aurelix or Auricannon
             "Vexmorth", "Astridra", "Varkos", "Ignisveil"
     };
 
-    protected ImageIcon characterGif;
-
-    // Abstract method to be implemented by each character
     protected abstract String getGifPath();
+    protected abstract String getCharacterName(); // Ensure this returns the character for THIS screen
 
-    public CharacterSelectionScreen(JFrame frame, String mode) {
+    // *** NEW: Constructor called by SecondPlayerSelection (for P2) ***
+    public CharacterSelectionScreen(JFrame frame, String mode, String firstPlayerSelection) {
         this.frame = frame;
         this.mode = mode;
+        // Store the choice made by Player 1
+        this.firstPlayerSelection = firstPlayerSelection;
+
         setPreferredSize(new Dimension(1920, 1080));
         setLayout(null);
-
         this.characterGif = loadImage(getGifPath());
         if (this.characterGif == null) {
             System.err.println("CRITICAL: Failed to load background GIF: " + getGifPath());
         }
         setupButtons();
+        // Optional: Add a visual indicator that it's P2's turn if needed
     }
 
+    // *** MODIFIED: Original constructor now calls the new one with null ***
+    // This constructor is called by CharacterSelection (for P1)
+    public CharacterSelectionScreen(JFrame frame, String mode) {
+        this(frame, mode, null); // Delegate to the new constructor, P1's choice is null initially
+    }
+
+
     private ImageIcon loadImage(String resourcePath) {
+        // loadImage implementation remains the same...
         if (resourcePath == null || resourcePath.isEmpty()) return null;
         try {
             URL imgURL = getClass().getResource(resourcePath);
@@ -54,14 +68,25 @@ public abstract class CharacterSelectionScreen extends JPanel {
     private JLabel continueButton;
 
     private void setupButtons() {
+        // setupButtons implementation remains the same...
         String backOffPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_off.png";
         String backHoverPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_hover.png";
+        // Assuming the continue buttons are character-specific, loaded via getContinueButtonPaths() maybe?
+        // Using Astridra paths as placeholder:
         String contOffPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/AstridraButtons/offButton.png";
         String contHoverPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/AstridraButtons/hoverButton.png";
 
+
         backButton = createButton(backOffPath, backHoverPath, 0, 30, () -> {
-            if (confirmationPanel == null) { // Prevent interaction when confirmation is open
-                frame.setContentPane(new CharacterSelection(frame, this.mode));
+            if (confirmationPanel == null) {
+                // Go back to the correct previous screen
+                if (this.firstPlayerSelection != null) {
+                    // If P1 selection exists, we came from P2 selection
+                    frame.setContentPane(new SecondPlayerSelection(frame, this.firstPlayerSelection, this.mode));
+                } else {
+                    // Otherwise, we came from P1 selection
+                    frame.setContentPane(new CharacterSelection(frame, this.mode));
+                }
                 frame.revalidate();
                 frame.repaint();
             }
@@ -69,7 +94,7 @@ public abstract class CharacterSelectionScreen extends JPanel {
         add(backButton);
 
         continueButton = createButton(contOffPath, contHoverPath, 1200, 890, () -> {
-            if (confirmationPanel == null) { // Prevent interaction when confirmation is open
+            if (confirmationPanel == null) {
                 showConfirmationScreen();
             }
         });
@@ -77,6 +102,7 @@ public abstract class CharacterSelectionScreen extends JPanel {
     }
 
     private void showConfirmationScreen() {
+        // showConfirmationScreen implementation remains the same...
         if (confirmationPanel != null) {
             remove(confirmationPanel);
         }
@@ -85,16 +111,14 @@ public abstract class CharacterSelectionScreen extends JPanel {
         confirmationPanel.setBounds(510, 190, 900, 700);
         confirmationPanel.setOpaque(false);
 
-        // Load and add the confirmation background first
         JLabel confirmImage = new JLabel(loadImage("/assets/CharacterSelectionScreen/CharacterConfirm/CharacterConfirm_off.png"));
         confirmImage.setBounds(0, 0, 900, 700);
         confirmationPanel.add(confirmImage);
 
-        // Create Yes and No buttons
         JLabel yesButton = createButton(
                 "/assets/CharacterSelectionScreen/CharacterConfirm/Yes_off.png",
                 "/assets/CharacterSelectionScreen/CharacterConfirm/Yes_on.png",
-                270, 390, this::continueToNextScreen
+                270, 390, this::continueToNextScreen // Call the updated logic
         );
 
         JLabel noButton = createButton(
@@ -106,10 +130,12 @@ public abstract class CharacterSelectionScreen extends JPanel {
         confirmationPanel.add(yesButton);
         confirmationPanel.add(noButton);
         add(confirmationPanel);
+        setComponentZOrder(confirmationPanel, 0); // Bring confirmation panel to front
 
-        // Bring buttons to front
+        // Ensure buttons are added correctly relative to confirmImage if needed
         confirmationPanel.setComponentZOrder(yesButton, 0);
         confirmationPanel.setComponentZOrder(noButton, 0);
+
 
         // Disable Back and Continue buttons
         backButton.setEnabled(false);
@@ -119,69 +145,115 @@ public abstract class CharacterSelectionScreen extends JPanel {
         repaint();
     }
 
+
     private void removeConfirmation() {
+        // removeConfirmation implementation remains the same...
         if (confirmationPanel != null) {
             remove(confirmationPanel);
             confirmationPanel = null;
 
-            // Re-enable Back and Continue buttons
             backButton.setEnabled(true);
             continueButton.setEnabled(true);
 
+            revalidate(); // Revalidate after removing component
             repaint();
         }
     }
 
+    // *** UPDATED LOGIC FOR CONTINUING ***
     private void continueToNextScreen() {
-        String player1Selection = getCharacterName();
-        if ("PVC".equalsIgnoreCase(this.mode)) {
-            String player2Selection = selectRandomCharacterForPVE(player1Selection);
-            frame.setContentPane(new MapSelection(frame, player1Selection, player2Selection));
-        } else if ("PVP".equalsIgnoreCase(this.mode)) {
-            frame.setContentPane(new SecondPlayerSelection(frame, player1Selection));
+        String currentCharacterSelection = getCharacterName(); // The character confirmed on THIS screen
+
+        // Check if this screen instance holds Player 1's selection
+        if (this.firstPlayerSelection != null && "PVP".equalsIgnoreCase(this.mode)) {
+            // --- This means Player 2 is confirming ---
+            // P1's choice is stored in this.firstPlayerSelection
+            // P2's choice is currentCharacterSelection
+            System.out.println("Player 2 confirmed: " + currentCharacterSelection);
+            System.out.println("Proceeding to Map Selection with P1: " + this.firstPlayerSelection + " and P2: " + currentCharacterSelection);
+
+            // Proceed to Map Selection with both choices
+            frame.setContentPane(new MapSelection(frame, this.firstPlayerSelection, currentCharacterSelection));
+
+        } else {
+            // --- This means Player 1 is confirming (or it's PVC mode) ---
+            String player1Choice = currentCharacterSelection; // P1 has confirmed this character
+            System.out.println("Player 1 confirmed: " + player1Choice);
+
+            if ("PVC".equalsIgnoreCase(this.mode)) {
+                System.out.println("Mode is PVC. Selecting AI opponent and proceeding to Map Selection.");
+                String player2Selection = selectRandomCharacterForPVE(player1Choice);
+                System.out.println("AI selected: " + player2Selection);
+                frame.setContentPane(new MapSelection(frame, player1Choice, player2Selection));
+
+            } else if ("PVP".equalsIgnoreCase(this.mode)) {
+                System.out.println("Mode is PVP. Proceeding to Second Player Selection.");
+                // Proceed to Player 2's selection screen, passing P1's confirmed choice
+                frame.setContentPane(new SecondPlayerSelection(frame, player1Choice, "PVP"));
+            }
         }
+
         frame.revalidate();
         frame.repaint();
     }
 
+
     private JLabel createButton(String offResourcePath, String hoverResourcePath, int x, int y, Runnable action) {
+        // createButton implementation remains the same...
         ImageIcon offIcon = loadImage(offResourcePath);
         ImageIcon hoverIcon = loadImage(hoverResourcePath);
 
-        if (offIcon == null) return new JLabel("Error");
+        // Add basic error handling for missing icons
+        if (offIcon == null) {
+            System.err.println("Error loading button icon: " + offResourcePath);
+            return new JLabel("Error"); // Return a placeholder
+        }
 
         JLabel button = new JLabel(offIcon);
         button.setBounds(x, y, offIcon.getIconWidth(), offIcon.getIconHeight());
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Add hand cursor
         button.addMouseListener(new MouseAdapter() {
-            @Override public void mouseEntered(MouseEvent e) { button.setIcon(hoverIcon); }
-            @Override public void mouseExited(MouseEvent e) { button.setIcon(offIcon); }
-            @Override public void mouseClicked(MouseEvent e) { action.run(); }
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (button.isEnabled() && hoverIcon != null) button.setIcon(hoverIcon);
+            }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (button.isEnabled()) button.setIcon(offIcon);
+            }
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (button.isEnabled()) action.run();
+            }
         });
         return button;
     }
 
     private String selectRandomCharacterForPVE(String player1Choice) {
+        // selectRandomCharacterForPVE implementation remains the same...
         Random random = new Random();
         String aiChoice;
         do {
             aiChoice = ALL_CHARACTER_NAMES[random.nextInt(ALL_CHARACTER_NAMES.length)];
-        } while (aiChoice.equals(player1Choice));
+        } while (aiChoice.equals(player1Choice)); // Ensure AI doesn't pick the same character
         return aiChoice;
     }
 
-    // Abstract method to be implemented by each character
-    protected abstract String getCharacterName();
 
     @Override
     protected void paintComponent(Graphics g) {
+        // paintComponent implementation remains the same...
         super.paintComponent(g);
-        if (characterGif != null) {
+        if (characterGif != null && characterGif.getImage() != null) {
             g.drawImage(characterGif.getImage(), 0, 0, getWidth(), getHeight(), this);
         } else {
             g.setColor(Color.DARK_GRAY);
             g.fillRect(0, 0, getWidth(), getHeight());
             g.setColor(Color.RED);
-            g.drawString("Error: Background GIF not loaded!", 50, 50);
+            g.setFont(new Font("Arial", Font.BOLD, 24));
+            g.drawString("Error: Background GIF not loaded! Path: " + getGifPath() , 50, 50);
         }
+        // If confirmationPanel exists, it should be painted on top automatically by Swing's Z-order
     }
+
 }
