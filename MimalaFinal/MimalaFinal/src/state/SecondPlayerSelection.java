@@ -4,84 +4,122 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URL;
 
 public class SecondPlayerSelection extends JPanel {
-    private final ImageIcon characterSelectionBg;
-    private final JFrame frame;
-    private final String[] characterNames = {
-            "Pyrothar", "Azurox", "Zenfang", "Auricannon",
-            "Vexmorth", "Astrida", "Varkos", "Ignisveil"
-    };
-    private final String firstPlayerSelection;
+    // Use resource paths
+    private final String HOVER_PATH_BASE = "/assets/CharacterSelectionScreen/Character_hover/";
 
-    public SecondPlayerSelection(JFrame frame, String firstPlayerSelection) {
+    private ImageIcon characterSelectionBg;
+    private final JFrame frame;
+    private final String firstPlayerSelection; // P1's choice is needed
+    private final String mode; // Should always be PVP here
+
+    // Use the same names as CharacterSelection for consistency
+    private final String[] characterNames = {
+            "Pyrothar", "Azurox", "Zenfang", "Auricannon", // Or Auricannon?
+            "Vexmorth", "Astrida", // Or Astrida?
+            "Varkos", "Ignisveil"
+    };
+    private final String[] characterHoverPaths = generateHoverPaths(); // Use helper
+
+
+    public SecondPlayerSelection(JFrame frame, String firstPlayerSelection, String mode) {
         this.frame = frame;
         this.firstPlayerSelection = firstPlayerSelection;
-        characterSelectionBg = loadIcon("assets/CharacterSelectionScreen/CharacterSelectOff.png");
+        this.mode = mode; // Should be "PVP"
+        characterSelectionBg = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\CharacterSelectOff.png");
 
-        setLayout(null); // Use null layout for absolute positioning
+        setLayout(null);
         setPreferredSize(new Dimension(1920, 1080));
+        setupButtons();
+    }
 
-        // Manually position and add character buttons
-        createCharacterButton("Pyrothar", "assets/CharacterSelectionScreen/Character_hover/Pyrothar_hover.png", 273, 199);
-        createCharacterButton("Azurox", "assets/CharacterSelectionScreen/Character_hover/Azurox_hover.png", 583, 197);
-        createCharacterButton("Zenfang", "assets/CharacterSelectionScreen/Character_hover/Zenfang_hover.png", 902, 197);
-        createCharacterButton("Auricannon", "assets/CharacterSelectionScreen/Character_hover/Auricannon_hover.png", 1154, 199);
-        createCharacterButton("Vexmorth", "assets/CharacterSelectionScreen/Character_hover/Vexmorth_hover.png", 273, 545);
-        createCharacterButton("Astrida", "assets/CharacterSelectionScreen/Character_hover/Astrida_hover.png", 599, 545);
-        createCharacterButton("Varkos", "assets/CharacterSelectionScreen/Character_hover/Varkos_hover.png", 924, 549);
-        createCharacterButton("Ignisveil", "assets/CharacterSelectionScreen/Character_hover/Ignisveil_hover.png", 1234, 545);
+    // Helper to generate hover paths (same as CharacterSelection)
+    private String[] generateHoverPaths() {
+        String[] paths = new String[characterNames.length];
+        for (int i = 0; i < characterNames.length; i++) {
+            String imageName = characterNames[i];
+            // Apply same name corrections as in CharacterSelection if needed
+            if (imageName.equals("Astridra")) {
+                // imageName = "Astrida";
+            }
+            if (imageName.equals("Aurelix")) {
+                // imageName = "Auricannon";
+            }
+            paths[i] = HOVER_PATH_BASE + imageName + "_hover.png";
+        }
+        return paths;
+    }
+
+    private ImageIcon loadImage(String resourcePath) {
+        try {
+            URL imgURL = getClass().getResource(resourcePath);
+            if (imgURL != null) {
+                return new ImageIcon(imgURL);
+            } else {
+                System.err.println("SecondPlayerSelection: Resource not found: " + resourcePath);
+                return null;
+            }
+        } catch (Exception e) {
+            System.err.println("SecondPlayerSelection: Error loading image resource: " + resourcePath);
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private void setupButtons() {
+        // Create hover buttons for each character
+        createCharacterButton("Pyrothar", "/assets/CharacterSelectionScreen/Character_hover/Pyrothar_hover.png", 273, 199);
+        createCharacterButton("Azurox", "/assets/CharacterSelectionScreen/Character_hover/Azurox_hover.png", 583, 197);
+        createCharacterButton("Zenfang", "/assets/CharacterSelectionScreen/Character_hover/Zenfang_hover.png", 902, 197);
+        createCharacterButton("Auricannon", "/assets/CharacterSelectionScreen/Character_hover/Auricannon_hover.png", 1145, 276);
+        createCharacterButton("Vexmorth", "/assets/CharacterSelectionScreen/Character_hover/Vexmorth_hover.png", 273, 545);
+        createCharacterButton("Astridra", "/assets/CharacterSelectionScreen/Character_hover/Astrida_hover.png", 599, 545);
+        createCharacterButton("Varkos", "/assets/CharacterSelectionScreen/Character_hover/Varkos_hover.png", 885, 598);
+        createCharacterButton("Ignisveil", "/assets/CharacterSelectionScreen/Character_hover/Ignisveil_hover.png", 1234, 545);
     }
 
     private void createCharacterButton(String characterName, String hoverImagePath, int x, int y) {
-        String basePath = "assets/CharacterSelectionScreen/";
-        ImageIcon hoverIcon = loadIcon(hoverImagePath);
+        ImageIcon hoverIcon = loadImage(hoverImagePath);
+        // Error handling as before...
 
-        JLabel button = new JLabel("", JLabel.CENTER);
-        button.setOpaque(false);
-        button.setPreferredSize(new Dimension(386, 456));
 
-        // Set position based on manual x and y
+        JLabel button = new JLabel();
+        assert hoverIcon != null;
         button.setBounds(x, y, 386, 456);
 
-        // Set the initial icon to null so that it's not visible by default
-        button.setIcon(null);
+            button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            button.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    button.setIcon(hoverIcon);
+                }
 
-        button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                button.setIcon(hoverIcon);  // Show hover icon when the mouse enters
-            }
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    button.setIcon(null);
+                }
 
-            @Override
-            public void mouseExited(MouseEvent e) {
-                button.setIcon(null);  // Hide hover icon when the mouse exits
-            }
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    // --- MODIFIED LOGIC ---
+                    // Go to CharacterInfoScreen, passing P1's choice along with P2's potential choice.
+                    System.out.println("Player 2 clicked: " + characterName + ". Showing info screen...");
+                    frame.setContentPane(new state.CharacterInfoScreen(frame, characterName, mode, firstPlayerSelection)); // Pass P1's selection
+                    frame.revalidate();
+                    frame.repaint();
+                }
+            });
 
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                System.out.println(characterName + " selected by Player 2!");
-                System.out.println("Transitioning to GameScreen...");
-                frame.setContentPane(new MapSelection(frame, firstPlayerSelection, characterName));
-                frame.revalidate();
-                frame.repaint();
-                System.out.println("Transition complete.");
-            }
-        });
 
         add(button);
-    }
-
-    private ImageIcon loadIcon(String path) {
-        java.net.URL imgURL = getClass().getClassLoader().getResource(path);
-        if (imgURL != null) return new ImageIcon(imgURL);
-        System.err.println("Warning: Missing image at " + path);
-        return new ImageIcon();
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         g.drawImage(characterSelectionBg.getImage(), 0, 0, getWidth(), getHeight(), this);
+
     }
 }

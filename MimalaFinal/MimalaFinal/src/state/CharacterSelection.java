@@ -45,7 +45,7 @@ public class CharacterSelection extends JPanel {
 
         JLabel button = new JLabel();
         button.setBounds(x, y, hoverIcon.getIconWidth(), hoverIcon.getIconHeight());
-
+        System.out.println(hoverIcon.getIconWidth() +" + " + hoverIcon.getIconHeight());
         // Mouse listener for hover effects
         button.addMouseListener(new MouseAdapter() {
             @Override
@@ -96,7 +96,7 @@ public class CharacterSelection extends JPanel {
                     firstPlayerSelection = characterName;
                     System.out.println(firstPlayerSelection + " selected by Player 1!");
                     if (mode.equals("PVP")) {
-                        frame.setContentPane(new SecondPlayerSelection(frame, firstPlayerSelection));
+                        frame.setContentPane(new SecondPlayerSelection(frame, firstPlayerSelection, "PVP"));
                     } else {
                         String secondPlayerSelection = selectRandomCharacter();
                         System.out.println(secondPlayerSelection + " selected for Player 2!");
