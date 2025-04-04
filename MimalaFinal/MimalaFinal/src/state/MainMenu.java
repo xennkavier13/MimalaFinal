@@ -13,7 +13,7 @@ public class MainMenu extends JPanel {
 
     public MainMenu(JFrame frame) {
         this.frame = frame;
-        mainMenuGif = loadIcon("assets/MainMenuScreen/MainMenuPixelated.gif");
+        mainMenuGif = loadIcon("assets/MainMenuScreen/MainMenuBG.gif");
         setLayout(null);
         setFocusable(true);
         requestFocusInWindow();
@@ -27,8 +27,8 @@ public class MainMenu extends JPanel {
     private void setupButtons() {
         // Transition to ModeSelection
         JLabel startButton = createButton(
-                "assets/MainMenuScreen/Start/Start_Off.png",
-                "assets/MainMenuScreen/Start/Start_On.png",
+                "assets/MainMenuScreen/Start/Start_off.png",
+                "assets/MainMenuScreen/Start/Start_hover.png",
                 450, () -> {
                     // Create the new panel off-screen
                     JPanel newScreen = new ModeSelection(frame);
@@ -47,8 +47,8 @@ public class MainMenu extends JPanel {
         );
 
         JLabel endButton = createButton(
-                "assets/MainMenuScreen/End/End_Off.png",
-                "assets/MainMenuScreen/End/End_On.png",
+                "assets/MainMenuScreen/End/End_off.png",
+                "assets/MainMenuScreen/End/End_hover.png",
                 525, () -> {
                     stopMusic(); // Stop music when exiting
                     System.exit(0);
@@ -70,7 +70,7 @@ public class MainMenu extends JPanel {
         ImageIcon offIcon = loadIcon(offPath);
         ImageIcon hoverIcon = loadIcon(hoverPath);
         JLabel button = new JLabel(offIcon);
-        button.setBounds(970, y, offIcon.getIconWidth(), offIcon.getIconHeight());
+        button.setBounds(680, y, offIcon.getIconWidth(), offIcon.getIconHeight());
 
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
