@@ -92,7 +92,7 @@ public abstract class CharacterSelectionScreen extends JPanel {
         });
         add(backButton);
 
-        continueButton = createButton(chooseOffPath, chooseHoverPath, 1220, 825, () -> {
+        continueButton = createButton(chooseOffPath, chooseHoverPath, 1320, 825, () -> {
             if (confirmationPanel == null) {
                 showConfirmationScreen();
             }

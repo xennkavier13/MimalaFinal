@@ -9,7 +9,7 @@ public class ModeSelection extends JPanel {
 
     public ModeSelection(JFrame gameFrame) {
         this.frame = gameFrame;
-        modeSelectionBg = new ImageIcon("MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/ModeSelection.gif");
+        modeSelectionBg = new ImageIcon("MimalaFinal/MimalaFinal/src/assets/MainMenuScreen/MainMenuBG.gif");
         setLayout(null);
         setPreferredSize(new Dimension(1920, 1080));
         setupButtons();
@@ -44,7 +44,7 @@ public class ModeSelection extends JPanel {
         ImageIcon offIcon = new ImageIcon(offPath);
         ImageIcon hoverIcon = new ImageIcon(hoverPath);
         JLabel button = new JLabel(offIcon);
-        button.setBounds(970, y, offIcon.getIconWidth(), offIcon.getIconHeight());
+        button.setBounds(680, y, offIcon.getIconWidth(), offIcon.getIconHeight());
 
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override

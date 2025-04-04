@@ -17,7 +17,7 @@ public class VexmorthScreen extends CharacterSelectionScreen {
     @Override
     protected String getGifPath() {
         // Return the correct path for Vexmorth's GIF
-        return "/assets/CharacterSelectionScreen/CharacterScreen/VexmorthSelection.gif"; // Example path - ADJUST AS NEEDED
+        return "/assets/CharacterSelectionScreen/CharacterScreen/vexmorthSelection.gif"; // Example path - ADJUST AS NEEDED
     }
 
     @Override
