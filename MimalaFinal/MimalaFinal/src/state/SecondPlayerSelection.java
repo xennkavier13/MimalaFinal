@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
+import state.CharacterScreen.CharacterInfoScreen;
 
 public class SecondPlayerSelection extends JPanel {
     // Use resource paths
@@ -28,7 +29,7 @@ public class SecondPlayerSelection extends JPanel {
         this.frame = frame;
         this.firstPlayerSelection = firstPlayerSelection;
         this.mode = mode; // Should be "PVP"
-        characterSelectionBg = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\CharacterSelectOff.png");
+        characterSelectionBg = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\CharacterSelect_BGcombine.png");
 
         setLayout(null);
         setPreferredSize(new Dimension(1920, 1080));
@@ -67,14 +68,14 @@ public class SecondPlayerSelection extends JPanel {
 
     private void setupButtons() {
         // Create hover buttons for each character
-        createCharacterButton("Pyrothar", "/assets/CharacterSelectionScreen/Character_hover/Pyrothar_hover.png", 273, 199);
-        createCharacterButton("Azurox", "/assets/CharacterSelectionScreen/Character_hover/Azurox_hover.png", 583, 197);
-        createCharacterButton("Zenfang", "/assets/CharacterSelectionScreen/Character_hover/Zenfang_hover.png", 902, 197);
-        createCharacterButton("Auricannon", "/assets/CharacterSelectionScreen/Character_hover/Auricannon_hover.png", 1145, 276);
-        createCharacterButton("Vexmorth", "/assets/CharacterSelectionScreen/Character_hover/Vexmorth_hover.png", 273, 545);
-        createCharacterButton("Astridra", "/assets/CharacterSelectionScreen/Character_hover/Astrida_hover.png", 599, 545);
-        createCharacterButton("Varkos", "/assets/CharacterSelectionScreen/Character_hover/Varkos_hover.png", 885, 598);
-        createCharacterButton("Ignisveil", "/assets/CharacterSelectionScreen/Character_hover/Ignisveil_hover.png", 1234, 545);
+        createCharacterButton("Pyrothar", "/assets/CharacterSelectionScreen/Character_hover/Pyrothar_hover.png", 614, 223);
+        createCharacterButton("Azurox", "/assets/CharacterSelectionScreen/Character_hover/Azurox_hover.png", 325, 243);
+        createCharacterButton("Zenfang", "/assets/CharacterSelectionScreen/Character_hover/Zenfang_hover.png", 982, 245);
+        createCharacterButton("Auricannon", "/assets/CharacterSelectionScreen/Character_hover/Auricannon_hover.png", 1140, 243);
+        createCharacterButton("Vexmorth", "/assets/CharacterSelectionScreen/Character_hover/Vexmorth_hover.png", 349, 610);
+        createCharacterButton("Astridra", "/assets/CharacterSelectionScreen/Character_hover/Astrida_hover.png", 657, 614);
+        createCharacterButton("Varkos", "/assets/CharacterSelectionScreen/Character_hover/Varkos_hover.png", 847, 614);
+        createCharacterButton("Ignisveil", "/assets/CharacterSelectionScreen/Character_hover/Ignisveil_hover.png", 1249, 535);
     }
 
     private void createCharacterButton(String characterName, String hoverImagePath, int x, int y) {
@@ -103,7 +104,7 @@ public class SecondPlayerSelection extends JPanel {
                     // --- MODIFIED LOGIC ---
                     // Go to CharacterInfoScreen, passing P1's choice along with P2's potential choice.
                     System.out.println("Player 2 clicked: " + characterName + ". Showing info screen...");
-                    frame.setContentPane(new state.CharacterInfoScreen(frame, characterName, mode, firstPlayerSelection)); // Pass P1's selection
+                    frame.setContentPane(new CharacterInfoScreen(frame, characterName, mode, firstPlayerSelection));
                     frame.revalidate();
                     frame.repaint();
                 }

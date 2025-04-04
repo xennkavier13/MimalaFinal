@@ -56,8 +56,8 @@ public class MainMenu extends JPanel {
         );
 
         JLabel creditsButton = createButton(
-                "assets/MainMenuScreen/Credits/Credits_Off.png",
-                "assets/MainMenuScreen/Credits/Credits_On.png",
+                "assets/MainMenuScreen/Credits/Credits_off.png",
+                "assets/MainMenuScreen/Credits/Credits_hover.png",
                 600, () -> System.out.println("Credits Clicked")
         );
 

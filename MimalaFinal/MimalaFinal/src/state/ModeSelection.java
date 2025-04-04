@@ -18,7 +18,7 @@ public class ModeSelection extends JPanel {
     private void setupButtons() {
         JLabel pvpButton = createButton(
                 "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVP/PVP_off.png",
-                "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVP/PVP_on.png",
+                "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVP/PVP_hover.png",
                 450, () -> {
                     frame.setContentPane(new CharacterSelection(frame, "PVP")); // Pass mode
                     frame.revalidate();
@@ -27,8 +27,8 @@ public class ModeSelection extends JPanel {
         );
 
         JLabel pvcButton = createButton(
-                "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVC/PVC_off.png",
-                "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVC/PVC_on.png",
+                "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PvAI/PvAI_off.png",
+                "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PvAI/PvAI_hover.png",
                 530, () -> {
                     frame.setContentPane(new CharacterSelection(frame, "PVC")); // Pass mode
                     frame.revalidate();

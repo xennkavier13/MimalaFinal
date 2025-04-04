@@ -1,4 +1,8 @@
-package state;
+package state.CharacterScreen;
+
+import state.CharacterSelection;
+import state.MapSelection;
+import state.SecondPlayerSelection;
 
 import javax.swing.*;
 import java.awt.*;
@@ -107,8 +111,8 @@ public class CharacterInfoScreen extends JPanel {
         // --- Continue/Select Button ---
         // Assuming buttons might still be character-specific OR generic "Select"
         // Using generic paths for simplicity now:
-        String contOffPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/AstridraButtons/offButton.png";
-        String contHoverPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/AstridraButtons/hoverButton.png";
+        String contOffPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Choose/Choose_off.png";
+        String contHoverPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Choose/Choose_hover.png";
         // If you have character-specific buttons like before:
         // String contOffPath = BUTTON_PATH_BASE + characterName + "Buttons/offButton.png";
         // String contHoverPath = BUTTON_PATH_BASE + characterName + "Buttons/hoverButton.png";
