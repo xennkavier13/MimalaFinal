@@ -21,7 +21,7 @@ public abstract class CharacterSelectionScreen extends JPanel {
     private final String firstPlayerSelection;
 
     private static final String[] ALL_CHARACTER_NAMES = {
-            "Pyrothar", "Azurox", "Zenfang", "Aurelix", // Check if Aurelix or Auricannon
+            "Pyrothar", "Azurox", "Zenfang", "Auricannon", // Check if Aurelix or Auricannon
             "Vexmorth", "Astridra", "Varkos", "Ignisveil"
     };
 

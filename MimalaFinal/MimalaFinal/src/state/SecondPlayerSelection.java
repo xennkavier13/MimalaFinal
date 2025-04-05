@@ -5,7 +5,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
-import state.CharacterScreen.CharacterInfoScreen;
+import state.CharacterScreen.SecondCharacterSelectionScreen;
 
 public class SecondPlayerSelection extends JPanel {
     // Use resource paths
@@ -41,10 +41,6 @@ public class SecondPlayerSelection extends JPanel {
         String[] paths = new String[characterNames.length];
         for (int i = 0; i < characterNames.length; i++) {
             String imageName = characterNames[i];
-            // Apply same name corrections as in CharacterSelection if needed
-            if (imageName.equals("Astridra")) {
-                // imageName = "Astrida";
-            }
             paths[i] = HOVER_PATH_BASE + imageName + "_hover.png";
         }
         return paths;
@@ -104,7 +100,7 @@ public class SecondPlayerSelection extends JPanel {
                     // --- MODIFIED LOGIC ---
                     // Go to CharacterInfoScreen, passing P1's choice along with P2's potential choice.
                     System.out.println("Player 2 clicked: " + characterName + ". Showing info screen...");
-                    frame.setContentPane(new CharacterInfoScreen(frame, characterName, mode, firstPlayerSelection));
+                    frame.setContentPane(new SecondCharacterSelectionScreen(frame, characterName, mode, firstPlayerSelection));
                     frame.revalidate();
                     frame.repaint();
                 }
