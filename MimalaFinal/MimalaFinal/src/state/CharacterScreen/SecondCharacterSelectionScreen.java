@@ -113,7 +113,7 @@ public class SecondCharacterSelectionScreen extends JPanel {
         // String contOffPath = BUTTON_PATH_BASE + characterName + "Buttons/offButton.png";
         // String contHoverPath = BUTTON_PATH_BASE + characterName + "Buttons/hoverButton.png";
 
-        continueButton = createButton(contOffPath, contHoverPath, 1200, 890, () -> {
+        continueButton = createButton(contOffPath, contHoverPath, 1280, 825, () -> {
             if (confirmationPanel == null) {
                 showConfirmationScreen();
             }
@@ -136,13 +136,13 @@ public class SecondCharacterSelectionScreen extends JPanel {
         }
 
         confirmationPanel = new JPanel(null); // Use null layout for absolute positioning inside
-        confirmationPanel.setBounds(510, 190, 900, 700); // Centered position
+        confirmationPanel.setBounds(0, 0, 1920, 1080); // Centered position
         confirmationPanel.setOpaque(false); // Make panel transparent
 
         // Background for confirmation
         JLabel confirmImage = new JLabel(loadImage(BUTTON_PATH_BASE + "../CharacterConfirm/CharacterConfirm_off.png")); // Path to confirm background
         if (confirmImage.getIcon() != null) {
-            confirmImage.setBounds(0, 0, 900, 700); // Position relative to confirmationPanel
+            confirmImage.setBounds(0, 0, 1920, 1080); // Position relative to confirmationPanel
             confirmationPanel.add(confirmImage);
         } else {
             System.err.println("Confirmation background image failed to load.");
@@ -155,8 +155,8 @@ public class SecondCharacterSelectionScreen extends JPanel {
         // Yes Button
         JLabel yesButton = createButton(
                 BUTTON_PATH_BASE + "../CharacterConfirm/Yes_off.png",
-                BUTTON_PATH_BASE + "../CharacterConfirm/Yes_on.png",
-                270, 390, // Position relative to confirmationPanel
+                BUTTON_PATH_BASE + "../CharacterConfirm/Yes_hover.png",
+                700, 575, // Position relative to confirmationPanel
                 this::confirmSelection // Action: Call the confirmation logic
         );
         confirmationPanel.add(yesButton);
@@ -164,8 +164,8 @@ public class SecondCharacterSelectionScreen extends JPanel {
         // No Button
         JLabel noButton = createButton(
                 BUTTON_PATH_BASE + "../CharacterConfirm/No_off.png",
-                BUTTON_PATH_BASE + "../CharacterConfirm/No_on.png",
-                467, 390, // Position relative to confirmationPanel
+                BUTTON_PATH_BASE + "../CharacterConfirm/No_hover.png",
+                923, 573, // Position relative to confirmationPanel
                 this::removeConfirmation // Action: Just remove the panel
         );
         confirmationPanel.add(noButton);

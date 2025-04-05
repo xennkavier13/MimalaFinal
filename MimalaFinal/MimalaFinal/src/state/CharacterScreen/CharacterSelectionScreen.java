@@ -76,6 +76,9 @@ public abstract class CharacterSelectionScreen extends JPanel {
         String chooseOffPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Choose/Choose_off.png";
         String chooseHoverPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Choose/Choose_hover.png";
 
+        String backstoryBtnOff = "/assets/CharacterSelectionScreen/CharacterScreenButtons/backstoryBtn.png";
+        String backstoryBtnHover = "/assets/CharacterSelectionScreen/CharacterScreenButtons/backstoryBtn.png";
+
         backButton = createButton(backOffPath, backHoverPath, 50, 57, () -> {
             if (confirmationPanel == null) {
                 // Go back to the correct previous screen
@@ -92,7 +95,7 @@ public abstract class CharacterSelectionScreen extends JPanel {
         });
         add(backButton);
 
-        continueButton = createButton(chooseOffPath, chooseHoverPath, 1320, 825, () -> {
+        continueButton = createButton(chooseOffPath, chooseHoverPath, 1280, 825, () -> {
             if (confirmationPanel == null) {
                 showConfirmationScreen();
             }
@@ -107,23 +110,23 @@ public abstract class CharacterSelectionScreen extends JPanel {
         }
 
         confirmationPanel = new JPanel(null);
-        confirmationPanel.setBounds(510, 190, 900, 700);
+        confirmationPanel.setBounds(0, 0, 1920, 1080);
         confirmationPanel.setOpaque(false);
 
         JLabel confirmImage = new JLabel(loadImage("/assets/CharacterSelectionScreen/CharacterConfirm/CharacterConfirm_off.png"));
-        confirmImage.setBounds(0, 0, 900, 700);
+        confirmImage.setBounds(0, 0, 1920, 1080);
         confirmationPanel.add(confirmImage);
 
         JLabel yesButton = createButton(
                 "/assets/CharacterSelectionScreen/CharacterConfirm/Yes_off.png",
-                "/assets/CharacterSelectionScreen/CharacterConfirm/Yes_on.png",
-                270, 390, this::continueToNextScreen // Call the updated logic
+                "/assets/CharacterSelectionScreen/CharacterConfirm/Yes_hover.png",
+                700, 575, this::continueToNextScreen // Call the updated logic
         );
 
         JLabel noButton = createButton(
                 "/assets/CharacterSelectionScreen/CharacterConfirm/No_off.png",
-                "/assets/CharacterSelectionScreen/CharacterConfirm/No_on.png",
-                467, 390, this::removeConfirmation
+                "/assets/CharacterSelectionScreen/CharacterConfirm/No_hover.png",
+                923, 573, this::removeConfirmation
         );
 
         confirmationPanel.add(yesButton);

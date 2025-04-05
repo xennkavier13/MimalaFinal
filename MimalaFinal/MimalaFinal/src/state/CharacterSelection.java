@@ -18,6 +18,7 @@ public class CharacterSelection extends JPanel {
     private String firstPlayerSelection = null;
     private final String mode;
 
+
     public CharacterSelection(JFrame frame, String mode) {
         this.frame = frame;
         this.mode = mode;
