@@ -155,6 +155,8 @@ public abstract class CharacterSelectionScreen extends JPanel {
             revalidate();
             repaint();
         }
+        backButton.setEnabled(true);
+        chooseButton.setEnabled(true);
     }
 
 
@@ -197,6 +199,7 @@ public abstract class CharacterSelectionScreen extends JPanel {
         // Disable Back and Continue buttons
         backButton.setEnabled(false);
         chooseButton.setEnabled(false);
+        infoButton.setEnabled(false);
 
         revalidate();
         repaint();

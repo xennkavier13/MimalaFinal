@@ -18,10 +18,18 @@ public class SecondCharacterSelectionScreen extends JPanel {
     private final String mode;
     private final String firstPlayerSelection; // Null if P1 is viewing, non-null if P2 is viewing
 
-    private ImageIcon characterGif;
+    private final ImageIcon characterGif;
     private JPanel confirmationPanel;
+
     private JLabel backButton;
-    private JLabel continueButton;
+    private JLabel chooseButton;
+    private JLabel infoButton;
+
+    private JPanel infoPanel;
+    private boolean infoVisible = false;
+
+    private JLabel infoOverlay;
+
 
     // Base paths - assuming a structure like /assets/CharacterScreenStuff/...
     private final String GIF_PATH_BASE = "/assets/CharacterSelectionScreen/CharacterScreen/"; // Adjust if needed
@@ -104,30 +112,117 @@ public class SecondCharacterSelectionScreen extends JPanel {
         });
         add(backButton);
 
-        // --- Continue/Select Button ---
-        // Assuming buttons might still be character-specific OR generic "Select"
-        // Using generic paths for simplicity now:
         String contOffPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Choose/Choose_off.png";
         String contHoverPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Choose/Choose_hover.png";
-        // If you have character-specific buttons like before:
-        // String contOffPath = BUTTON_PATH_BASE + characterName + "Buttons/offButton.png";
-        // String contHoverPath = BUTTON_PATH_BASE + characterName + "Buttons/hoverButton.png";
 
-        continueButton = createButton(contOffPath, contHoverPath, 1280, 825, () -> {
+        chooseButton = createButton(contOffPath, contHoverPath, 1280, 825, () -> {
             if (confirmationPanel == null) {
                 showConfirmationScreen();
             }
         });
         // Check if continue buttons loaded, provide fallback text if not
-        if (continueButton.getIcon() == null) {
+        if (chooseButton.getIcon() == null) {
             System.err.println("Failed to load Continue button icons at path prefix: " + BUTTON_PATH_BASE + "Select/");
-            continueButton.setText("SELECT " + characterName);
-            continueButton.setForeground(Color.GREEN);
-            continueButton.setBorder(BorderFactory.createLineBorder(Color.GREEN));
+            chooseButton.setText("SELECT " + characterName);
+            chooseButton.setForeground(Color.GREEN);
+            chooseButton.setBorder(BorderFactory.createLineBorder(Color.GREEN));
             // Adjust bounds if using text
-            continueButton.setBounds(1200, 890, 200, 50);
+            chooseButton.setBounds(1200, 890, 200, 50);
         }
-        add(continueButton);
+        add(chooseButton);
+
+        String infoBtnOff = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Info/info_off.png";
+        String infoBtnHover = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Info/info_hover.png";
+
+        infoButton = createButton(infoBtnOff, infoBtnHover, 1100, 825, () -> {
+            if (infoVisible) {
+                removeInfoPanel();
+            } else {
+                showInfoPanel();
+            }
+        });
+        add(infoButton);
+    }
+
+    private CharacterSelectionScreen getCharacterScreenInstance() {
+        switch (characterName) {
+            case "Astridra":
+                return new AstridraScreen(frame, mode);
+            case "Ignisveil":
+                return new IgnisveilScreen(frame, mode);
+            case "Zenfang":
+                return new ZenfangScreen(frame, mode);
+            case "Varkos":
+                return new VarkosScreen(frame, mode);
+            case "Vexmorth":
+                return new VexmorthScreen(frame, mode);
+            case "Auricannon":
+                return new AuricannonScreen(frame, mode);
+            case "Azurox":
+                return new AzuroxScreen(frame, mode);
+            case "Pyrothar":
+                return new PyrotharScreen(frame, mode);
+            default:
+                System.err.println("Unknown character: " + characterName);
+                return null;
+        }
+    }
+
+    private String getInfoImagePath() {
+        CharacterSelectionScreen screen = getCharacterScreenInstance();
+        if (screen != null) {
+            return screen.getInfoImagePath();
+        }
+        System.err.println("Could not retrieve info image path for character: " + characterName);
+        return null;
+    }
+
+
+
+    private void showInfoPanel() {
+        if (infoPanel != null) return;
+
+        infoPanel = new JPanel(null);
+        infoPanel.setBounds(0, 0, 1920, 1080);
+        infoPanel.setOpaque(false);
+
+        ImageIcon infoImage = loadImage(getInfoImagePath());
+        if (infoImage != null) {
+            JLabel infoLabel = new JLabel(infoImage);
+            infoLabel.setBounds(0, 0, 1920, 1080);
+            infoPanel.add(infoLabel);
+        }
+
+        JLabel closeInfoButton = createButton(
+                "/assets/CharacterSelectionScreen/CharacterInfos/sampleCloseOff.png",
+                "/assets/CharacterSelectionScreen/CharacterInfos/sampleCloseHover.png",
+                1540, 200, this::removeInfoPanel
+        );
+
+        infoPanel.add(closeInfoButton);
+        add(infoPanel);
+        setComponentZOrder(infoPanel, 0);
+
+        backButton.setEnabled(false);
+        chooseButton.setEnabled(false);
+
+        infoVisible = true;
+        revalidate();
+        repaint();
+    }
+
+    private void removeInfoPanel() {
+        if (infoPanel != null) {
+            remove(infoPanel);
+            infoPanel = null;
+            infoVisible = false;
+
+            revalidate();
+            repaint();
+        }
+        backButton.setEnabled(true);
+        chooseButton.setEnabled(true);
+        infoButton.setEnabled(true);
     }
 
     private void showConfirmationScreen() {
@@ -148,9 +243,8 @@ public class SecondCharacterSelectionScreen extends JPanel {
             System.err.println("Confirmation background image failed to load.");
             confirmationPanel.setBorder(BorderFactory.createLineBorder(Color.YELLOW, 2)); // Visual fallback
             confirmationPanel.setOpaque(true);
-            confirmationPanel.setBackground(new Color(0,0,0, 200)); // Semi-transparent black fallback
+            confirmationPanel.setBackground(new Color(0, 0, 0, 200)); // Semi-transparent black fallback
         }
-
 
         // Yes Button
         JLabel yesButton = createButton(
@@ -184,7 +278,8 @@ public class SecondCharacterSelectionScreen extends JPanel {
 
         // Disable Back and Continue buttons while confirmation is visible
         backButton.setEnabled(false);
-        continueButton.setEnabled(false);
+        chooseButton.setEnabled(false);
+        infoButton.setEnabled(false);
 
         revalidate();
         repaint();
@@ -193,11 +288,11 @@ public class SecondCharacterSelectionScreen extends JPanel {
     private void removeConfirmation() {
         if (confirmationPanel != null) {
             remove(confirmationPanel);
-            confirmationPanel = null; // Important! Reset the panel variable
+            confirmationPanel = null;
 
-            // Re-enable Back and Continue buttons
             backButton.setEnabled(true);
-            continueButton.setEnabled(true);
+            chooseButton.setEnabled(true);
+            infoButton.setEnabled(true);
 
             revalidate();
             repaint();
