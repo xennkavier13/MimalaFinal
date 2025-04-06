@@ -36,15 +36,15 @@ public class GameScreen extends JPanel {
     private static final int STAMINA_BAR_HEIGHT = 40;
     private static final int BAR_SPACING = 5;
     private static final int CHARACTER_Y_OFFSET = 30;
-    private static final int CHARACTER_WIDTH = 300;
-    private static final int CHARACTER_HEIGHT = 350;
+    private static final int CHARACTER_WIDTH = 768;
+    private static final int CHARACTER_HEIGHT = 768;
     private static final int SKILL_BUTTON_WIDTH = 180;
     private static final int SKILL_BUTTON_HEIGHT = 60;
     private static final int SKILL_SPACING = 10;
     private static final int SKILL_AREA_BOTTOM_MARGIN = 30;
 
     // --- Asset Path Constants ---
-    private static final String HP_BAR_BG_BASE_PATH = "/assets/FightingUI/HealthBar_EachCharacters/";
+    private static final String HP_BAR_BG_BASE_PATH = "/assets/FightingUI/HealthBar_EachCharacters/Azurox.png";
     private static final String HP_BAR_FG_PATH = "/assets/FightingUI/HealthBar_EachCharacters/HealthBar_AllCharacters1.png";
     private static final String STAMINA_BAR_BG_PATH = "/assets/FightingUI/StaminaBar1.png";
     private static final String STAMINA_BAR_FG_PATH = "/assets/FightingUI/StaminaBar2.png";
@@ -88,14 +88,12 @@ public class GameScreen extends JPanel {
     // --- Path Generation Helpers (Corrected) ---
 
     private String getHpBackgroundPath(String characterName, boolean isPlayer1) {
-        // Reverted to P1/P2 suffix logic - ADJUST THIS TO YOUR FILE NAMES
-        String fileName = characterName + ".png"; // Make sure these files exist!
-        return HP_BAR_BG_BASE_PATH + fileName;
+        return HP_BAR_BG_BASE_PATH;
     }
 
     private String getCharacterGifPath(String characterName, boolean isPlayer1) {
         // Reverted to flipped logic for P2 - Make sure "[Char]Idle_flipped.gif" files exist!
-        String gifFileName = characterName  + "Idle.gif";
+        String gifFileName = characterName  + "Idle" + (isPlayer1 ? "": "flipped") + ".gif";
         String path = CHAR_GIF_BASE_PATH + characterName + "/" + gifFileName;
         System.out.println("Attempting to load GIF from: " + path);
         return path;
@@ -221,60 +219,67 @@ public class GameScreen extends JPanel {
         int panelWidth = getPreferredSize().width > 0 ? getPreferredSize().width : 1920; // Use default if panel size not known yet
         int panelHeight = getPreferredSize().height > 0 ? getPreferredSize().height : 1080;
 
-        // --- Status Bar Sizes (Get from component AFTER initialization) ---
-        Dimension p1HpPrefSize = player1HpBar.getPreferredSize();
-        Dimension p1StamPrefSize = player1StaminaBar.getPreferredSize();
-        Dimension p2HpPrefSize = player2HpBar.getPreferredSize();
-        Dimension p2StamPrefSize = player2StaminaBar.getPreferredSize();
-
-        // Ensure dimensions > 0
-        int p1HpW = p1HpPrefSize.width; int p1HpH = p1HpPrefSize.height;
-        int p1StW = p1StamPrefSize.width; int p1StH = p1StamPrefSize.height;
-        int p2HpW = p2HpPrefSize.width; int p2HpH = p2HpPrefSize.height;
-        int p2StW = p2StamPrefSize.width; int p2StH = p2StamPrefSize.height;
-        System.out.println("P1 HP Size: " + p1HpW + "x" + p1HpH + " | P1 Stam Size: " + p1StW + "x" + p1StH);
-
+        // --- Use Constants for Bar Sizes ---
+        // NOTE: StatusBar's preferredSize might interfere with null layout.
+        // setBounds should override, but ensure StatusBar doesn't resize itself.
+        // You might need to remove setPreferredSize in StatusBar if issues persist.
+        int p1HpW = BAR_WIDTH; int p1HpH = HP_BAR_HEIGHT;
+        int p1StW = BAR_WIDTH; int p1StH = STAMINA_BAR_HEIGHT; // Assuming stamina bar should also be wide
+        int p2HpW = BAR_WIDTH; int p2HpH = HP_BAR_HEIGHT;
+        int p2StW = BAR_WIDTH; int p2StH = STAMINA_BAR_HEIGHT;
 
         // --- Player 1 Positions ---
-        int p1_X = PADDING;
+        int p1_X = PADDING + 50; // Bar starts near left edge
         int p1_Y_HP = PADDING;
         player1HpBar.setBounds(p1_X, p1_Y_HP, p1HpW, p1HpH);
 
         int p1_Y_Stamina = p1_Y_HP + p1HpH + BAR_SPACING;
-        player1StaminaBar.setBounds(p1_X, p1_Y_Stamina, p1StW, p1StH); // Use calculated Stamina width/height
+        player1StaminaBar.setBounds(p1_X, p1_Y_Stamina, p1StW, p1StH);
 
-        int p1_Y_Char = p1_Y_Stamina + p1StH + CHARACTER_Y_OFFSET;
-        player1CharacterLabel.setBounds(p1_X + 30, p1_Y_Char, CHARACTER_WIDTH, CHARACTER_HEIGHT); // Use constants for GIF
+        // --- Player 1 Character Position (Moved Right and Lower) ---
+        // Position from bottom edge, slightly offset from left
+        int p1_Char_X = PADDING + 150; // Increased X offset from left edge
+        int p1_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 80; // Positioned near the bottom, above potential skill area space
+        player1CharacterLabel.setBounds(p1_Char_X, p1_Char_Y, CHARACTER_WIDTH, CHARACTER_HEIGHT);
 
+        // --- Player 1 Skills Position (Near Bottom Left) ---
         int p1_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT;
-        player1Skill3.setBounds(p1_X, p1_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
-        player1Skill2.setBounds(p1_X, p1_Skill_Y_Start - SKILL_BUTTON_HEIGHT - SKILL_SPACING, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
-        player1Skill1.setBounds(p1_X, p1_Skill_Y_Start - 2 * (SKILL_BUTTON_HEIGHT + SKILL_SPACING), SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
+        // Align skills closer to the corner if desired
+        int p1_Skill_X = PADDING;
+        player1Skill3.setBounds(p1_Skill_X, p1_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
+        player1Skill2.setBounds(p1_Skill_X, p1_Skill_Y_Start - SKILL_BUTTON_HEIGHT - SKILL_SPACING, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
+        player1Skill1.setBounds(p1_Skill_X, p1_Skill_Y_Start - 2 * (SKILL_BUTTON_HEIGHT + SKILL_SPACING), SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
+
 
         // --- Player 2 Positions ---
-        int p2_X_HP = panelWidth - PADDING - p2HpW;
+        int p2_X_HP = panelWidth - PADDING - p2HpW - 50; // Bar ends near right edge
         int p2_Y_HP = PADDING;
         player2HpBar.setBounds(p2_X_HP, p2_Y_HP, p2HpW, p2HpH);
 
         int p2_Y_Stamina = p2_Y_HP + p2HpH + BAR_SPACING;
-        int p2_X_Stamina = panelWidth - PADDING - p2StW;
-        player2StaminaBar.setBounds(p2_X_Stamina, p2_Y_Stamina, p2StW, p2StH); // Use calculated Stamina width/height
+        int p2_X_Stamina = panelWidth - PADDING - p2StW - 50; // Align stamina bar end with HP bar end
+        player2StaminaBar.setBounds(p2_X_Stamina, p2_Y_Stamina, p2StW, p2StH);
 
-        int p2_Y_Char = p2_Y_Stamina + p2StH + CHARACTER_Y_OFFSET;
-        int p2_X_Char = panelWidth - PADDING - 30 - CHARACTER_WIDTH;
-        player2CharacterLabel.setBounds(p2_X_Char, p2_Y_Char, CHARACTER_WIDTH, CHARACTER_HEIGHT); // Use constants for GIF
+        // --- Player 2 Character Position (Moved Left and Lower) ---
+        // Position from bottom edge, slightly offset from right
+        int p2_Char_X = panelWidth - PADDING  - 150 - CHARACTER_WIDTH; // Increased X offset from right edge (moved left)
+        int p2_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 80; // Same Y as P1
+        player2CharacterLabel.setBounds(p2_Char_X, p2_Char_Y, CHARACTER_WIDTH, CHARACTER_HEIGHT);
 
+        // --- Player 2 Skills Position (Near Bottom Right) ---
         int p2_Skill_X = panelWidth - PADDING - SKILL_BUTTON_WIDTH;
         int p2_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT;
         player2Skill3.setBounds(p2_Skill_X, p2_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
         player2Skill2.setBounds(p2_Skill_X, p2_Skill_Y_Start - SKILL_BUTTON_HEIGHT - SKILL_SPACING, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
         player2Skill1.setBounds(p2_Skill_X, p2_Skill_Y_Start - 2 * (SKILL_BUTTON_HEIGHT + SKILL_SPACING), SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
 
-        // --- Center HUD Positions ---
+
+        // --- Center HUD Positions (Remain the same) ---
         int timerWidth = 100; int timerHeight = 60;
         timerDisplayLabel.setBounds(panelWidth / 2 - timerWidth / 2, PADDING, timerWidth, timerHeight);
         int indicatorWidth = 300; int indicatorHeight = 40;
         turnIndicatorLabel.setBounds(panelWidth / 2 - indicatorWidth / 2, PADDING + timerHeight + 5, indicatorWidth, indicatorHeight);
+
         System.out.println("UI Components Positioned.");
     }
 

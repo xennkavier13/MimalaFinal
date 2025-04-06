@@ -21,22 +21,13 @@ public class StatusBar extends JPanel {
         // Crucial for null layout: Set size explicitly based on background image if possible
         // Do this *after* loading images.
         if (backgroundIcon != null) {
-            setPreferredSize(new Dimension(backgroundIcon.getIconWidth(), backgroundIcon.getIconHeight()/3));
+            setPreferredSize(new Dimension(backgroundIcon.getIconWidth(), backgroundIcon.getIconHeight()));
         } else {
             setPreferredSize(new Dimension(200, 20)); // Default fallback size
         }
     }
 
-    // Method to explicitly set the background, useful for character-specific bars
-    public void setBackgroundIconPath(String backgroundPath) {
-        this.backgroundPath = backgroundPath;
-        loadImages(backgroundPath, this.foregroundPath); // Reload images
-        if (backgroundIcon != null) {
-            setPreferredSize(new Dimension(backgroundIcon.getIconWidth()/2, backgroundIcon.getIconHeight()/2-100));
-            revalidate(); // Tell layout manager to reconsider size
-        }
-        repaint();
-    }
+
 
 
     private void loadImages(String backgroundPath, String foregroundPath) {
