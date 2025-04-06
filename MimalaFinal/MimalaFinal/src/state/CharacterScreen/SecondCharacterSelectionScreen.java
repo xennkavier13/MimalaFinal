@@ -27,6 +27,8 @@ public class SecondCharacterSelectionScreen extends JPanel {
 
     private JPanel infoPanel;
     private boolean infoVisible = false;
+    private JLabel closeInfoButton;
+    private boolean closeVisible = false;
 
     private JLabel infoOverlay;
 
@@ -135,7 +137,7 @@ public class SecondCharacterSelectionScreen extends JPanel {
         String infoBtnHover = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Info/info_hover.png";
 
         infoButton = createButton(infoBtnOff, infoBtnHover, 1100, 825, () -> {
-            if (infoVisible) {
+            if (infoVisible && closeVisible) {
                 removeInfoPanel();
             } else {
                 showInfoPanel();
@@ -193,18 +195,22 @@ public class SecondCharacterSelectionScreen extends JPanel {
             infoPanel.add(infoLabel);
         }
 
-        JLabel closeInfoButton = createButton(
-                "/assets/CharacterSelectionScreen/CharacterInfos/sampleCloseOff.png",
-                "/assets/CharacterSelectionScreen/CharacterInfos/sampleCloseHover.png",
-                1540, 200, this::removeInfoPanel
+        closeInfoButton = createButton(
+                "/assets/CharacterSelectionScreen/CharacterScreenButtons/Close_button.png",
+                "/assets/CharacterSelectionScreen/CharacterScreenButtons/Close_button.png",
+                1470, 280, () -> {
+                    removeInfoPanel();
+                    closeInfoButton.setVisible(false);  // Hide the close button after clicking
+                }
         );
 
-        infoPanel.add(closeInfoButton);
         add(infoPanel);
-        setComponentZOrder(infoPanel, 0);
+        infoPanel.add(closeInfoButton);
+        setComponentZOrder(closeInfoButton, 0);
 
         backButton.setEnabled(false);
         chooseButton.setEnabled(false);
+        infoButton.setEnabled(false);
 
         infoVisible = true;
         revalidate();
@@ -215,14 +221,20 @@ public class SecondCharacterSelectionScreen extends JPanel {
         if (infoPanel != null) {
             remove(infoPanel);
             infoPanel = null;
+            closeVisible = false;
             infoVisible = false;
 
             revalidate();
             repaint();
         }
+
         backButton.setEnabled(true);
         chooseButton.setEnabled(true);
         infoButton.setEnabled(true);
+
+        if (closeVisible) {
+            closeInfoButton.setVisible(false); // Hide the close button when clicked
+        }
     }
 
     private void showConfirmationScreen() {

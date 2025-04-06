@@ -19,6 +19,8 @@ public abstract class CharacterSelectionScreen extends JPanel {
 
     private JPanel infoPanel;
     private boolean infoVisible = false;
+    private JLabel closeInfoButton;
+    private boolean closeVisible = false;
 
     // *** NEW: Store Player 1's selection if this screen is for Player 2 ***
     private final String firstPlayerSelection;
@@ -48,8 +50,6 @@ public abstract class CharacterSelectionScreen extends JPanel {
         // Optional: Add a visual indicator that it's P2's turn if needed
     }
 
-    // *** MODIFIED: Original constructor now calls the new one with null ***
-    // This constructor is called by CharacterSelection (for P1)
     public CharacterSelectionScreen(JFrame frame, String mode) {
         this(frame, mode, null); // Delegate to the new constructor, P1's choice is null initially
     }
@@ -82,7 +82,7 @@ public abstract class CharacterSelectionScreen extends JPanel {
         String infoBtnHover = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Info/info_hover.png";
 
         infoButton = createButton(infoBtnOff, infoBtnHover, 1100, 825, () -> {
-            if (infoVisible) {
+            if (infoVisible && closeVisible) {
                 removeInfoPanel();
             } else {
                 showInfoPanel();
@@ -128,19 +128,24 @@ public abstract class CharacterSelectionScreen extends JPanel {
             infoPanel.add(infoLabel);
         }
 
-        JLabel closeInfoButton = createButton(
-                "/assets/CharacterSelectionScreen/CharacterInfos/sampleCloseOff.png",
-                "/assets/CharacterSelectionScreen/CharacterInfos/sampleCloseHover.png",
-                1540, 200, this::removeInfoPanel
+        closeInfoButton = createButton(
+                "/assets/CharacterSelectionScreen/CharacterScreenButtons/Close_button.png",
+                "/assets/CharacterSelectionScreen/CharacterScreenButtons/Close_button.png",
+                1470, 280, () -> {
+                    removeInfoPanel();
+                    closeInfoButton.setVisible(false);  // Hide the close button after clicking
+                }
         );
 
-        infoPanel.add(closeInfoButton);
         add(infoPanel);
-        setComponentZOrder(infoPanel, 0);
+        infoPanel.add(closeInfoButton);
+        setComponentZOrder(closeInfoButton, 0);
 
         backButton.setEnabled(false);
         chooseButton.setEnabled(false);
+        infoButton.setEnabled(false);
 
+        closeVisible = true;
         infoVisible = true;
         revalidate();
         repaint();
@@ -150,6 +155,7 @@ public abstract class CharacterSelectionScreen extends JPanel {
         if (infoPanel != null) {
             remove(infoPanel);
             infoPanel = null;
+            closeVisible = false;
             infoVisible = false;
 
             revalidate();
@@ -157,8 +163,13 @@ public abstract class CharacterSelectionScreen extends JPanel {
         }
         backButton.setEnabled(true);
         chooseButton.setEnabled(true);
-    }
+        infoButton.setEnabled(true);
 
+        // Make sure to hide the close button after it's clicked
+        if (closeVisible) {
+            closeInfoButton.setVisible(false); // Hide the close button when clicked
+        }
+    }
 
     private void showConfirmationScreen() {
         // showConfirmationScreen implementation remains the same...
@@ -214,6 +225,7 @@ public abstract class CharacterSelectionScreen extends JPanel {
 
             backButton.setEnabled(true);
             chooseButton.setEnabled(true);
+            infoButton.setEnabled(true);
 
             revalidate(); // Revalidate after removing component
             repaint();
