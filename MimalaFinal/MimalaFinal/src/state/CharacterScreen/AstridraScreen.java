@@ -17,4 +17,9 @@ public class AstridraScreen extends CharacterSelectionScreen {
     protected String getCharacterName() {
         return "Astridra";
     }
+
+    @Override
+    protected String getInfoImagePath() {
+        return "/assets/CharacterSelectionScreen/CharacterInfos/AstridraInfo.png";
+    }
 }

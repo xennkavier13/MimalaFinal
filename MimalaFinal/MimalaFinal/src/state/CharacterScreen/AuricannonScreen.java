@@ -17,4 +17,9 @@ public class AuricannonScreen extends CharacterSelectionScreen {
     protected String getCharacterName() {
         return "Auricannon";
     }
+
+    @Override
+    protected String getInfoImagePath() {
+        return "/assets/CharacterSelectionScreen/CharacterInfos/AuricannonInfo.png";
+    }
 }

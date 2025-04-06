@@ -17,6 +17,9 @@ public abstract class CharacterSelectionScreen extends JPanel {
     private JPanel confirmationPanel;
     protected ImageIcon characterGif; // Keep protected
 
+    private JPanel infoPanel;
+    private boolean infoVisible = false;
+
     // *** NEW: Store Player 1's selection if this screen is for Player 2 ***
     private final String firstPlayerSelection;
 
@@ -65,19 +68,27 @@ public abstract class CharacterSelectionScreen extends JPanel {
     }
 
     private JLabel backButton;
-    private JLabel continueButton;
+    private JLabel chooseButton;
+    private JLabel infoButton;
 
     private void setupButtons() {
-        // setupButtons implementation remains the same...
         String backOffPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_off.png";
         String backHoverPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_hover.png";
-        // Assuming the continue buttons are character-specific, loaded via getContinueButtonPaths() maybe?
-        // Using Astridra paths as placeholder:
+
         String chooseOffPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Choose/Choose_off.png";
         String chooseHoverPath = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Choose/Choose_hover.png";
 
-        String backstoryBtnOff = "/assets/CharacterSelectionScreen/CharacterScreenButtons/backstoryBtn.png";
-        String backstoryBtnHover = "/assets/CharacterSelectionScreen/CharacterScreenButtons/backstoryBtn.png";
+        String infoBtnOff = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Info/info_off.png";
+        String infoBtnHover = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Info/info_hover.png";
+
+        infoButton = createButton(infoBtnOff, infoBtnHover, 1100, 825, () -> {
+            if (infoVisible) {
+                removeInfoPanel();
+            } else {
+                showInfoPanel();
+            }
+        });
+        add(infoButton);
 
         backButton = createButton(backOffPath, backHoverPath, 50, 57, () -> {
             if (confirmationPanel == null) {
@@ -95,13 +106,57 @@ public abstract class CharacterSelectionScreen extends JPanel {
         });
         add(backButton);
 
-        continueButton = createButton(chooseOffPath, chooseHoverPath, 1280, 825, () -> {
+        chooseButton = createButton(chooseOffPath, chooseHoverPath, 1280, 825, () -> {
             if (confirmationPanel == null) {
                 showConfirmationScreen();
             }
         });
-        add(continueButton);
+        add(chooseButton);
     }
+
+    private void showInfoPanel() {
+        if (infoPanel != null) return;
+
+        infoPanel = new JPanel(null);
+        infoPanel.setBounds(0, 0, 1920, 1080);
+        infoPanel.setOpaque(false);
+
+        ImageIcon infoImage = loadImage(getInfoImagePath());
+        if (infoImage != null) {
+            JLabel infoLabel = new JLabel(infoImage);
+            infoLabel.setBounds(0, 0, 1920, 1080);
+            infoPanel.add(infoLabel);
+        }
+
+        JLabel closeInfoButton = createButton(
+                "/assets/CharacterSelectionScreen/CharacterInfos/sampleCloseOff.png",
+                "/assets/CharacterSelectionScreen/CharacterInfos/sampleCloseHover.png",
+                1540, 200, this::removeInfoPanel
+        );
+
+        infoPanel.add(closeInfoButton);
+        add(infoPanel);
+        setComponentZOrder(infoPanel, 0);
+
+        backButton.setEnabled(false);
+        chooseButton.setEnabled(false);
+
+        infoVisible = true;
+        revalidate();
+        repaint();
+    }
+
+    private void removeInfoPanel() {
+        if (infoPanel != null) {
+            remove(infoPanel);
+            infoPanel = null;
+            infoVisible = false;
+
+            revalidate();
+            repaint();
+        }
+    }
+
 
     private void showConfirmationScreen() {
         // showConfirmationScreen implementation remains the same...
@@ -141,7 +196,7 @@ public abstract class CharacterSelectionScreen extends JPanel {
 
         // Disable Back and Continue buttons
         backButton.setEnabled(false);
-        continueButton.setEnabled(false);
+        chooseButton.setEnabled(false);
 
         revalidate();
         repaint();
@@ -155,7 +210,7 @@ public abstract class CharacterSelectionScreen extends JPanel {
             confirmationPanel = null;
 
             backButton.setEnabled(true);
-            continueButton.setEnabled(true);
+            chooseButton.setEnabled(true);
 
             revalidate(); // Revalidate after removing component
             repaint();
@@ -258,4 +313,5 @@ public abstract class CharacterSelectionScreen extends JPanel {
         // If confirmationPanel exists, it should be painted on top automatically by Swing's Z-order
     }
 
+    protected abstract String getInfoImagePath();
 }

@@ -17,4 +17,9 @@ public class AzuroxScreen extends CharacterSelectionScreen {
     protected String getCharacterName() {
         return "Azurox";
     }
+
+    @Override
+    protected String getInfoImagePath() {
+        return "/assets/CharacterSelectionScreen/CharacterInfos/AzuroxInfo.png";
+    }
 }

@@ -17,4 +17,9 @@ public class ZenfangScreen extends CharacterSelectionScreen {
     protected String getCharacterName() {
         return "Zenfang";
     }
+
+    @Override
+    protected String getInfoImagePath() {
+        return "/assets/CharacterSelectionScreen/CharacterInfos/ZenfangInfo.png";
+    }
 }

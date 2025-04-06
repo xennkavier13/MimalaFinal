@@ -17,4 +17,9 @@ public class IgnisveilScreen extends CharacterSelectionScreen {
     protected String getCharacterName() {
         return "Ignisveil";
     }
+
+    @Override
+    protected String getInfoImagePath() {
+        return "/assets/CharacterSelectionScreen/CharacterInfos/IgnisveilInfo.png";
+    }
 }

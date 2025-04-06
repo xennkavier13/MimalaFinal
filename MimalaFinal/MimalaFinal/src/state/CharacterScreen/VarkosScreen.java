@@ -17,4 +17,9 @@ public class VarkosScreen extends CharacterSelectionScreen {
     protected String getCharacterName() {
         return "Varkos";
     }
+
+    @Override
+    protected String getInfoImagePath() {
+        return "/assets/CharacterSelectionScreen/CharacterInfos/VarkosInfo.png";
+    }
 }
