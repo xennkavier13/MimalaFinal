@@ -6,16 +6,28 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.awt.event.ActionEvent;
-import java.util.Random; // For AI
+import java.util.Random;
+import state.character.CharacterDataLoader;
+import state.character.CharacterStats;
+// Removed: import javax.swing.Timer; // We are replacing this
 
 public class GameScreen extends JPanel {
     private final JFrame frame;
-    private final String firstPlayerCharacter;
-    private final String secondPlayerCharacter;
+    private final String firstPlayerCharacterName; // Renamed for clarity
+    private final String secondPlayerCharacterName; // Renamed for clarity
     private final String selectedMapPath;
     private ImageIcon mapImage;
 
+    // --- Character Stats ---
+    private CharacterStats player1Stats;
+    private CharacterStats player2Stats;
+    private double player1CurrentHp;
+    private double player1CurrentStamina;
+    private double player2CurrentHp;
+    private double player2CurrentStamina;
+
     // --- UI Components ---
+
     private StatusBar player1HpBar;
     private StatusBar player1StaminaBar;
     private JLabel player1CharacterLabel;
@@ -28,8 +40,9 @@ public class GameScreen extends JPanel {
 
     private JLabel timerDisplayLabel;
     private JLabel turnIndicatorLabel;
+    private JLabel roundDisplayLabel; // New label for rounds
 
-    // --- Layout Constants --- (Keep previous adjustments or modify as needed)
+    // --- Layout Constants --- (Keep as they are)
     private static final int PADDING = 30;
     private static final int BAR_WIDTH = 600;
     private static final int HP_BAR_HEIGHT = 65;
@@ -42,64 +55,117 @@ public class GameScreen extends JPanel {
     private static final int SKILL_BUTTON_HEIGHT = 60;
     private static final int SKILL_SPACING = 10;
     private static final int SKILL_AREA_BOTTOM_MARGIN = 30;
+    // ... (rest of the layout constants)
 
-    // --- Asset Path Constants ---
+    // --- Asset Path Constants --- (Keep as they are)
     private static final String HP_BAR_BG_BASE_PATH = "/assets/FightingUI/HealthBar_EachCharacters/Azurox.png";
     private static final String HP_BAR_FG_PATH = "/assets/FightingUI/HealthBar_EachCharacters/HealthBar_AllCharacters1.png";
     private static final String STAMINA_BAR_BG_PATH = "/assets/FightingUI/StaminaBar1.png";
     private static final String STAMINA_BAR_FG_PATH = "/assets/FightingUI/StaminaBar2.png";
     private static final String CHAR_GIF_BASE_PATH = "/assets/FightingUI/Mimala_Characters/";
 
+
     // --- Game State ---
-    private boolean isPlayer1Turn = true;
-    private Timer turnTimer;
-    private int remainingTime;
+    private volatile boolean isPlayer1Turn = true; // Tracks whose turn it is NOW
+    private volatile boolean gameRunning = true;
+    private Thread turnTimerThread;
+    private volatile int remainingTime;
     private static final int TURN_DURATION_SECONDS = 15;
-    private final Random random = new Random(); // For AI
-    private static final String AI_PLAYER_NAME = "Computer"; // Identifier for AI player
+    private final Random random = new Random(); // Still needed for AI, maybe other things
+    private static final String AI_PLAYER_NAME = "Computer";
+    private boolean isVsAI;
+
+    // --- Rounds & Stamina Recovery
+    private static final int MAX_ROUNDS = 10;
+    private RoundManager roundManager;
+    private static final double STAMINA_RECOVERY_PER_ROUND = 10.0; // Recover 30 stamina points
 
     public GameScreen(JFrame frame, String firstPlayerCharacter, String secondPlayerCharacter, String selectedMapResourcePath) {
         this.frame = frame;
-        this.firstPlayerCharacter = firstPlayerCharacter;
-        this.secondPlayerCharacter = secondPlayerCharacter;
+        this.firstPlayerCharacterName = firstPlayerCharacter;
+        this.secondPlayerCharacterName = secondPlayerCharacter;
         this.selectedMapPath = selectedMapResourcePath;
+        this.isVsAI = this.secondPlayerCharacterName.equals(AI_PLAYER_NAME);
 
+        // --- Initialize Round Manager FIRST ---
+        this.roundManager = new RoundManager(MAX_ROUNDS); // Initialize here!
+
+        // --- Load Character Stats ---
+        loadCharacterStats(); // Now safe to call
+
+        // --- Basic Panel Setup ---
         setLayout(null);
         setPreferredSize(new Dimension(1920, 1080));
-
-        // Make the panel focusable to receive key events for bindings
         setFocusable(true);
 
+        // --- Load Assets ---
         loadMapImage();
+
+        // --- Setup UI (Now safe to use roundManager here) ---
         initializeUIComponents();
         positionUIComponents();
-        setupGameTimer();
-        setupKeyBindings(); // Setup keyboard inputs
+        setupKeyBindings();
 
-        updateUIBasedOnTurn();
+        // --- Add Components ---
         addAllComponents(); // Add components AFTER positioning
-        startTurn(); // Start the first turn timer
 
-        // Request focus right after the panel is set up and visible
-        // Best done after the frame is packed/visible, but can try here too.
-        SwingUtilities.invokeLater(() -> requestFocusInWindow());
+        // --- Start Game Flow ---
+        startNextRoundSequence(); // Start the first round
+
+        // --- Request Focus ---
+        SwingUtilities.invokeLater(this::requestFocusInWindow);
     }
 
-    // --- Path Generation Helpers (Corrected) ---
+    private void loadCharacterStats() {
+        System.out.println("Loading character stats...");
+        player1Stats = CharacterDataLoader.getStats(firstPlayerCharacterName);
+        // If P2 is AI, load stats for P1's character initially for placeholder? No, load the character AI *will* be.
+        // The AI *is* the second character selected, just controlled by computer.
+        player2Stats = CharacterDataLoader.getStats(secondPlayerCharacterName);
 
+        if (player1Stats == null || player2Stats == null) {
+            // Handle error - perhaps show a message and go back to selection?
+            System.err.println("FATAL ERROR: Could not load stats for selected characters!");
+            // For now, use defaults to avoid NullPointerException, but this is bad practice
+            if (player1Stats == null) player1Stats = CharacterDataLoader.getStats("Default"); // Assuming Default exists
+            if (player2Stats == null) player2Stats = CharacterDataLoader.getStats("Default");
+            // A real game should prevent starting with invalid characters.
+        }
+
+        // Set initial current HP/Stamina based on loaded max values
+        player1CurrentHp = player1Stats.getMaxHp();
+        player1CurrentStamina = player1Stats.getMaxStamina();
+        player2CurrentHp = player2Stats.getMaxHp();
+        player2CurrentStamina = player2Stats.getMaxStamina();
+
+        System.out.println("Stats loaded for P1 (" + firstPlayerCharacterName + ") and P2 (" + secondPlayerCharacterName + ")");
+    }
+
+
+
+    // --- Path Generation Helpers (Keep as they are) ---
     private String getHpBackgroundPath(String characterName, boolean isPlayer1) {
+        // Assuming Azurox bar is the standard for now
         return HP_BAR_BG_BASE_PATH;
     }
 
     private String getCharacterGifPath(String characterName, boolean isPlayer1) {
-        // Reverted to flipped logic for P2 - Make sure "[Char]Idle_flipped.gif" files exist!
-        String gifFileName = characterName  + "Idle" + (isPlayer1 ? "": "flipped") + ".gif";
+        // Check if AI needs specific handling for GIF path (it shouldn't, use selected character)
+        // String actualCharacterName = (isVsAI && !isPlayer1) ? firstPlayerCharacterName : characterName; // Example if AI mirrors P1 visually? No, use selected char.
+
+        String gifFileName = characterName + "Idle" + (isPlayer1 ? "" : "flipped") + ".gif"; // Ensure flipped GIFs exist!
         String path = CHAR_GIF_BASE_PATH + characterName + "/" + gifFileName;
-        System.out.println("Attempting to load GIF from: " + path);
+        System.out.println("Attempting to load GIF from: " + path + " for " + characterName);
+        URL testUrl = getClass().getResource(path);
+        if (testUrl == null) {
+            System.err.println("!!! GIF NOT FOUND AT: " + path + " !!!");
+            // Consider returning a path to a default/placeholder GIF here
+        }
         return path;
     }
 
-    // --- Loading and Initialization (Mostly unchanged, ensure paths are correct) ---
+
+    // --- Loading and Initialization ---
 
     private void loadMapImage() {
         try {
@@ -119,22 +185,14 @@ public class GameScreen extends JPanel {
     }
 
     private ImageIcon loadCharacterGif(String characterName, boolean isPlayer1) {
-        // Check if AI is selected but has no specific assets, maybe use a default?
-        if (characterName.equals(AI_PLAYER_NAME)) {
-            // Option 1: Use a default character's assets
-            // characterName = "DefaultCharacterName"; // e.g., "Zenfang"
-            // Option 2: Return a specific "AI" placeholder
-            System.out.println("Loading placeholder for AI player.");
-            return createPlaceholderIcon(CHARACTER_WIDTH, CHARACTER_HEIGHT, "AI Player");
-        }
-
+        // Now uses the selected character name directly
         String path = getCharacterGifPath(characterName, isPlayer1);
         URL gifUrl = getClass().getResource(path);
         if (gifUrl != null) {
             System.out.println("GIF loaded successfully: " + path);
             return new ImageIcon(gifUrl);
         } else {
-            System.err.println("ERROR: Character GIF not found at path: " + path);
+            System.err.println("ERROR: Character GIF not found at path: " + path + ". Creating placeholder.");
             return createPlaceholderIcon(CHARACTER_WIDTH, CHARACTER_HEIGHT, characterName + " GIF Missing");
         }
     }
@@ -155,33 +213,28 @@ public class GameScreen extends JPanel {
         return new ImageIcon(img);
     }
 
+
     private void initializeUIComponents() {
         System.out.println("Initializing UI Components...");
         // --- Player 1 ---
-        String p1HpBgPath = getHpBackgroundPath(firstPlayerCharacter, true);
-        System.out.println("P1 HP BG Path: " + p1HpBgPath);
+        String p1HpBgPath = getHpBackgroundPath(firstPlayerCharacterName, true);
         player1HpBar = new StatusBar(p1HpBgPath, HP_BAR_FG_PATH);
         player1StaminaBar = new StatusBar(STAMINA_BAR_BG_PATH, STAMINA_BAR_FG_PATH);
-        ImageIcon p1Gif = loadCharacterGif(firstPlayerCharacter, true);
+        ImageIcon p1Gif = loadCharacterGif(firstPlayerCharacterName, true);
         player1CharacterLabel = new JLabel(p1Gif);
-
-        player1Skill1 = new JButton("Skill 1 (1)"); // Add key hint
-        player1Skill2 = new JButton("Skill 2 (2)");
-        player1Skill3 = new JButton("Skill 3 (3)");
+        player1Skill1 = new JButton(String.format("Skill 1 (%.0f dmg / %.0f sta)", player1Stats.getSkillDamage(1), player1Stats.getSkillCost(1)));
+        player1Skill2 = new JButton(String.format("Skill 2 (%.0f dmg / %.0f sta)", player1Stats.getSkillDamage(2), player1Stats.getSkillCost(2)));
+        player1Skill3 = new JButton(String.format("Skill 3 (%.0f dmg / %.0f sta)", player1Stats.getSkillDamage(3), player1Stats.getSkillCost(3)));
 
         // --- Player 2 ---
-        // Handle case where P2 is AI for HP bar background
-        String p2ActualCharacter = secondPlayerCharacter.equals(AI_PLAYER_NAME) ? firstPlayerCharacter : secondPlayerCharacter; // Example: AI uses P1's bar mirror? Or needs own default?
-        String p2HpBgPath = getHpBackgroundPath(p2ActualCharacter, false); // Use AI identifier or default if needed
-        System.out.println("P2 HP BG Path: " + p2HpBgPath);
+        String p2HpBgPath = getHpBackgroundPath(secondPlayerCharacterName, false);
         player2HpBar = new StatusBar(p2HpBgPath, HP_BAR_FG_PATH);
         player2StaminaBar = new StatusBar(STAMINA_BAR_BG_PATH, STAMINA_BAR_FG_PATH);
-        ImageIcon p2Gif = loadCharacterGif(secondPlayerCharacter, false); // Load AI placeholder or char GIF
+        ImageIcon p2Gif = loadCharacterGif(secondPlayerCharacterName, false); // Use P2's character name even if AI
         player2CharacterLabel = new JLabel(p2Gif);
-
-        player2Skill1 = new JButton("Skill 1 (1)"); // Also uses 1,2,3 but only active on P2 turn
-        player2Skill2 = new JButton("Skill 2 (2)");
-        player2Skill3 = new JButton("Skill 3 (3)");
+        player2Skill1 = new JButton(String.format("Skill 1 (%.0f dmg / %.0f sta)", player2Stats.getSkillDamage(1), player2Stats.getSkillCost(1)));
+        player2Skill2 = new JButton(String.format("Skill 2 (%.0f dmg / %.0f sta)", player2Stats.getSkillDamage(2), player2Stats.getSkillCost(2)));
+        player2Skill3 = new JButton(String.format("Skill 3 (%.0f dmg / %.0f sta)", player2Stats.getSkillDamage(3), player2Stats.getSkillCost(3)));
 
 
         // --- Center HUD ---
@@ -190,95 +243,82 @@ public class GameScreen extends JPanel {
         timerDisplayLabel.setForeground(Color.WHITE);
         timerDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        turnIndicatorLabel = new JLabel();
+        turnIndicatorLabel = new JLabel(); // Text set in updateUIBasedOnTurn
         turnIndicatorLabel.setFont(new Font("Arial", Font.BOLD, 24));
         turnIndicatorLabel.setForeground(Color.YELLOW);
         turnIndicatorLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
+        roundDisplayLabel = new JLabel("Round: - /" + roundManager.getMaxRounds());
+        roundDisplayLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        roundDisplayLabel.setForeground(Color.CYAN);
+        roundDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+
         // --- Action Listeners ---
-        player1Skill1.addActionListener(e -> handleAction("P1_SKILL_1"));
-        player1Skill2.addActionListener(e -> handleAction("P1_SKILL_2"));
-        player1Skill3.addActionListener(e -> handleAction("P1_SKILL_3"));
+        player1Skill1.addActionListener(e -> handleAction(1)); // Pass skill number
+        player1Skill2.addActionListener(e -> handleAction(2));
+        player1Skill3.addActionListener(e -> handleAction(3));
 
-        // Add listeners for P2 only if not AI? Or let handleAction check turn.
-        player2Skill1.addActionListener(e -> handleAction("P2_SKILL_1"));
-        player2Skill2.addActionListener(e -> handleAction("P2_SKILL_2"));
-        player2Skill3.addActionListener(e -> handleAction("P2_SKILL_3"));
+        player2Skill1.addActionListener(e -> handleAction(1));
+        player2Skill2.addActionListener(e -> handleAction(2));
+        player2Skill3.addActionListener(e -> handleAction(3));
 
-        // Set initial values (make sure bars are initialized first)
-        player1HpBar.setValue(1.0);
-        player1StaminaBar.setValue(1.0);
-        player2HpBar.setValue(1.0);
-        player2StaminaBar.setValue(1.0);
+        // --- Set Initial Bar Values (based on current HP/Stamina which are initially max) ---
+        updateHpBars();
+        updateStaminaBars();
 
         System.out.println("UI Components Initialized.");
     }
 
+
     private void positionUIComponents() {
         System.out.println("Positioning UI Components...");
-        int panelWidth = getPreferredSize().width > 0 ? getPreferredSize().width : 1920; // Use default if panel size not known yet
+        int panelWidth = getPreferredSize().width > 0 ? getPreferredSize().width : 1920;
         int panelHeight = getPreferredSize().height > 0 ? getPreferredSize().height : 1080;
 
-        // --- Use Constants for Bar Sizes ---
-        // NOTE: StatusBar's preferredSize might interfere with null layout.
-        // setBounds should override, but ensure StatusBar doesn't resize itself.
-        // You might need to remove setPreferredSize in StatusBar if issues persist.
-        int p1HpW = BAR_WIDTH; int p1HpH = HP_BAR_HEIGHT;
-        int p1StW = BAR_WIDTH; int p1StH = STAMINA_BAR_HEIGHT; // Assuming stamina bar should also be wide
-        int p2HpW = BAR_WIDTH; int p2HpH = HP_BAR_HEIGHT;
-        int p2StW = BAR_WIDTH; int p2StH = STAMINA_BAR_HEIGHT;
-
-        // --- Player 1 Positions ---
-        int p1_X = PADDING + 50; // Bar starts near left edge
+        // --- Player 1 Positions --- (Keep existing positioning logic)
+        int p1_X = PADDING + 50;
         int p1_Y_HP = PADDING;
-        player1HpBar.setBounds(p1_X, p1_Y_HP, p1HpW, p1HpH);
-
-        int p1_Y_Stamina = p1_Y_HP + p1HpH + BAR_SPACING;
-        player1StaminaBar.setBounds(p1_X, p1_Y_Stamina, p1StW, p1StH);
-
-        // --- Player 1 Character Position (Moved Right and Lower) ---
-        // Position from bottom edge, slightly offset from left
-        int p1_Char_X = PADDING + 150; // Increased X offset from left edge
-        int p1_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 80; // Positioned near the bottom, above potential skill area space
+        player1HpBar.setBounds(p1_X, p1_Y_HP, BAR_WIDTH, HP_BAR_HEIGHT);
+        int p1_Y_Stamina = p1_Y_HP + HP_BAR_HEIGHT + BAR_SPACING;
+        player1StaminaBar.setBounds(p1_X, p1_Y_Stamina, BAR_WIDTH, STAMINA_BAR_HEIGHT);
+        int p1_Char_X = PADDING + 150;
+        int p1_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 80;
         player1CharacterLabel.setBounds(p1_Char_X, p1_Char_Y, CHARACTER_WIDTH, CHARACTER_HEIGHT);
-
-        // --- Player 1 Skills Position (Near Bottom Left) ---
         int p1_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT;
-        // Align skills closer to the corner if desired
         int p1_Skill_X = PADDING;
         player1Skill3.setBounds(p1_Skill_X, p1_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
         player1Skill2.setBounds(p1_Skill_X, p1_Skill_Y_Start - SKILL_BUTTON_HEIGHT - SKILL_SPACING, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
         player1Skill1.setBounds(p1_Skill_X, p1_Skill_Y_Start - 2 * (SKILL_BUTTON_HEIGHT + SKILL_SPACING), SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
 
-
-        // --- Player 2 Positions ---
-        int p2_X_HP = panelWidth - PADDING - p2HpW - 50; // Bar ends near right edge
+        // --- Player 2 Positions --- (Keep existing positioning logic)
+        int p2_X_HP = panelWidth - PADDING - BAR_WIDTH - 50;
         int p2_Y_HP = PADDING;
-        player2HpBar.setBounds(p2_X_HP, p2_Y_HP, p2HpW, p2HpH);
-
-        int p2_Y_Stamina = p2_Y_HP + p2HpH + BAR_SPACING;
-        int p2_X_Stamina = panelWidth - PADDING - p2StW - 50; // Align stamina bar end with HP bar end
-        player2StaminaBar.setBounds(p2_X_Stamina, p2_Y_Stamina, p2StW, p2StH);
-
-        // --- Player 2 Character Position (Moved Left and Lower) ---
-        // Position from bottom edge, slightly offset from right
-        int p2_Char_X = panelWidth - PADDING  - 150 - CHARACTER_WIDTH; // Increased X offset from right edge (moved left)
-        int p2_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 80; // Same Y as P1
+        player2HpBar.setBounds(p2_X_HP, p2_Y_HP, BAR_WIDTH, HP_BAR_HEIGHT);
+        int p2_Y_Stamina = p2_Y_HP + HP_BAR_HEIGHT + BAR_SPACING;
+        int p2_X_Stamina = panelWidth - PADDING - BAR_WIDTH - 50;
+        player2StaminaBar.setBounds(p2_X_Stamina, p2_Y_Stamina, BAR_WIDTH, STAMINA_BAR_HEIGHT);
+        int p2_Char_X = panelWidth - PADDING - 150 - CHARACTER_WIDTH;
+        int p2_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 80;
         player2CharacterLabel.setBounds(p2_Char_X, p2_Char_Y, CHARACTER_WIDTH, CHARACTER_HEIGHT);
-
-        // --- Player 2 Skills Position (Near Bottom Right) ---
         int p2_Skill_X = panelWidth - PADDING - SKILL_BUTTON_WIDTH;
         int p2_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT;
         player2Skill3.setBounds(p2_Skill_X, p2_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
         player2Skill2.setBounds(p2_Skill_X, p2_Skill_Y_Start - SKILL_BUTTON_HEIGHT - SKILL_SPACING, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
         player2Skill1.setBounds(p2_Skill_X, p2_Skill_Y_Start - 2 * (SKILL_BUTTON_HEIGHT + SKILL_SPACING), SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
 
-
-        // --- Center HUD Positions (Remain the same) ---
+        // --- Center HUD Positions ---
         int timerWidth = 100; int timerHeight = 60;
         timerDisplayLabel.setBounds(panelWidth / 2 - timerWidth / 2, PADDING, timerWidth, timerHeight);
+
         int indicatorWidth = 300; int indicatorHeight = 40;
-        turnIndicatorLabel.setBounds(panelWidth / 2 - indicatorWidth / 2, PADDING + timerHeight + 5, indicatorWidth, indicatorHeight);
+        // Move turn indicator down slightly to make room for round display
+        turnIndicatorLabel.setBounds(panelWidth / 2 - indicatorWidth / 2, PADDING + timerHeight + BAR_SPACING + 25, indicatorWidth, indicatorHeight);
+
+        int roundLabelWidth = 250; int roundLabelHeight = 40;
+        // Position round display above timer
+        roundDisplayLabel.setBounds(panelWidth / 2 - roundLabelWidth / 2, PADDING - roundLabelHeight + 15 , roundLabelWidth, roundLabelHeight);
+
 
         System.out.println("UI Components Positioned.");
     }
@@ -286,46 +326,31 @@ public class GameScreen extends JPanel {
     // --- Keyboard Input Setup ---
     private void setupKeyBindings() {
         System.out.println("Setting up key bindings...");
-        // Use WHEN_IN_FOCUSED_WINDOW to capture keys even if buttons have focus
         InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap actionMap = getActionMap();
 
-        // --- Skill 1 (Key '1') ---
+        // Bind keys 1, 2, 3 to call handleAction with the skill number
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_1, 0), "skill1Action");
         actionMap.put("skill1Action", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (isPlayer1Turn) {
-                    handleAction("P1_SKILL_1");
-                } else if (!secondPlayerCharacter.equals(AI_PLAYER_NAME)) { // P2 is human
-                    handleAction("P2_SKILL_1");
-                }
+                handleAction(1); // Use skill 1
             }
         });
 
-        // --- Skill 2 (Key '2') ---
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_2, 0), "skill2Action");
         actionMap.put("skill2Action", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (isPlayer1Turn) {
-                    handleAction("P1_SKILL_2");
-                } else if (!secondPlayerCharacter.equals(AI_PLAYER_NAME)) {
-                    handleAction("P2_SKILL_2");
-                }
+                handleAction(2); // Use skill 2
             }
         });
 
-        // --- Skill 3 (Key '3') ---
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_3, 0), "skill3Action");
         actionMap.put("skill3Action", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (isPlayer1Turn) {
-                    handleAction("P1_SKILL_3");
-                } else if (!secondPlayerCharacter.equals(AI_PLAYER_NAME)) {
-                    handleAction("P2_SKILL_3");
-                }
+                handleAction(3); // Use skill 3
             }
         });
         System.out.println("Key bindings set up.");
@@ -334,159 +359,315 @@ public class GameScreen extends JPanel {
 
     // --- Game Logic Methods ---
 
-    private void setupGameTimer() {
-        turnTimer = new Timer(1000, e -> { // Use Lambda if preferred
-            remainingTime--;
-            timerDisplayLabel.setText(String.valueOf(remainingTime));
-            if (remainingTime <= 0) {
-                System.out.println("Time's up!");
-                switchTurn(); // Switch turn automatically
-            }
-        });
-        turnTimer.setRepeats(true);
+    // NEW: Starts a new round (or the first round)
+
+    // NEW: Stamina Recovery Logic
+    private void recoverStamina() {
+        player1CurrentStamina = Math.min(player1Stats.getMaxStamina(), player1CurrentStamina + STAMINA_RECOVERY_PER_ROUND);
+        player2CurrentStamina = Math.min(player2Stats.getMaxStamina(), player2CurrentStamina + STAMINA_RECOVERY_PER_ROUND);
+        System.out.printf("Stamina Recovered! P1: %.1f/%.1f, P2: %.1f/%.1f%n",
+                player1CurrentStamina, player1Stats.getMaxStamina(),
+                player2CurrentStamina, player2Stats.getMaxStamina());
+        updateStaminaBars();
     }
 
-    private void startTurn() {
+
+    // MODIFIED: Uses Thread instead of Timer
+    private void startTurnTimer() {
+        stopTurnTimer(); // Ensure any previous timer thread is stopped
+
         remainingTime = TURN_DURATION_SECONDS;
+        updateTimerLabel(); // Update display immediately
+
+        turnTimerThread = new Thread(() -> {
+            try {
+                while (gameRunning && remainingTime > 0) {
+                    Thread.sleep(1000); // Wait for 1 second
+                    if (!gameRunning) break; // Exit if game ended during sleep
+
+                    remainingTime--;
+                    // Update UI on the Event Dispatch Thread (EDT)
+                    SwingUtilities.invokeLater(this::updateTimerLabel);
+
+                    if (remainingTime <= 0) {
+                        // Time's up! Switch turn on the EDT
+                        SwingUtilities.invokeLater(() -> {
+                            System.out.println("Time's up for " + (isPlayer1Turn ? firstPlayerCharacterName : secondPlayerCharacterName));
+                            if (gameRunning) { // Check again in case game ended while scheduling
+                                switchTurn();
+                            }
+                        });
+                        break; // Exit the timer loop
+                    }
+                }
+            } catch (InterruptedException e) {
+                // This is expected when we stop the timer
+                System.out.println("Timer thread interrupted for " + (isPlayer1Turn ? firstPlayerCharacterName : secondPlayerCharacterName));
+                Thread.currentThread().interrupt(); // Restore interrupt status
+            } catch (Exception e) {
+                System.err.println("Error in timer thread: " + e.getMessage());
+                e.printStackTrace();
+            } finally {
+                System.out.println("Timer thread finished for " + (isPlayer1Turn ? firstPlayerCharacterName : secondPlayerCharacterName));
+            }
+        }, "TurnTimerThread-" + (isPlayer1Turn ? "P1" : "P2"));
+
+        turnTimerThread.setDaemon(true); // Allows JVM to exit even if thread is running
+        turnTimerThread.start();
+        System.out.println((isPlayer1Turn ? firstPlayerCharacterName : secondPlayerCharacterName) + "'s turn started. Timer running.");
+    }
+
+    // Helper to update label (must be called via invokeLater from other threads)
+    private void updateTimerLabel() {
         timerDisplayLabel.setText(String.valueOf(remainingTime));
-        turnTimer.start();
-        updateUIBasedOnTurn();
-        System.out.println((isPlayer1Turn ? firstPlayerCharacter : secondPlayerCharacter) + "'s turn started.");
     }
 
-    private void switchTurn() {
-        turnTimer.stop();
-        isPlayer1Turn = !isPlayer1Turn;
+    private void startNextRoundSequence() {
+        if (!gameRunning) return;
 
-        // Check if it's AI's turn
-        if (!isPlayer1Turn && secondPlayerCharacter.equals(AI_PLAYER_NAME)) {
-            updateUIBasedOnTurn(); // Update UI to show AI's turn briefly
-            performAiAction();   // AI takes its turn
-        } else {
-            startTurn(); // Start timer for the next human player
-        }
-    }
-
-    // Central method to handle player actions
-    private void handleAction(String actionCode) {
-        boolean isP1Action = actionCode.startsWith("P1");
-
-        // Check turn validity (redundant check for keyboard actions, but good for button clicks)
-        if ((isP1Action && !isPlayer1Turn) || (!isP1Action && isPlayer1Turn)) {
-            System.out.println("Not your turn! (Action: " + actionCode + ", isP1Turn: " + isPlayer1Turn + ")");
+        // 1. Attempt to start the next round (increments round counter)
+        if (!roundManager.startNextRound()) {
+            // Max rounds reached, end the game
+            endGame(true); // Pass true for max rounds reached
             return;
         }
-        // Check if AI action is attempted by human input
-        if (!isP1Action && secondPlayerCharacter.equals(AI_PLAYER_NAME)) {
-            System.out.println("Cannot manually trigger AI action.");
-            return; // Prevent human input during AI's turn or for AI player
+
+        // 2. Apply Stamina Recovery (if applicable, handled within RoundManager)
+        double[] newStaminas = roundManager.applyStaminaRecovery(
+                player1Stats, player2Stats,
+                player1CurrentStamina, player2CurrentStamina
+        );
+        player1CurrentStamina = newStaminas[0];
+        player2CurrentStamina = newStaminas[1];
+        updateStaminaBars(); // Update UI with potentially recovered stamina
+
+        // 3. Determine who starts *this* round randomly
+        isPlayer1Turn = roundManager.determineStartingPlayer();
+
+        // 4. Update UI for the new round and starting player
+        roundDisplayLabel.setText("Round: " + roundManager.getCurrentRound() + "/" + roundManager.getMaxRounds());
+        updateUIBasedOnTurn(); // Set enabled buttons, highlights, turn indicator
+
+        // 5. Start the first turn of the round
+        startTurnTimer(); // Start the timer for the randomly chosen starting player
+
+        // 6. If AI starts, trigger its action
+        if (!isPlayer1Turn && isVsAI) {
+            System.out.println("[Log] AI starts round " + roundManager.getCurrentRound() + ". Triggering AI action..."); // ADD LOG
+            SwingUtilities.invokeLater(this::performAiAction);
         }
-
-
-        turnTimer.stop(); // Stop timer as action is chosen
-        System.out.println("Action handled: " + actionCode + " by " + (isP1Action ? "Player 1" : "Player 2"));
-
-        // --- Apply skill effect (Placeholder) ---
-        // IMPORTANT: Replace with your actual skill logic based on 'actionCode'
-        // Use data structures (Maps, Classes) to store skill costs/effects per character later.
-        double staminaCost = 0.1; // Default placeholder cost
-        double damageDealt = 0.0; // Default placeholder damage
-
-        if (isP1Action) { // Player 1's action
-            if (actionCode.equals("P1_SKILL_1")) { staminaCost = 0.15; damageDealt = 0.1; }
-            else if (actionCode.equals("P1_SKILL_2")) { staminaCost = 0.20; damageDealt = 0.12; }
-            else if (actionCode.equals("P1_SKILL_3")) { staminaCost = 0.25; damageDealt = 0.15; }
-
-            if (player1StaminaBar.getValue() >= staminaCost) {
-                player1StaminaBar.setValue(player1StaminaBar.getValue() - staminaCost);
-                player2HpBar.setValue(player2HpBar.getValue() - damageDealt);
-                System.out.printf("P1 used %s. P1 Stamina: %.2f, P2 HP: %.2f%n", actionCode, player1StaminaBar.getValue(), player2HpBar.getValue());
-            } else {
-                System.out.println("P1: Not enough stamina for " + actionCode);
-                startTurn(); // Restart turn timer if action failed
-                return; // Don't switch turn
-            }
-        } else { // Player 2's action (Must be human player at this point)
-            if (actionCode.equals("P2_SKILL_1")) { staminaCost = 0.15; damageDealt = 0.1; }
-            else if (actionCode.equals("P2_SKILL_2")) { staminaCost = 0.20; damageDealt = 0.12; }
-            else if (actionCode.equals("P2_SKILL_3")) { staminaCost = 0.25; damageDealt = 0.15; }
-
-            if (player2StaminaBar.getValue() >= staminaCost) {
-                player2StaminaBar.setValue(player2StaminaBar.getValue() - staminaCost);
-                player1HpBar.setValue(player1HpBar.getValue() - damageDealt);
-                System.out.printf("P2 used %s. P2 Stamina: %.2f, P1 HP: %.2f%n", actionCode, player2StaminaBar.getValue(), player1HpBar.getValue());
-            } else {
-                System.out.println("P2: Not enough stamina for " + actionCode);
-                startTurn(); // Restart turn timer if action failed
-                return; // Don't switch turn
-            }
-        }
-
-
-        // Check for win/loss conditions AFTER applying effects
-        if (player1HpBar.getValue() <= 0 || player2HpBar.getValue() <= 0) {
-            endGame();
-            return; // Don't switch turn if game ended
-        }
-
-        // --- Switch to the next player's turn (if action was successful) ---
-        switchTurn();
     }
 
-    private void performAiAction() {
-        System.out.println("AI ("+ secondPlayerCharacter +") is thinking...");
-        turnTimer.stop(); // Ensure timer is stopped during AI "choice"
+    // MODIFIED: Stops the timer Thread
+    private void stopTurnTimer() {
+        if (turnTimerThread != null && turnTimerThread.isAlive()) {
+            turnTimerThread.interrupt(); // Signal the thread to stop
+            try {
+                turnTimerThread.join(100); // Wait briefly for it to finish
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            turnTimerThread = null; // Release the reference
+            System.out.println("Timer thread stopped.");
+        }
+    }
 
-        // Simple AI: Choose a random skill (0, 1, or 2 corresponds to Skill 1, 2, 3)
-        int skillChoice = random.nextInt(3); // Generates 0, 1, or 2
-        String actionCode = "P2_SKILL_" + (skillChoice + 1);
+    // MODIFIED: Handles turn switching and round progression
+    private void switchTurn() {
+        if (!gameRunning) return;
 
-        // Check if AI has enough stamina (Basic check, can be improved)
-        double staminaCost = 0.1; // Default cost, adjust based on skillChoice later
-        if (actionCode.equals("P2_SKILL_1")) { staminaCost = 0.15; }
-        else if (actionCode.equals("P2_SKILL_2")) { staminaCost = 0.20; }
-        else if (actionCode.equals("P2_SKILL_3")) { staminaCost = 0.25; }
+        System.out.println("Switching turn sequence...");
+        stopTurnTimer(); // Stop the timer for the player who just finished
 
-        final String finalActionCode = actionCode;
-        final double finalStaminaCost = staminaCost;
+        // 1. Record that the player took their turn this round
+        roundManager.recordTurnTaken(isPlayer1Turn);
 
-        // Add a small delay before the AI performs the action
-        Timer aiDelayTimer = new Timer(1200, e -> { // 1.2 second delay
-            if (player2StaminaBar.getValue() >= finalStaminaCost) {
-                System.out.println("AI performs action: " + finalActionCode);
-                handleAiSkillExecution(finalActionCode, finalStaminaCost); // Separate method for actual effect
+        // 2. Check if the round is now complete (both players had a turn)
+        if (roundManager.isRoundComplete()) {
+            // Start the next round sequence
+            System.out.println("Round complete, starting next round sequence...");
+            // Add a small delay maybe? Or go straight to next round.
+            startNextRoundSequence();
+        } else {
+            // Round is not complete, switch to the other player
+            System.out.println("Round not complete, switching player...");
+            isPlayer1Turn = !isPlayer1Turn; // Flip the turn indicator
+
+            // Update UI for the player whose turn it is now
+            updateUIBasedOnTurn();
+
+            // Start the turn timer/AI action for the next player
+            if (!isPlayer1Turn && isVsAI) {
+                System.out.println("[Log] Switching to AI's turn. Triggering AI action..."); // ADD LOG
+                SwingUtilities.invokeLater(this::performAiAction);
             } else {
-                System.out.println("AI has insufficient stamina for " + finalActionCode + ". Skipping turn.");
-                switchTurn(); // AI skips turn if it can't afford any move (simple logic)
+                System.out.println("[Log] Switching to Human's turn. Starting timer..."); // ADD LOG
+                startTurnTimer(); // Start timer for human player
+            }
+        }
+    }
+
+
+
+    // MODIFIED: Central method to handle player actions using skill number
+    private void handleAction(int skillNumber) {
+        if (!gameRunning) return;
+
+        CharacterStats currentActorStats;
+        double currentActorStamina;
+        double opponentCurrentHp; // Need opponent HP for log message
+        String actorName;
+
+        // --- Check Turn Validity ---
+        if (isPlayer1Turn) {
+            actorName = firstPlayerCharacterName;
+            currentActorStats = player1Stats;
+            currentActorStamina = player1CurrentStamina;
+            opponentCurrentHp = player2CurrentHp;
+        } else {
+            if (isVsAI) {
+                System.out.println("Cannot manually trigger AI action.");
+                return;
+            }
+            actorName = secondPlayerCharacterName;
+            currentActorStats = player2Stats;
+            currentActorStamina = player2CurrentStamina;
+            opponentCurrentHp = player1CurrentHp;
+        }
+
+        double staminaCost = currentActorStats.getSkillCost(skillNumber);
+        double damageDealt = currentActorStats.getSkillDamage(skillNumber);
+
+        System.out.printf("%s attempts Skill %d (Cost: %.1f, Damage: %.1f)%n", actorName, skillNumber, staminaCost, damageDealt);
+
+        if (currentActorStamina >= staminaCost) {
+            // Stop timer immediately only if action is successful
+            // stopTurnTimer(); // Moved this inside the "if stamina sufficient" block previously - KEEP IT HERE
+
+            // --- Apply Effects ---
+            // Stop timer ONLY when action is confirmed valid and will proceed
+            stopTurnTimer();
+
+            if (isPlayer1Turn) {
+                player1CurrentStamina -= staminaCost;
+                player2CurrentHp -= damageDealt;
+                System.out.printf("P1 used Skill %d. P1 Stamina: %.1f -> %.1f. P2 HP: %.1f -> %.1f%n",
+                        skillNumber, currentActorStamina, player1CurrentStamina, opponentCurrentHp, player2CurrentHp);
+            } else {
+                player2CurrentStamina -= staminaCost;
+                player1CurrentHp -= damageDealt;
+                System.out.printf("P2 used Skill %d. P2 Stamina: %.1f -> %.1f. P1 HP: %.1f -> %.1f%n",
+                        skillNumber, currentActorStamina, player2CurrentStamina, opponentCurrentHp, player1CurrentHp);
+            }
+
+            updateHpBars();
+            updateStaminaBars();
+
+            if (player1CurrentHp <= 0 || player2CurrentHp <= 0) {
+                endGame(false); // End game due to HP depletion
+                return;
+            }
+
+            // --- Action successful, proceed to switch turn ---
+            switchTurn(); // This now handles round completion check
+
+        } else {
+            System.out.println(actorName + ": Not enough stamina for Skill " + skillNumber);
+            // Action failed, do not switch turn. Let timer continue or player choose again.
+        }
+    }
+
+    // MODIFIED: AI Logic uses stats and skill numbers
+    private void performAiAction() {
+        if (!gameRunning || isPlayer1Turn) return; // Should only run on AI's turn
+
+        System.out.println("AI (" + secondPlayerCharacterName + ") is thinking...");
+
+
+        // Simple AI: Choose a random valid skill it can afford
+        int skillChoice = -1;
+
+
+        java.util.List<Integer> possibleSkills = new java.util.ArrayList<>();
+        for (int i = 1; i <= 3; i++) {
+            if (player2CurrentStamina >= player2Stats.getSkillCost(i)) {
+                possibleSkills.add(i);
+            }
+        }
+
+        if (!possibleSkills.isEmpty()) {
+            skillChoice = possibleSkills.get(random.nextInt(possibleSkills.size()));
+        } else {
+            System.out.println("AI has insufficient stamina for any skill. Skipping turn.");
+            stopTurnTimer(); // Stop timer as turn is skipped
+            SwingUtilities.invokeLater(this::switchTurn); // Call switchTurn to record AI's (skipped) turn
+            return;
+        }
+
+        final int finalSkillChoice = skillChoice;
+
+        // Add delay
+        javax.swing.Timer aiDelayTimer = new javax.swing.Timer(1000, e -> {
+            if (gameRunning && !isPlayer1Turn) {
+                stopTurnTimer(); // Stop timer just before executing the action
+                handleAiSkillExecution(finalSkillChoice);
             }
         });
         aiDelayTimer.setRepeats(false);
         aiDelayTimer.start();
     }
 
-    // Separated AI skill execution to be called after delay
-    private void handleAiSkillExecution(String actionCode, double staminaCost) {
-        double damageDealt = 0.0;
-        if (actionCode.equals("P2_SKILL_1")) { damageDealt = 0.1; }
-        else if (actionCode.equals("P2_SKILL_2")) { damageDealt = 0.12; }
-        else if (actionCode.equals("P2_SKILL_3")) { damageDealt = 0.15; }
+    // MODIFIED: Separated AI skill execution, uses skill number and stats
+    private void handleAiSkillExecution(int skillNumber) {
+        if (!gameRunning || isPlayer1Turn) return; // Final check
 
-        player2StaminaBar.setValue(player2StaminaBar.getValue() - staminaCost);
-        player1HpBar.setValue(player1HpBar.getValue() - damageDealt);
-        System.out.printf("AI used %s. P2 Stamina: %.2f, P1 HP: %.2f%n", actionCode, player2StaminaBar.getValue(), player1HpBar.getValue());
+        double staminaCost = player2Stats.getSkillCost(skillNumber);
+        double damageDealt = player2Stats.getSkillDamage(skillNumber);
+
+        System.out.printf("AI performs Skill %d (Cost: %.1f, Damage: %.1f)%n", skillNumber, staminaCost, damageDealt);
+
+        // Apply Effects
+        double opponentCurrentHp = player1CurrentHp; // For logging
+        player2CurrentStamina -= staminaCost;
+        player1CurrentHp -= damageDealt;
+        System.out.printf("AI used Skill %d. P2 Stamina: %.1f -> %.1f. P1 HP: %.1f -> %.1f%n",
+                skillNumber, player2CurrentStamina + staminaCost, player2CurrentStamina, opponentCurrentHp, player1CurrentHp);
+
+        updateHpBars();
+        updateStaminaBars();
 
         // Check for win/loss conditions AFTER AI effects
-        if (player1HpBar.getValue() <= 0 || player2HpBar.getValue() <= 0) {
-            endGame();
+        if (player1CurrentHp <= 0 || player2CurrentHp <= 0) {
+            endGame(false);
             return;
         }
+
         // Switch back to Player 1's turn AFTER AI action completes
-        switchTurn();
+        // Use invokeLater to ensure UI updates and checks happen correctly on EDT
+        SwingUtilities.invokeLater(this::switchTurn);
+    }
+
+    // --- UI Update Helpers ---
+
+    private void updateHpBars() {
+        // Ensure HP doesn't go below 0 for display purposes
+        double p1HpDisplay = Math.max(0, player1CurrentHp);
+        double p2HpDisplay = Math.max(0, player2CurrentHp);
+
+        player1HpBar.setValue(p1HpDisplay / player1Stats.getMaxHp());
+        player2HpBar.setValue(p2HpDisplay / player2Stats.getMaxHp());
+    }
+
+    private void updateStaminaBars() {
+        player1StaminaBar.setValue(player1CurrentStamina / player1Stats.getMaxStamina());
+        player2StaminaBar.setValue(player2CurrentStamina / player2Stats.getMaxStamina());
     }
 
 
     private void updateUIBasedOnTurn() {
-        boolean isHumanP2 = !secondPlayerCharacter.equals(AI_PLAYER_NAME);
+        if (!gameRunning) return; // Don't update if game over
+
+        boolean isHumanP2 = !isVsAI;
 
         // Enable/Disable P1 buttons
         player1Skill1.setEnabled(isPlayer1Turn);
@@ -499,40 +680,63 @@ public class GameScreen extends JPanel {
         player2Skill3.setEnabled(!isPlayer1Turn && isHumanP2);
 
         // Update turn indicator text
-        turnIndicatorLabel.setText(isPlayer1Turn ? firstPlayerCharacter + "'s Turn" : secondPlayerCharacter + "'s Turn");
+        turnIndicatorLabel.setText(isPlayer1Turn ? firstPlayerCharacterName + "'s Turn" : secondPlayerCharacterName + "'s Turn");
 
         // Update highlight border
         player1CharacterLabel.setBorder(isPlayer1Turn ? BorderFactory.createLineBorder(Color.YELLOW, 3) : null);
+        // Only highlight P2 if it's their turn (human or AI)
         player2CharacterLabel.setBorder(!isPlayer1Turn ? BorderFactory.createLineBorder(Color.YELLOW, 3) : null);
 
-        // Ensure panel has focus for key bindings when a turn starts
-        if ((isPlayer1Turn || isHumanP2)) { // If it's a human player's turn
-            SwingUtilities.invokeLater(this::requestFocusInWindow); // Request focus politely
+        // Ensure panel has focus for key bindings when a human player's turn starts
+        if ((isPlayer1Turn || (!isPlayer1Turn && isHumanP2))) {
+            SwingUtilities.invokeLater(this::requestFocusInWindow);
         }
     }
 
 
-    private void endGame() {
+    // MODIFIED: Handles game end conditions
+    private void endGame(boolean maxRoundsReached) {
+        if (!gameRunning) return; // Prevent multiple calls
+
         System.out.println("Ending Game...");
-        turnTimer.stop();
-        // Disable all buttons regardless of AI status
+        gameRunning = false; // Signal threads to stop
+        stopTurnTimer(); // Stop the timer thread immediately
+
+        // Disable all buttons
         player1Skill1.setEnabled(false); player1Skill2.setEnabled(false); player1Skill3.setEnabled(false);
         player2Skill1.setEnabled(false); player2Skill2.setEnabled(false); player2Skill3.setEnabled(false);
 
-        // Display winner message
-        String winner;
-        // Check HP after potential final blow
-        boolean p1Alive = player1HpBar.getValue() > 0;
-        boolean p2Alive = player2HpBar.getValue() > 0;
+        // Determine winner based on HP or rounds
+        String winnerMessage;
+        double finalP1Hp = Math.max(0, player1CurrentHp);
+        double finalP2Hp = Math.max(0, player2CurrentHp);
 
-        if (!p1Alive && !p2Alive) { winner = "It's a Draw!"; }
-        else if (!p2Alive) { winner = firstPlayerCharacter + " Wins!"; }
-        else if (!p1Alive) { winner = secondPlayerCharacter + " Wins!"; }
-        else { winner = "Error determining winner"; } // Should not happen if called correctly
+        if (maxRoundsReached) {
+            // ... (Determine winner by HP as before) ...
+            winnerMessage = determineWinnerByHp(finalP1Hp, finalP2Hp);
+        } else { // Game ended due to HP depletion
+            // ... (Determine winner by HP as before) ...
+            winnerMessage = determineWinnerByHp(finalP1Hp, finalP2Hp);
+        }
 
-        turnIndicatorLabel.setText("GAME OVER: " + winner);
+
+        turnIndicatorLabel.setText("GAME OVER: " + winnerMessage);
         turnIndicatorLabel.setForeground(Color.RED);
-        System.out.println("Game Over! Winner: " + winner);
+        // Display the round the game ended on
+        roundDisplayLabel.setText("Final Round: " + roundManager.getCurrentRound());
+        System.out.println("Game Over! " + winnerMessage + " (Ended on Round " + roundManager.getCurrentRound() + ")");
+
+        // Optional: Add a "Return to Menu" button or similar functionality here
+    }
+
+    private String determineWinnerByHp(double p1Hp, double p2Hp) {
+        if (p1Hp > p2Hp) {
+            return firstPlayerCharacterName + " Wins!";
+        } else if (p2Hp > p1Hp) {
+            return secondPlayerCharacterName + " Wins!";
+        } else {
+            return "It's a Draw!";
+        }
     }
 
 
@@ -540,32 +744,41 @@ public class GameScreen extends JPanel {
         // Ensure all components are added. Add order doesn't usually matter for null layout.
         System.out.println("Adding components to panel...");
         add(player1HpBar);
-        add(player1StaminaBar); // Make sure this is added
-        add(player1CharacterLabel); // Make sure this is added
-        add(player1Skill1);
-        add(player1Skill2);
-        add(player1Skill3);
+        add(player1StaminaBar);
+        add(player1CharacterLabel);
 
         add(player2HpBar);
-        add(player2StaminaBar); // Make sure this is added
-        add(player2CharacterLabel); // Make sure this is added
-        add(player2Skill1);
-        add(player2Skill2);
-        add(player2Skill3);
+        add(player2StaminaBar);
+        add(player2CharacterLabel);
 
         add(timerDisplayLabel);
         add(turnIndicatorLabel);
+        add(roundDisplayLabel); // Add the new round label
         System.out.println("Components added.");
-        // Print component count for verification
         System.out.println("Component count: " + getComponentCount());
     }
 
     @Override
     protected void paintComponent(Graphics g) {
-        super.paintComponent(g); // Clears the panel
-
+        super.paintComponent(g);
+        if (mapImage != null) {
+            // Scale map to fit panel size
             g.drawImage(mapImage.getImage(), 0, 0, getWidth(), getHeight(), this);
+        } else {
+            // Draw a fallback background if map is missing
+            g.setColor(Color.DARK_GRAY);
+            g.fillRect(0, 0, getWidth(), getHeight());
+            g.setColor(Color.WHITE);
+            g.drawString("Map image missing: /" + selectedMapPath, 50, 50);
+        }
+        // Swing components (labels, buttons, bars) are painted *after* this method
+    }
 
-        // Swing paints children AFTER this method completes
+    // Optional: Cleanup method if needed when the panel is removed
+    public void cleanup() {
+        System.out.println("Cleaning up GameScreen...");
+        gameRunning = false; // Ensure flag is set
+        stopTurnTimer(); // Explicitly stop the timer thread
+        // Remove listeners? Not strictly necessary if the panel/frame is disposed.
     }
 }
