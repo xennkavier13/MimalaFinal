@@ -330,7 +330,7 @@ public class SecondCharacterSelectionScreen extends JPanel {
                 String player2Choice = selectRandomCharacterForPVE(player1Choice);
                 System.out.println("AI selected: " + player2Choice);
                 System.out.println("Proceeding to Map Selection.");
-                frame.setContentPane(new MapSelection(frame, player1Choice, player2Choice)); // Assuming MapSelection constructor
+                frame.setContentPane(new MapSelection(frame, player1Choice, player2Choice,"PVC")); // Assuming MapSelection constructor
             }
         }
         // Case 2: Player 2 is confirming (firstPlayerSelection is NOT null)
@@ -341,7 +341,7 @@ public class SecondCharacterSelectionScreen extends JPanel {
             // Both players selected (P1 in firstPlayerSelection, P2 in player2Choice)
             // Proceed to Map Selection
             System.out.println("Proceeding to Map Selection.");
-            frame.setContentPane(new MapSelection(frame, this.firstPlayerSelection, player2Choice)); // Pass P1's and P2's choices
+            frame.setContentPane(new MapSelection(frame, this.firstPlayerSelection, player2Choice,"PVP")); // Pass P1's and P2's choices
         }
 
         // Update the frame

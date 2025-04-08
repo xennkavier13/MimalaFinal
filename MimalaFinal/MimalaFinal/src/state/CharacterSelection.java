@@ -16,6 +16,8 @@ public class CharacterSelection extends JPanel {
             "Vexmorth", "Astridra", "Varkos", "Ignisveil"
     };
     private String firstPlayerSelection = null;
+    private String player2Selection = null;
+    private static final String AI_PLAYER_NAME = "Computer";
     private final String mode;
 
 
@@ -24,6 +26,11 @@ public class CharacterSelection extends JPanel {
         this.mode = mode;
         characterSelectionBg = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\CharacterSelect_BGcombine.png");
 
+        if ("PVC".equals(this.mode)) {
+            this.player2Selection = AI_PLAYER_NAME;
+            System.out.println("PVC mode: Player 2 set to " + AI_PLAYER_NAME);
+            // Potentially disable P2 selection UI elements here
+        }
         setLayout(null);  // Absolute layout
         setPreferredSize(new Dimension(1920, 1080));
         setupButtons();
@@ -101,7 +108,7 @@ public class CharacterSelection extends JPanel {
                     } else {
                         String secondPlayerSelection = selectRandomCharacter();
                         System.out.println(secondPlayerSelection + " selected for Player 2!");
-                        frame.setContentPane(new MapSelection(frame, firstPlayerSelection, secondPlayerSelection));
+                        frame.setContentPane(new MapSelection(frame, firstPlayerSelection, secondPlayerSelection,"PVC"));
                     }
                     frame.revalidate();
                     frame.repaint();

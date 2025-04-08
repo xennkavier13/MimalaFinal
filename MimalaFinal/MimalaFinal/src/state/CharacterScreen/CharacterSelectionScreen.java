@@ -245,7 +245,7 @@ public abstract class CharacterSelectionScreen extends JPanel {
             System.out.println("Proceeding to Map Selection with P1: " + this.firstPlayerSelection + " and P2: " + currentCharacterSelection);
 
             // Proceed to Map Selection with both choices
-            frame.setContentPane(new MapSelection(frame, this.firstPlayerSelection, currentCharacterSelection));
+            frame.setContentPane(new MapSelection(frame, this.firstPlayerSelection, currentCharacterSelection, "PVP"));
 
         } else {
             // --- This means Player 1 is confirming (or it's PVC mode) ---
@@ -256,7 +256,7 @@ public abstract class CharacterSelectionScreen extends JPanel {
                 System.out.println("Mode is PVC. Selecting AI opponent and proceeding to Map Selection.");
                 String player2Selection = selectRandomCharacterForPVE(player1Choice);
                 System.out.println("AI selected: " + player2Selection);
-                frame.setContentPane(new MapSelection(frame, player1Choice, player2Selection));
+                frame.setContentPane(new MapSelection(frame, player1Choice, player2Selection, "PVC"));
 
             } else if ("PVP".equalsIgnoreCase(this.mode)) {
                 System.out.println("Mode is PVP. Proceeding to Second Player Selection.");

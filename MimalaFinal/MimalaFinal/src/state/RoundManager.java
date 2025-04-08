@@ -14,7 +14,7 @@ public class RoundManager {
     private boolean player1TookTurnThisRound = false;
     private boolean player2TookTurnThisRound = false;
 
-    private static final double STAMINA_RECOVERY_PER_ROUND = 30.0; // Keep recovery logic here
+    private static final double STAMINA_RECOVERY_PER_ROUND = 15.0; // Keep recovery logic here
 
     public RoundManager(int maxRounds) {
         if (maxRounds <= 0) {

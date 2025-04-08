@@ -2,6 +2,7 @@ package state;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.net.URL;
@@ -17,6 +18,14 @@ public class GameScreen extends JPanel {
     private final String secondPlayerCharacterName; // Renamed for clarity
     private final String selectedMapPath;
     private ImageIcon mapImage;
+    // --- Animation State ---
+    private ImageIcon player1IdleIcon; // To store the idle state easily
+    private ImageIcon player2IdleIcon;
+    private javax.swing.Timer animationRevertTimer; // Timer to switch back to idle
+    private boolean isAnimating = false; // Simple flag to prevent overlapping actions during animation
+    private javax.swing.Timer player1AnimTimer;
+    private javax.swing.Timer player2AnimTimer;
+    private javax.swing.Timer deathSequenceTimer;
 
     // --- Character Stats ---
     private CharacterStats player1Stats;
@@ -51,7 +60,7 @@ public class GameScreen extends JPanel {
     private static final int CHARACTER_Y_OFFSET = 30;
     private static final int CHARACTER_WIDTH = 768;
     private static final int CHARACTER_HEIGHT = 768;
-    private static final int SKILL_BUTTON_WIDTH = 180;
+    private static final int SKILL_BUTTON_WIDTH = 200;
     private static final int SKILL_BUTTON_HEIGHT = 60;
     private static final int SKILL_SPACING = 10;
     private static final int SKILL_AREA_BOTTOM_MARGIN = 30;
@@ -80,12 +89,18 @@ public class GameScreen extends JPanel {
     private RoundManager roundManager;
     private static final double STAMINA_RECOVERY_PER_ROUND = 10.0; // Recover 30 stamina points
 
-    public GameScreen(JFrame frame, String firstPlayerCharacter, String secondPlayerCharacter, String selectedMapResourcePath) {
+    private final String gameMode; // <<< ADD field for game mode
+
+    public GameScreen(JFrame frame, String firstPlayerCharacter, String secondPlayerCharacter, String selectedMapResourcePath, String gameMode) {
         this.frame = frame;
         this.firstPlayerCharacterName = firstPlayerCharacter;
         this.secondPlayerCharacterName = secondPlayerCharacter;
         this.selectedMapPath = selectedMapResourcePath;
-        this.isVsAI = this.secondPlayerCharacterName.equals(AI_PLAYER_NAME);
+        this.gameMode = gameMode;
+
+        // --- Set isVsAI based on gameMode ---
+        this.isVsAI = this.gameMode.equals("PVC"); // <<< Use gameMode now
+        System.out.println("GameScreen initialized. Mode: " + this.gameMode + ", Is Vs AI: " + this.isVsAI);
 
         // --- Initialize Round Manager FIRST ---
         this.roundManager = new RoundManager(MAX_ROUNDS); // Initialize here!
@@ -115,7 +130,6 @@ public class GameScreen extends JPanel {
         // --- Request Focus ---
         SwingUtilities.invokeLater(this::requestFocusInWindow);
     }
-
     private void loadCharacterStats() {
         System.out.println("Loading character stats...");
         player1Stats = CharacterDataLoader.getStats(firstPlayerCharacterName);
@@ -222,10 +236,22 @@ public class GameScreen extends JPanel {
         player1StaminaBar = new StatusBar(STAMINA_BAR_BG_PATH, STAMINA_BAR_FG_PATH);
         ImageIcon p1Gif = loadCharacterGif(firstPlayerCharacterName, true);
         player1CharacterLabel = new JLabel(p1Gif);
+        ImageIcon skill1Icon = new ImageIcon(getClass().getResource("/assets/CharacterSelectionScreen/hoverButton.png"));
+
         player1Skill1 = new JButton(String.format("Skill 1 (%.0f dmg / %.0f sta)", player1Stats.getSkillDamage(1), player1Stats.getSkillCost(1)));
         player1Skill2 = new JButton(String.format("Skill 2 (%.0f dmg / %.0f sta)", player1Stats.getSkillDamage(2), player1Stats.getSkillCost(2)));
         player1Skill3 = new JButton(String.format("Skill 3 (%.0f dmg / %.0f sta)", player1Stats.getSkillDamage(3), player1Stats.getSkillCost(3)));
+        player1Skill1.setIcon(skill1Icon);      // Completely transparent
+        player1Skill1.setHorizontalTextPosition(SwingConstants.CENTER);
+        player1Skill1.setVerticalTextPosition(SwingConstants.CENTER);
+        player1Skill1.setFont(new Font("Arial", Font.BOLD, 14));
+        player1Skill1.setForeground(Color.WHITE);
 
+// Style the button so it looks clean
+        player1Skill1.setBorderPainted(false);
+        player1Skill1.setContentAreaFilled(false);
+        player1Skill1.setFocusPainted(false);
+        player1Skill1.setOpaque(false);
         // --- Player 2 ---
         String p2HpBgPath = getHpBackgroundPath(secondPlayerCharacterName, false);
         player2HpBar = new StatusBar(p2HpBgPath, HP_BAR_FG_PATH);
@@ -254,6 +280,8 @@ public class GameScreen extends JPanel {
         roundDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
 
+        player1IdleIcon = (ImageIcon) player1CharacterLabel.getIcon();
+        player2IdleIcon = (ImageIcon) player2CharacterLabel.getIcon();
         // --- Action Listeners ---
         player1Skill1.addActionListener(e -> handleAction(1)); // Pass skill number
         player1Skill2.addActionListener(e -> handleAction(2));
@@ -270,6 +298,93 @@ public class GameScreen extends JPanel {
         System.out.println("UI Components Initialized.");
     }
 
+    private void playAnimation(JLabel characterLabel, String characterName, String animationType, boolean isPlayer1, ImageIcon idleIcon) {
+
+        // Construct the path to the animation GIF
+        String flippedSuffix = isPlayer1 ? "" : "flipped";
+        String gifFileName = characterName + animationType + flippedSuffix + ".gif";
+        String path = CHAR_GIF_BASE_PATH + characterName + "/" + gifFileName;
+        System.out.println("Attempting animation: " + path);
+
+        URL gifUrl = getClass().getResource(path);
+        ImageIcon animationIcon;
+
+        if (gifUrl != null) {
+            animationIcon = new ImageIcon(gifUrl); // Reload ImageIcon
+            animationIcon.setImageObserver(characterLabel);
+        } else {
+            System.err.println("ERROR: Animation GIF not found: " + path);
+            return; // Don't animate if file missing
+        }
+
+        // --- Set Icon ---
+        characterLabel.setIcon(animationIcon);
+
+        // --- Timer Logic ---
+
+        // Select the correct timer and stop it if it's running for THIS player
+        javax.swing.Timer relevantTimer = isPlayer1 ? player1AnimTimer : player2AnimTimer;
+        if (relevantTimer != null && relevantTimer.isRunning()) {
+            relevantTimer.stop();
+        }
+
+        // If it's a death animation, don't set a timer to revert
+        if ("Death".equals(animationType)) {
+            System.out.println(characterName + " death animation playing.");
+            return;
+        }
+
+        // Get estimated duration for other animations
+        int durationMs = getAnimationDuration(animationType);
+
+        // Define the action to perform when the timer finishes (revert to idle)
+        ActionListener revertAction = e -> {
+            // Check if the label and idle icon are still valid
+            if (idleIcon != null && characterLabel != null) {
+                // Optional safety check: only revert if the icon is still the animation one
+                // This helps prevent reverting if another animation started very quickly.
+                // Comment out if it causes issues.
+                // if (characterLabel.getIcon() == animationIcon) {
+                characterLabel.setIcon(idleIcon);
+                System.out.println("Reverted " + characterName + " to Idle after " + animationType);
+                // } else {
+                //     System.out.println("Skipped revert for " + characterName + " as icon already changed.");
+                // }
+            }
+            // Nullify the timer reference for this player once done? Optional.
+             if (isPlayer1) player1AnimTimer = null; else player2AnimTimer = null;
+        };
+
+        // Create and start the NEW timer instance for the specific player
+        relevantTimer = new javax.swing.Timer(durationMs, revertAction);
+        relevantTimer.setRepeats(false);
+        relevantTimer.start();
+
+        // Store the reference to the running timer for this player
+        if (isPlayer1) {
+            player1AnimTimer = relevantTimer;
+        } else {
+            player2AnimTimer = relevantTimer;
+        }
+    }
+
+    /**
+     * Provides estimated durations for different animation types in milliseconds.
+     * Adjust these values based on your actual GIF lengths!
+     * @param animationType The type of animation (e.g., "Skill1", "Hit").
+     * @return Estimated duration in milliseconds.
+     */
+    private int getAnimationDuration(String animationType) {
+        switch (animationType) {
+            case "Skill1": return 1000; // 1 second
+            case "Skill2": return 1200; // 1.2 seconds
+            case "Skill3": return 2000; // 2.0 seconds
+            case "GetHit": return 800;  // 0.8 seconds
+            case "Death":  return 2000;// Death animation duration not needed here as we don't auto-revert it
+            default:       return 1000; // Default duration
+        }
+    }
+
 
     private void positionUIComponents() {
         System.out.println("Positioning UI Components...");
@@ -282,7 +397,7 @@ public class GameScreen extends JPanel {
         player1HpBar.setBounds(p1_X, p1_Y_HP, BAR_WIDTH, HP_BAR_HEIGHT);
         int p1_Y_Stamina = p1_Y_HP + HP_BAR_HEIGHT + BAR_SPACING;
         player1StaminaBar.setBounds(p1_X, p1_Y_Stamina, BAR_WIDTH, STAMINA_BAR_HEIGHT);
-        int p1_Char_X = PADDING + 150;
+        int p1_Char_X = PADDING + 250;
         int p1_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 80;
         player1CharacterLabel.setBounds(p1_Char_X, p1_Char_Y, CHARACTER_WIDTH, CHARACTER_HEIGHT);
         int p1_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT;
@@ -298,7 +413,7 @@ public class GameScreen extends JPanel {
         int p2_Y_Stamina = p2_Y_HP + HP_BAR_HEIGHT + BAR_SPACING;
         int p2_X_Stamina = panelWidth - PADDING - BAR_WIDTH - 50;
         player2StaminaBar.setBounds(p2_X_Stamina, p2_Y_Stamina, BAR_WIDTH, STAMINA_BAR_HEIGHT);
-        int p2_Char_X = panelWidth - PADDING - 150 - CHARACTER_WIDTH;
+        int p2_Char_X = panelWidth - PADDING - 250 - CHARACTER_WIDTH;
         int p2_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 80;
         player2CharacterLabel.setBounds(p2_Char_X, p2_Char_Y, CHARACTER_WIDTH, CHARACTER_HEIGHT);
         int p2_Skill_X = panelWidth - PADDING - SKILL_BUTTON_WIDTH;
@@ -335,6 +450,7 @@ public class GameScreen extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 handleAction(1); // Use skill 1
+
             }
         });
 
@@ -353,6 +469,33 @@ public class GameScreen extends JPanel {
                 handleAction(3); // Use skill 3
             }
         });
+
+        // --- Skip Turn (Spacebar) --- <<< NEW BINDING >>>
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "skipTurnAction");
+        actionMap.put("skipTurnAction", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!gameRunning) return; // Don't skip if game over
+
+                boolean isHumanTurn = false;
+                if ("PVP".equals(gameMode)) {
+                    // In PVP, either player can skip
+                    isHumanTurn = true;
+                } else { // PVC mode
+                    // In PVC, only Player 1 can skip
+                    isHumanTurn = isPlayer1Turn;
+                }
+
+                if (isHumanTurn) {
+                    System.out.println("Player " + (isPlayer1Turn ? "1" : "2") + " skipped turn.");
+                    // Directly switch turn without applying actions/costs
+                    stopTurnTimer(); // Stop timer immediately
+                    switchTurn();    // Go to next turn/round sequence
+                } else {
+                    System.out.println("Cannot skip turn (Not a human player's turn).");
+                }
+            }
+        });
         System.out.println("Key bindings set up.");
     }
 
@@ -362,14 +505,7 @@ public class GameScreen extends JPanel {
     // NEW: Starts a new round (or the first round)
 
     // NEW: Stamina Recovery Logic
-    private void recoverStamina() {
-        player1CurrentStamina = Math.min(player1Stats.getMaxStamina(), player1CurrentStamina + STAMINA_RECOVERY_PER_ROUND);
-        player2CurrentStamina = Math.min(player2Stats.getMaxStamina(), player2CurrentStamina + STAMINA_RECOVERY_PER_ROUND);
-        System.out.printf("Stamina Recovered! P1: %.1f/%.1f, P2: %.1f/%.1f%n",
-                player1CurrentStamina, player1Stats.getMaxStamina(),
-                player2CurrentStamina, player2Stats.getMaxStamina());
-        updateStaminaBars();
-    }
+
 
 
     // MODIFIED: Uses Thread instead of Timer
@@ -541,35 +677,77 @@ public class GameScreen extends JPanel {
         System.out.printf("%s attempts Skill %d (Cost: %.1f, Damage: %.1f)%n", actorName, skillNumber, staminaCost, damageDealt);
 
         if (currentActorStamina >= staminaCost) {
-            // Stop timer immediately only if action is successful
-            // stopTurnTimer(); // Moved this inside the "if stamina sufficient" block previously - KEEP IT HERE
+            stopTurnTimer(); // Stop turn timer as action is happening
 
-            // --- Apply Effects ---
-            // Stop timer ONLY when action is confirmed valid and will proceed
-            stopTurnTimer();
+            // --- Trigger Animations Simultaneously ---
+            String skillAnimType = "Skill" + skillNumber;
+            if (isPlayer1Turn) {
+                // P1 uses skill, P2 gets hit
+                playAnimation(player1CharacterLabel, firstPlayerCharacterName, skillAnimType, true, player1IdleIcon);
+                // Only play hit animation if damage is expected (or always play a "block/dodge" if no damage?)
+                // Let's assume for now damage always happens if skill hits.
+                playAnimation(player2CharacterLabel, secondPlayerCharacterName, "GetHit", false, player2IdleIcon);
+            } else { // Human P2 Turn
+                // P2 uses skill, P1 gets hit
+                playAnimation(player2CharacterLabel, secondPlayerCharacterName, skillAnimType, false, player2IdleIcon);
+                playAnimation(player1CharacterLabel, firstPlayerCharacterName, "GetHit", true, player1IdleIcon);
+            }
 
+            // --- Apply Effects (Happens logically after triggering visuals) ---
             if (isPlayer1Turn) {
                 player1CurrentStamina -= staminaCost;
                 player2CurrentHp -= damageDealt;
-                System.out.printf("P1 used Skill %d. P1 Stamina: %.1f -> %.1f. P2 HP: %.1f -> %.1f%n",
-                        skillNumber, currentActorStamina, player1CurrentStamina, opponentCurrentHp, player2CurrentHp);
-            } else {
+                System.out.printf("P1 used Skill %d...%n", skillNumber);
+            } else { // Player 2's action (Human P2)
                 player2CurrentStamina -= staminaCost;
                 player1CurrentHp -= damageDealt;
-                System.out.printf("P2 used Skill %d. P2 Stamina: %.1f -> %.1f. P1 HP: %.1f -> %.1f%n",
-                        skillNumber, currentActorStamina, player2CurrentStamina, opponentCurrentHp, player1CurrentHp);
+                System.out.printf("P2 used Skill %d...%n", skillNumber);
             }
 
+            // --- Update UI Bars ---
             updateHpBars();
             updateStaminaBars();
 
-            if (player1CurrentHp <= 0 || player2CurrentHp <= 0) {
-                endGame(false); // End game due to HP depletion
-                return;
+            // --- Check for Death (after effects applied) ---
+            boolean p1Died = player1CurrentHp <= 0;
+            boolean p2Died = player2CurrentHp <= 0;
+            // --- Trigger Death Animation(s) ---
+            if (p1Died) {
+                playAnimation(player1CharacterLabel, firstPlayerCharacterName, "Death", true, player1IdleIcon);
+            }
+            if (p2Died) { // Check separately, could be a draw
+                playAnimation(player2CharacterLabel, secondPlayerCharacterName, "Death", false, player2IdleIcon);
             }
 
-            // --- Action successful, proceed to switch turn ---
-            switchTurn(); // This now handles round completion check
+
+            if (p1Died || p2Died) {
+                System.out.println("Death detected. Starting game over sequence...");
+                gameRunning = false; // Stop game logic processing
+                stopTurnTimer();     // Stop the main turn timer
+
+                // Use the estimated duration of the death animation for the delay
+                int deathAnimDuration = getAnimationDuration("Death");
+
+                // Stop any ongoing revert timers immediately
+                if (player1AnimTimer != null) player1AnimTimer.stop();
+                if (player2AnimTimer != null) player2AnimTimer.stop();
+
+                // Start a timer to transition *after* the death animation duration
+                if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
+                    deathSequenceTimer.stop(); // Stop previous if any (shouldn't happen often)
+                }
+                deathSequenceTimer = new javax.swing.Timer(deathAnimDuration, evt -> {
+                    System.out.println("Death sequence timer finished. Transitioning...");
+                    transitionToGameOverScreen(); // Transition to the new screen
+                });
+                deathSequenceTimer.setRepeats(false);
+                deathSequenceTimer.start();
+
+                // IMPORTANT: Return here to prevent switchTurn() from being called
+                return;
+            }
+            // --- Switch turn (only if game didn't end) ---
+            switchTurn();
 
         } else {
             System.out.println(actorName + ": Not enough stamina for Skill " + skillNumber);
@@ -621,31 +799,75 @@ public class GameScreen extends JPanel {
     private void handleAiSkillExecution(int skillNumber) {
         if (!gameRunning || isPlayer1Turn) return; // Final check
 
+        playAnimation(player2CharacterLabel, secondPlayerCharacterName, "Skill" + skillNumber, false, player2IdleIcon); // AI Skill
+        playAnimation(player1CharacterLabel, firstPlayerCharacterName, "GetHit", true, player1IdleIcon);           // P1 Hit
+
+        // --- Apply Effects ---
         double staminaCost = player2Stats.getSkillCost(skillNumber);
         double damageDealt = player2Stats.getSkillDamage(skillNumber);
 
-        System.out.printf("AI performs Skill %d (Cost: %.1f, Damage: %.1f)%n", skillNumber, staminaCost, damageDealt);
-
-        // Apply Effects
-        double opponentCurrentHp = player1CurrentHp; // For logging
         player2CurrentStamina -= staminaCost;
         player1CurrentHp -= damageDealt;
-        System.out.printf("AI used Skill %d. P2 Stamina: %.1f -> %.1f. P1 HP: %.1f -> %.1f%n",
-                skillNumber, player2CurrentStamina + staminaCost, player2CurrentStamina, opponentCurrentHp, player1CurrentHp);
+        System.out.printf("AI used Skill %d...%n", skillNumber);
 
+        // Update UI Bars
         updateHpBars();
         updateStaminaBars();
+        boolean p1Died = player1CurrentHp <= 0;
 
-        // Check for win/loss conditions AFTER AI effects
-        if (player1CurrentHp <= 0 || player2CurrentHp <= 0) {
-            endGame(false);
+        if (p1Died) {
+            System.out.println("Death detected (P1). Starting game over sequence...");
+            gameRunning = false; // Stop game logic
+            // AI's turn timer was already stopped before execution, but ensure main one is stopped
+            stopTurnTimer();
+
+            playAnimation(player1CharacterLabel, firstPlayerCharacterName, "Death", true, player1IdleIcon);
+
+            int deathAnimDuration = getAnimationDuration("Death");
+
+            // Stop any ongoing revert timers immediately
+            if (player1AnimTimer != null) player1AnimTimer.stop();
+            if (player2AnimTimer != null) player2AnimTimer.stop();
+
+
+            if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
+                deathSequenceTimer.stop();
+            }
+            deathSequenceTimer = new javax.swing.Timer(deathAnimDuration, evt -> {
+                System.out.println("Death sequence timer finished. Transitioning...");
+                transitionToGameOverScreen();
+            });
+            deathSequenceTimer.setRepeats(false);
+            deathSequenceTimer.start();
+
+            // IMPORTANT: Return here to prevent the invokeLater(switchTurn) below
             return;
         }
-
         // Switch back to Player 1's turn AFTER AI action completes
         // Use invokeLater to ensure UI updates and checks happen correctly on EDT
         SwingUtilities.invokeLater(this::switchTurn);
     }
+    /**
+     * Cleans up game state and switches the view to the GameOverScreen.
+     */
+    private void transitionToGameOverScreen() {
+        System.out.println("Executing transitionToGameOverScreen...");
+        // Ensure all timers are stopped
+        stopTurnTimer();
+        if (player1AnimTimer != null) player1AnimTimer.stop();
+        if (player2AnimTimer != null) player2AnimTimer.stop();
+        if (deathSequenceTimer != null) deathSequenceTimer.stop(); // Stop itself just in case
+
+        // Create and set the new panel
+        GameOverScreen gameOverScreen = new GameOverScreen(frame); // Pass the frame
+        frame.setContentPane(gameOverScreen);
+        frame.revalidate();
+        frame.repaint();
+        System.out.println("Switched to GameOverScreen.");
+    }
+
+    // Make sure endGame is removed or no longer called on death by HP
+    // public void endGame(boolean maxRoundsReached) { ... } // Keep if needed for MAX_ROUNDS end condition
 
     // --- UI Update Helpers ---
 
@@ -746,10 +968,16 @@ public class GameScreen extends JPanel {
         add(player1HpBar);
         add(player1StaminaBar);
         add(player1CharacterLabel);
+        add(player1Skill1);
+        add(player1Skill2);
+        add(player1Skill3);
 
         add(player2HpBar);
         add(player2StaminaBar);
         add(player2CharacterLabel);
+        add(player2Skill1);
+        add(player2Skill2);
+        add(player2Skill3);
 
         add(timerDisplayLabel);
         add(turnIndicatorLabel);

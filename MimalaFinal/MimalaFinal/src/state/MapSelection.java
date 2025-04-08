@@ -48,12 +48,13 @@ public class MapSelection extends JPanel {
     private final String firstPlayerSelection;
     private final String secondPlayerSelection;
     private final Random random = new Random();
+    private final String gameMode;
 
-    public MapSelection(JFrame frame, String firstPlayerSelection, String secondPlayerSelection) {
+    public MapSelection(JFrame frame, String firstPlayerSelection, String secondPlayerSelection, String mode) {
         this.frame = frame;
         this.firstPlayerSelection = firstPlayerSelection;
         this.secondPlayerSelection = secondPlayerSelection;
-
+        this.gameMode = mode;
         // Add this line to help debug classpath issues if images still don't load:
         System.out.println("Attempting to load resources relative to classpath. Check project structure if paths starting with /assets/... fail.");
         // You can also print the working directory, but it's less relevant for resource loading:
@@ -286,7 +287,8 @@ public class MapSelection extends JPanel {
                 frame,
                 firstPlayerSelection,
                 secondPlayerSelection,
-                mapResourcePath // Pass the resource path
+                mapResourcePath,
+                gameMode// Pass the resource path
         ));
         frame.revalidate();
         frame.repaint();
