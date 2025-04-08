@@ -236,22 +236,21 @@ public class GameScreen extends JPanel {
         player1StaminaBar = new StatusBar(STAMINA_BAR_BG_PATH, STAMINA_BAR_FG_PATH);
         ImageIcon p1Gif = loadCharacterGif(firstPlayerCharacterName, true);
         player1CharacterLabel = new JLabel(p1Gif);
-        ImageIcon skill1Icon = new ImageIcon(getClass().getResource("/assets/CharacterSelectionScreen/hoverButton.png"));
+
+
+        ImageIcon skillIcon = new ImageIcon(getClass().getResource("/assets/FightingUI/skillbutton.png"));
+
 
         player1Skill1 = new JButton(String.format("Skill 1 (%.0f dmg / %.0f sta)", player1Stats.getSkillDamage(1), player1Stats.getSkillCost(1)));
         player1Skill2 = new JButton(String.format("Skill 2 (%.0f dmg / %.0f sta)", player1Stats.getSkillDamage(2), player1Stats.getSkillCost(2)));
         player1Skill3 = new JButton(String.format("Skill 3 (%.0f dmg / %.0f sta)", player1Stats.getSkillDamage(3), player1Stats.getSkillCost(3)));
-        player1Skill1.setIcon(skill1Icon);      // Completely transparent
-        player1Skill1.setHorizontalTextPosition(SwingConstants.CENTER);
-        player1Skill1.setVerticalTextPosition(SwingConstants.CENTER);
-        player1Skill1.setFont(new Font("Arial", Font.BOLD, 14));
-        player1Skill1.setForeground(Color.WHITE);
 
-// Style the button so it looks clean
-        player1Skill1.setBorderPainted(false);
-        player1Skill1.setContentAreaFilled(false);
-        player1Skill1.setFocusPainted(false);
-        player1Skill1.setOpaque(false);
+        // Style for Player 1 Skills
+        styleButton(player1Skill1, skillIcon);
+        styleButton(player1Skill2, skillIcon);
+        styleButton(player1Skill3, skillIcon);
+
+
         // --- Player 2 ---
         String p2HpBgPath = getHpBackgroundPath(secondPlayerCharacterName, false);
         player2HpBar = new StatusBar(p2HpBgPath, HP_BAR_FG_PATH);
@@ -262,6 +261,10 @@ public class GameScreen extends JPanel {
         player2Skill2 = new JButton(String.format("Skill 2 (%.0f dmg / %.0f sta)", player2Stats.getSkillDamage(2), player2Stats.getSkillCost(2)));
         player2Skill3 = new JButton(String.format("Skill 3 (%.0f dmg / %.0f sta)", player2Stats.getSkillDamage(3), player2Stats.getSkillCost(3)));
 
+        // Style for Player 2 Skills
+        styleButton(player2Skill1, skillIcon);
+        styleButton(player2Skill2, skillIcon);
+        styleButton(player2Skill3, skillIcon);
 
         // --- Center HUD ---
         timerDisplayLabel = new JLabel(String.valueOf(TURN_DURATION_SECONDS));
@@ -296,6 +299,18 @@ public class GameScreen extends JPanel {
         updateStaminaBars();
 
         System.out.println("UI Components Initialized.");
+    }
+
+    private void styleButton(JButton button, ImageIcon icon) {
+        button.setIcon(icon);
+        button.setHorizontalTextPosition(SwingConstants.CENTER);
+        button.setVerticalTextPosition(SwingConstants.CENTER);
+        button.setFont(new Font("Arial", Font.BOLD, 14));
+        button.setForeground(Color.WHITE);
+        button.setBorderPainted(false);
+        button.setContentAreaFilled(false);
+        button.setFocusPainted(false);
+        button.setOpaque(false);
     }
 
     private void playAnimation(JLabel characterLabel, String characterName, String animationType, boolean isPlayer1, ImageIcon idleIcon) {
