@@ -391,10 +391,10 @@ public class GameScreen extends JPanel {
      */
     private int getAnimationDuration(String animationType) {
         switch (animationType) {
-            case "Skill1": return 1000; // 1 second
-            case "Skill2": return 1200; // 1.2 seconds
-            case "Skill3": return 2000; // 2.0 seconds
-            case "GetHit": return 800;  // 0.8 seconds
+            case "Skill1": return 3000; // 1 second
+            case "Skill2": return 3000; // 1.2 seconds
+            case "Skill3": return 3000; // 2.0 seconds
+            case "GetHit": return 1000;  // 0.8 seconds
             case "Death":  return 2000;// Death animation duration not needed here as we don't auto-revert it
             default:       return 1000; // Default duration
         }
@@ -666,10 +666,9 @@ public class GameScreen extends JPanel {
 
         CharacterStats currentActorStats;
         double currentActorStamina;
-        double opponentCurrentHp; // Need opponent HP for log message
+        double opponentCurrentHp;
         String actorName;
 
-        // --- Check Turn Validity ---
         if (isPlayer1Turn) {
             actorName = firstPlayerCharacterName;
             currentActorStats = player1Stats;
@@ -692,83 +691,88 @@ public class GameScreen extends JPanel {
         System.out.printf("%s attempts Skill %d (Cost: %.1f, Damage: %.1f)%n", actorName, skillNumber, staminaCost, damageDealt);
 
         if (currentActorStamina >= staminaCost) {
-            stopTurnTimer(); // Stop turn timer as action is happening
+            stopTurnTimer();
 
-            // --- Trigger Animations Simultaneously ---
             String skillAnimType = "Skill" + skillNumber;
+            int skillAnimDuration = getAnimationDuration(skillAnimType);
+
             if (isPlayer1Turn) {
-                // P1 uses skill, P2 gets hit
+                // P1 attacks
                 playAnimation(player1CharacterLabel, firstPlayerCharacterName, skillAnimType, true, player1IdleIcon);
-                // Only play hit animation if damage is expected (or always play a "block/dodge" if no damage?)
-                // Let's assume for now damage always happens if skill hits.
-                playAnimation(player2CharacterLabel, secondPlayerCharacterName, "GetHit", false, player2IdleIcon);
-            } else { // Human P2 Turn
-                // P2 uses skill, P1 gets hit
+            } else {
+                // P2 attacks
                 playAnimation(player2CharacterLabel, secondPlayerCharacterName, skillAnimType, false, player2IdleIcon);
-                playAnimation(player1CharacterLabel, firstPlayerCharacterName, "GetHit", true, player1IdleIcon);
             }
 
-            // --- Apply Effects (Happens logically after triggering visuals) ---
-            if (isPlayer1Turn) {
-                player1CurrentStamina -= staminaCost;
-                player2CurrentHp -= damageDealt;
-                System.out.printf("P1 used Skill %d...%n", skillNumber);
-            } else { // Player 2's action (Human P2)
-                player2CurrentStamina -= staminaCost;
-                player1CurrentHp -= damageDealt;
-                System.out.printf("P2 used Skill %d...%n", skillNumber);
-            }
+            // --- Apply Effects (After attack animation visually lands) ---
+            javax.swing.Timer effectTimer = new javax.swing.Timer(skillAnimDuration, evt -> {
+                if (isPlayer1Turn) {
+                    player1CurrentStamina -= staminaCost;
+                    player2CurrentHp -= damageDealt;
+                    System.out.printf("P1 used Skill %d...%n", skillNumber);
 
-            // --- Update UI Bars ---
-            updateHpBars();
-            updateStaminaBars();
+                    if (damageDealt > 0) {
+                        playAnimation(player2CharacterLabel, secondPlayerCharacterName, "GetHit", false, player2IdleIcon);
+                    }
 
-            // --- Check for Death (after effects applied) ---
-            boolean p1Died = player1CurrentHp <= 0;
-            boolean p2Died = player2CurrentHp <= 0;
-            // --- Trigger Death Animation(s) ---
-            if (p1Died) {
-                playAnimation(player1CharacterLabel, firstPlayerCharacterName, "Death", true, player1IdleIcon);
-            }
-            if (p2Died) { // Check separately, could be a draw
-                playAnimation(player2CharacterLabel, secondPlayerCharacterName, "Death", false, player2IdleIcon);
-            }
+                } else {
+                    player2CurrentStamina -= staminaCost;
+                    player1CurrentHp -= damageDealt;
+                    System.out.printf("P2 used Skill %d...%n", skillNumber);
 
-
-            if (p1Died || p2Died) {
-                System.out.println("Death detected. Starting game over sequence...");
-                gameRunning = false; // Stop game logic processing
-                stopTurnTimer();     // Stop the main turn timer
-
-                // Use the estimated duration of the death animation for the delay
-                int deathAnimDuration = getAnimationDuration("Death");
-
-                // Stop any ongoing revert timers immediately
-                if (player1AnimTimer != null) player1AnimTimer.stop();
-                if (player2AnimTimer != null) player2AnimTimer.stop();
-
-                // Start a timer to transition *after* the death animation duration
-                if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
-                    deathSequenceTimer.stop(); // Stop previous if any (shouldn't happen often)
+                    if (damageDealt > 0) {
+                        playAnimation(player1CharacterLabel, firstPlayerCharacterName, "GetHit", true, player1IdleIcon);
+                    }
                 }
-                deathSequenceTimer = new javax.swing.Timer(deathAnimDuration, evt -> {
-                    System.out.println("Death sequence timer finished. Transitioning...");
-                    transitionToGameOverScreen(); // Transition to the new screen
-                });
-                deathSequenceTimer.setRepeats(false);
-                deathSequenceTimer.start();
 
-                // IMPORTANT: Return here to prevent switchTurn() from being called
-                return;
-            }
-            // --- Switch turn (only if game didn't end) ---
-            switchTurn();
+                updateHpBars();
+                updateStaminaBars();
+
+                boolean p1Died = player1CurrentHp <= 0;
+                boolean p2Died = player2CurrentHp <= 0;
+
+                if (p1Died) {
+                    playAnimation(player1CharacterLabel, firstPlayerCharacterName, "Death", true, player1IdleIcon);
+                }
+                if (p2Died) {
+                    playAnimation(player2CharacterLabel, secondPlayerCharacterName, "Death", false, player2IdleIcon);
+                }
+
+                if (p1Died || p2Died) {
+                    System.out.println("Death detected. Starting game over sequence...");
+                    gameRunning = false;
+                    stopTurnTimer();
+
+                    int deathAnimDuration = getAnimationDuration("Death");
+
+                    if (player1AnimTimer != null) player1AnimTimer.stop();
+                    if (player2AnimTimer != null) player2AnimTimer.stop();
+
+                    if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
+                        deathSequenceTimer.stop();
+                    }
+
+                    deathSequenceTimer = new javax.swing.Timer(deathAnimDuration, e -> {
+                        System.out.println("Death sequence timer finished. Transitioning...");
+                        transitionToGameOverScreen();
+                    });
+                    deathSequenceTimer.setRepeats(false);
+                    deathSequenceTimer.start();
+
+                    return;
+                }
+
+                switchTurn();
+            });
+
+            effectTimer.setRepeats(false);
+            effectTimer.start();
 
         } else {
             System.out.println(actorName + ": Not enough stamina for Skill " + skillNumber);
-            // Action failed, do not switch turn. Let timer continue or player choose again.
         }
     }
+
 
     // MODIFIED: AI Logic uses stats and skill numbers
     private void performAiAction() {
