@@ -1,0 +1,4 @@
+player1Wins = 6
+player1Losses = 0
+player2Wins = 0
+player2Losses = 6

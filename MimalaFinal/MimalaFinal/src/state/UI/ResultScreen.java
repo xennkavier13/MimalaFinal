@@ -51,7 +51,6 @@ public class ResultScreen extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                System.out.println("ResultScreen clicked. Transitioning to options...");
                 transitionToOptionsScreen();
             }
         });
@@ -79,15 +78,10 @@ public class ResultScreen extends JPanel {
         // Debugging print removed for cleaner output, uncomment if needed
         // System.out.println("ResultScreen paintComponent - Width: " + getWidth() + ", Height: " + getHeight());
 
-        if (background != null && background.getImage() != null && background.getImageLoadStatus() == MediaTracker.COMPLETE) {
+        if (background != null && background.getImage() != null) {
             g.drawImage(background.getImage(), 0, 0, getWidth(), getHeight(), this);
             // Optionally draw "Click anywhere to continue" if not part of the image
-            g.setColor(new Color(200, 200, 200, 200)); // Semi-transparent white/gray
-            g.setFont(new Font("Arial", Font.BOLD, 24));
-            String continueText = "Click anywhere to continue";
-            FontMetrics fm = g.getFontMetrics();
-            int textWidth = fm.stringWidth(continueText);
-            g.drawString(continueText, (getWidth() - textWidth) / 2, getHeight() - 50); // Position near bottom center
+
         } else {
             g.setColor(Color.BLACK);
             g.fillRect(0, 0, getWidth(), getHeight());

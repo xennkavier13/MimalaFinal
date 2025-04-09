@@ -24,10 +24,42 @@ public class CharacterDataLoader {
                 18.0, 25.0,   // Skill 2 Damage, Cost
                 30.0, 45.0    // Skill 3 Damage, Cost
         ));
-        characterStatsMap.put("Zenfang", new CharacterStats("Zenfang",
+        characterStatsMap.put("Auricannon", new CharacterStats("Auricannon",
                 110.0, 90.0, // Max HP, Max Stamina
                 10.0, 18.0,   // Skill 1 Damage, Cost
                 22.0, 28.0,   // Skill 2 Damage, Cost
+                28.0, 38.0    // Skill 3 Damage, Cost
+        ));
+
+        characterStatsMap.put("Zenfang", new CharacterStats("Zenfang",
+                110.0, 90.0, // Max HP, Max Stamina
+                10.0, 18.0,   // Skill 1 Damage, Cost
+                23.0, 28.0,   // Skill 2 Damage, Cost
+                28.0, 38.0    // Skill 3 Damage, Cost
+        ));
+
+        characterStatsMap.put("Ignisveil", new CharacterStats("Ignisveil",
+                110.0, 90.0, // Max HP, Max Stamina
+                10.0, 18.0,   // Skill 1 Damage, Cost
+                12.0, 28.0,   // Skill 2 Damage, Cost
+                28.0, 38.0    // Skill 3 Damage, Cost
+        ));
+        characterStatsMap.put("Pyrothar", new CharacterStats("Pyrothar",
+                110.0, 90.0, // Max HP, Max Stamina
+                10.0, 18.0,   // Skill 1 Damage, Cost
+                12.0, 28.0,   // Skill 2 Damage, Cost
+                28.0, 38.0    // Skill 3 Damage, Cost
+        ));
+        characterStatsMap.put("Varkos", new CharacterStats("Varkos",
+                110.0, 90.0, // Max HP, Max Stamina
+                10.0, 18.0,   // Skill 1 Damage, Cost
+                12.0, 28.0,   // Skill 2 Damage, Cost
+                28.0, 38.0    // Skill 3 Damage, Cost
+        ));
+        characterStatsMap.put("Vexmorth", new CharacterStats("Vexmorth",
+                110.0, 90.0, // Max HP, Max Stamina
+                10.0, 18.0,   // Skill 1 Damage, Cost
+                12.0, 28.0,   // Skill 2 Damage, Cost
                 28.0, 38.0    // Skill 3 Damage, Cost
         ));
 

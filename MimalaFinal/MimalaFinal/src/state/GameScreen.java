@@ -18,6 +18,7 @@ import state.UI.ResultScreen;
 import state.UI.StatusBar;
 import state.character.CharacterDataLoader;
 import state.character.CharacterStats;
+import util.GameLog;
 import util.RoundManager;
 // Removed: import javax.swing.Timer; // We are replacing this
 
@@ -35,7 +36,10 @@ public class GameScreen extends JPanel {
     private javax.swing.Timer player1AnimTimer;
     private javax.swing.Timer player2AnimTimer;
     private javax.swing.Timer deathSequenceTimer;
-
+    public static int p1Wins = 0;
+    public static int p1Lose = 0;
+    public static int p2Wins = 0;
+    public static int p2Lose = 0;
     // --- Character Stats ---
     private CharacterStats player1Stats;
     private CharacterStats player2Stats;
@@ -740,40 +744,23 @@ public class GameScreen extends JPanel {
 
                 boolean p1Died = player1CurrentHp <= 0;
                 boolean p2Died = player2CurrentHp <= 0;
+                String winner = "";
 
-                if (p1Died) playAnimation(player1CharacterLabel, firstPlayerCharacterName, "Death", true, player1IdleIcon);
-                if (p2Died) playAnimation(player2CharacterLabel, secondPlayerCharacterName, "Death", false, player2IdleIcon);
-
-                if (p1Died || p2Died) {
-                    System.out.println("Death detected. Starting game over sequence...");
-                    gameRunning = false;
-                    stopTurnTimer();
-
-                    int deathAnimDuration = getAnimationDuration("Death");
-
-                    if (player1AnimTimer != null) player1AnimTimer.stop();
-                    if (player2AnimTimer != null) player2AnimTimer.stop();
-                    if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) deathSequenceTimer.stop();
-
-                    deathSequenceTimer = new javax.swing.Timer(deathAnimDuration, e -> {
-                        System.out.println("Death sequence timer finished. Transitioning...");
-
-                        // Check for victory or defeat after the AI action
-                        if (player2CurrentHp <= 0) {
-                            // Player 1 wins, show victory screen
-                            frame.setContentPane(new ResultScreen(frame, true,firstPlayerCharacterName,secondPlayerCharacterName,selectedMapPath,gameMode));  // Pass true for victory
-                        } else if (player1CurrentHp <= 0) {
-                            // Player 2 wins, show defeat screen
-                            frame.setContentPane(new ResultScreen(frame, false, firstPlayerCharacterName,secondPlayerCharacterName,selectedMapPath,gameMode)); // Pass false for defeat
-                        }
-
-                        frame.revalidate();
-                        frame.repaint();
-                    });
-
-                    deathSequenceTimer.setRepeats(false);
-                    deathSequenceTimer.start();
-                    return;
+                if (p1Died) {
+                    playAnimation(player1CharacterLabel, firstPlayerCharacterName, "Death", true, player1IdleIcon);
+                    p1Lose++;
+                    p2Wins++;
+                    winner = "Player 2";
+                    new GameLog().recordGame(winner);
+                    new GameLog().saveStatsToFile();
+                }
+                if (p2Died){
+                    playAnimation(player2CharacterLabel, secondPlayerCharacterName, "Death", false, player2IdleIcon);
+                    p2Lose++;
+                    p1Wins++;
+                    winner = "Player 1";
+                    new GameLog().recordGame(winner);
+                    new GameLog().saveStatsToFile();
                 }
 
                 switchTurn();

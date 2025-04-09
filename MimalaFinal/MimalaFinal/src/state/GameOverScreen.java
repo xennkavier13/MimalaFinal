@@ -6,6 +6,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
 
+import static util.AudioManager.stopMusic;
+
 public class GameOverScreen extends JPanel {
 
     private final JFrame frame;
@@ -101,9 +103,11 @@ public class GameOverScreen extends JPanel {
         // Add null checks in case createButton returned an error label or null
         if (rematchButton != null) {
             add(rematchButton);
+            stopMusic();
         }
         if (menuButton != null) {
             add(menuButton);
+
         }
 
         // --- Crucial Fix: Set Z-Order ---
