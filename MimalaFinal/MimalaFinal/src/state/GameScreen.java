@@ -166,8 +166,6 @@ public class GameScreen extends JPanel {
         System.out.println("Stats loaded for P1 (" + firstPlayerCharacterName + ") and P2 (" + secondPlayerCharacterName + ")");
     }
 
-
-
     // --- Path Generation Helpers (Keep as they are) ---
     private String getHpBackgroundPath(String characterName, boolean isPlayer1) {
         // Assuming Azurox bar is the standard for now
@@ -394,12 +392,6 @@ public class GameScreen extends JPanel {
         }
     }
 
-    /**
-     * Provides estimated durations for different animation types in milliseconds.
-     * Adjust these values based on your actual GIF lengths!
-     * @param animationType The type of animation (e.g., "Skill1", "Hit").
-     * @return Estimated duration in milliseconds.
-     */
     private int getAnimationDuration(String animationType) {
         switch (animationType) {
             case "Skill1": return 3000; // 1 second
@@ -410,7 +402,6 @@ public class GameScreen extends JPanel {
             default:       return 1000; // Default duration
         }
     }
-
 
     private void positionUIComponents() {
         System.out.println("Positioning UI Components...");
@@ -424,7 +415,7 @@ public class GameScreen extends JPanel {
         int p1_Y_Stamina = p1_Y_HP + HP_BAR_HEIGHT + BAR_SPACING;
         player1StaminaBar.setBounds(p1_X, p1_Y_Stamina, BAR_WIDTH, STAMINA_BAR_HEIGHT);
         int p1_Char_X = PADDING + 250;
-        int p1_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 50; // position character
+        int p1_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 150; // position character
         player1CharacterLabel.setBounds(p1_Char_X, p1_Char_Y, CHARACTER_WIDTH, CHARACTER_HEIGHT);
         int p1_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT;
         int p1_Skill_X = PADDING;
@@ -440,7 +431,7 @@ public class GameScreen extends JPanel {
         int p2_X_Stamina = panelWidth - PADDING - BAR_WIDTH - 50;
         player2StaminaBar.setBounds(p2_X_Stamina, p2_Y_Stamina, BAR_WIDTH, STAMINA_BAR_HEIGHT);
         int p2_Char_X = panelWidth - PADDING - 250 - CHARACTER_WIDTH;
-        int p2_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 50; // position character
+        int p2_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 80; // position character
         player2CharacterLabel.setBounds(p2_Char_X, p2_Char_Y, CHARACTER_WIDTH, CHARACTER_HEIGHT);
         int p2_Skill_X = panelWidth - PADDING - SKILL_BUTTON_WIDTH;
         int p2_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT;
@@ -524,15 +515,6 @@ public class GameScreen extends JPanel {
         });
         System.out.println("Key bindings set up.");
     }
-
-
-    // --- Game Logic Methods ---
-
-    // NEW: Starts a new round (or the first round)
-
-    // NEW: Stamina Recovery Logic
-
-
 
     // MODIFIED: Uses Thread instead of Timer
     private void startTurnTimer() {
@@ -708,14 +690,11 @@ public class GameScreen extends JPanel {
             int skillAnimDuration = getAnimationDuration(skillAnimType);
 
             if (isPlayer1Turn) {
-                // P1 attacks
                 playAnimation(player1CharacterLabel, firstPlayerCharacterName, skillAnimType, true, player1IdleIcon);
             } else {
-                // P2 attacks
                 playAnimation(player2CharacterLabel, secondPlayerCharacterName, skillAnimType, false, player2IdleIcon);
             }
 
-            // --- Apply Effects (After attack animation visually lands) ---
             javax.swing.Timer effectTimer = new javax.swing.Timer(skillAnimDuration, evt -> {
                 if (isPlayer1Turn) {
                     player1CurrentStamina -= staminaCost;
@@ -725,7 +704,6 @@ public class GameScreen extends JPanel {
                     if (damageDealt > 0) {
                         playAnimation(player2CharacterLabel, secondPlayerCharacterName, "GetHit", false, player2IdleIcon);
                     }
-
                 } else {
                     player2CurrentStamina -= staminaCost;
                     player1CurrentHp -= damageDealt;
@@ -742,12 +720,8 @@ public class GameScreen extends JPanel {
                 boolean p1Died = player1CurrentHp <= 0;
                 boolean p2Died = player2CurrentHp <= 0;
 
-                if (p1Died) {
-                    playAnimation(player1CharacterLabel, firstPlayerCharacterName, "Death", true, player1IdleIcon);
-                }
-                if (p2Died) {
-                    playAnimation(player2CharacterLabel, secondPlayerCharacterName, "Death", false, player2IdleIcon);
-                }
+                if (p1Died) playAnimation(player1CharacterLabel, firstPlayerCharacterName, "Death", true, player1IdleIcon);
+                if (p2Died) playAnimation(player2CharacterLabel, secondPlayerCharacterName, "Death", false, player2IdleIcon);
 
                 if (p1Died || p2Died) {
                     System.out.println("Death detected. Starting game over sequence...");
@@ -758,18 +732,26 @@ public class GameScreen extends JPanel {
 
                     if (player1AnimTimer != null) player1AnimTimer.stop();
                     if (player2AnimTimer != null) player2AnimTimer.stop();
-
-                    if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
-                        deathSequenceTimer.stop();
-                    }
+                    if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) deathSequenceTimer.stop();
 
                     deathSequenceTimer = new javax.swing.Timer(deathAnimDuration, e -> {
                         System.out.println("Death sequence timer finished. Transitioning...");
-                        transitionToGameOverScreen();
+
+                        // Check for victory or defeat after the AI action
+                        if (player2CurrentHp <= 0) {
+                            // Player 1 wins, show victory screen
+                            frame.setContentPane(new GameOverScreen(frame, true));  // Pass true for victory
+                        } else if (player1CurrentHp <= 0) {
+                            // Player 2 wins, show defeat screen
+                            frame.setContentPane(new GameOverScreen(frame, false)); // Pass false for defeat
+                        }
+
+                        frame.revalidate();
+                        frame.repaint();
                     });
+
                     deathSequenceTimer.setRepeats(false);
                     deathSequenceTimer.start();
-
                     return;
                 }
 
@@ -784,17 +766,14 @@ public class GameScreen extends JPanel {
         }
     }
 
-
     // MODIFIED: AI Logic uses stats and skill numbers
     private void performAiAction() {
         if (!gameRunning || isPlayer1Turn) return; // Should only run on AI's turn
 
         System.out.println("AI (" + secondPlayerCharacterName + ") is thinking...");
 
-
         // Simple AI: Choose a random valid skill it can afford
         int skillChoice = -1;
-
 
         java.util.List<Integer> possibleSkills = new java.util.ArrayList<>();
         for (int i = 1; i <= 3; i++) {
@@ -815,12 +794,13 @@ public class GameScreen extends JPanel {
         final int finalSkillChoice = skillChoice;
 
         // Add delay
-        javax.swing.Timer aiDelayTimer = new javax.swing.Timer(1000, e -> {
+        javax.swing.Timer aiDelayTimer = new javax.swing.Timer(3000, e -> {
             if (gameRunning && !isPlayer1Turn) {
                 stopTurnTimer(); // Stop timer just before executing the action
                 handleAiSkillExecution(finalSkillChoice);
             }
         });
+
         aiDelayTimer.setRepeats(false);
         aiDelayTimer.start();
     }
@@ -888,8 +868,11 @@ public class GameScreen extends JPanel {
         if (player2AnimTimer != null) player2AnimTimer.stop();
         if (deathSequenceTimer != null) deathSequenceTimer.stop(); // Stop itself just in case
 
-        // Create and set the new panel
-        GameOverScreen gameOverScreen = new GameOverScreen(frame); // Pass the frame
+        // Determine the result of the game (victory or defeat)
+        boolean player1Won = player2CurrentHp <= 0; // Assuming player 1 wins if player 2's HP is 0 or less
+
+        // Create and set the new panel with the appropriate win condition
+        GameOverScreen gameOverScreen = new GameOverScreen(frame, player1Won); // Pass the frame and victory condition
         frame.setContentPane(gameOverScreen);
         frame.revalidate();
         frame.repaint();
