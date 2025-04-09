@@ -95,7 +95,7 @@ public class GameScreen extends JPanel {
     private static final int TURN_DURATION_SECONDS = 15;
     private final Random random = new Random(); // Still needed for AI, maybe other things
     private static final String AI_PLAYER_NAME = "Computer";
-    private boolean isVsAI;
+    public static boolean isVsAI;
 
     // --- Rounds & Stamina Recovery
     private static final int MAX_ROUNDS = 10;

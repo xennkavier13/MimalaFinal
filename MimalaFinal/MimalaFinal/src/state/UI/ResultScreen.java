@@ -1,6 +1,7 @@
 package state.UI;
 
 import state.GameOverScreen;
+import state.GameScreen;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,26 +14,37 @@ public class ResultScreen extends JPanel {
     private final JFrame frame;
     private final ImageIcon background;
     // Keep paths for victory/defeat images
-    private final String victoryPath = "assets/FightingUI/AI/VictoryScreen.png";
-    private final String defeatPath = "assets/FightingUI/AI/DefeatScreen.png";
+    private final String AIvictoryPath = "assets/FightingUI/AI/VictoryScreen.png";
+    private final String AIdefeatPath = "assets/FightingUI/AI/DefeatScreen.png";
     // Store game details needed for a potential rematch
     private final String p1Name, p2Name, mapPath, gameMode;
     private final boolean player1Won; // Store result
 
 
     // Modify constructor to potentially receive game details later if needed for rematch
-    public ResultScreen(JFrame frame, boolean isVictory , String p1, String p2, String map, String mode) {
+    public ResultScreen(JFrame frame, boolean isVictory, String p1, String p2, String map, String mode) {
         this.frame = frame;
         this.player1Won = isVictory; // Store result
 
-         this.p1Name = p1;
-         this.p2Name = p2;
-         this.mapPath = map;
-         this.gameMode = mode;
+        this.p1Name = p1;
+        this.p2Name = p2;
+        this.mapPath = map;
+        this.gameMode = mode;
 
 
-        // Choose the appropriate background based on the result
-        String imagePathString = isVictory ? victoryPath : defeatPath;
+        String playerWinPath = "";
+        String imagePathString = "";        // Choose the appropriate background based on the result
+        if (GameScreen.isVsAI) {
+            imagePathString = isVictory ? AIvictoryPath : AIdefeatPath;
+        } else {
+            if (player1Won) {
+                playerWinPath = "assets/FightingUI/PVP/player1Wins.png";
+            } else {
+                playerWinPath = "assets/FightingUI/PVP/player2Wins.png";
+            }
+            imagePathString = playerWinPath;
+        }
+
         // Ensure path starts with "/" if relative to classpath root
         java.net.URL imageURL = getClass().getResource("/" + imagePathString);
 

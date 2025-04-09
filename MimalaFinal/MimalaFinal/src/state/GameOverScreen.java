@@ -20,7 +20,7 @@ public class GameOverScreen extends JPanel {
     private final String menuOffPath = "assets/GameOver/ReturnToMainMenu/MainMenu_off.png";
     private final String menuHoverPath = "assets/GameOver/ReturnToMainMenu/MainMenu_hover.png";
     private final String p1Name, p2Name, mapPath, gameMode;
-    private final String bgPath = "assets/GameOver/GameOver.gif"; // Your GIF path
+    private final String bgPath = "assets/GameOver/GameOver.png"; // Your GIF path
 
     // Constructor
     public GameOverScreen(JFrame frame, boolean player1Won, String p1, String p2, String map, String mode) {
