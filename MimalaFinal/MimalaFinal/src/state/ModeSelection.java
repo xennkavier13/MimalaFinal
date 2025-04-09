@@ -1,5 +1,7 @@
 package state;
 
+import state.CharacterScreen.Select.CharacterSelection;
+
 import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;

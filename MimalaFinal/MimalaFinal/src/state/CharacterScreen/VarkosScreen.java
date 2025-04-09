@@ -1,5 +1,7 @@
 package state.CharacterScreen;
 
+import state.CharacterScreen.Select.CharacterSelectionScreen;
+
 import javax.swing.*;
 
 public class VarkosScreen extends CharacterSelectionScreen {

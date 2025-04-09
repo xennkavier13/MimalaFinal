@@ -12,6 +12,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.awt.event.ActionEvent;
 import java.util.Random;
+
+import state.UI.Pause;
+import state.UI.ResultScreen;
+import state.UI.StatusBar;
 import state.character.CharacterDataLoader;
 import state.character.CharacterStats;
 import util.RoundManager;
@@ -73,7 +77,7 @@ public class GameScreen extends JPanel {
 
     // --- Asset Path Constants --- (Keep as they are)
     private static final String HP_BAR_BG_BASE_PATH = "/assets/FightingUI/HealthBarBorder.png";
-    private static final String HP_BAR_FG_PATH = "/assets/FightingUI/HealthBar_EachCharacters/HealthBar_AllCharacters.png";
+    private static final String HP_BAR_FG_PATH = "/assets/FightingUI/HealthBar_AllCharacters.png";
     private static final String STAMINA_BAR_BG_PATH = "/assets/FightingUI/StaminaBar1.png";
     private static final String STAMINA_BAR_FG_PATH = "/assets/FightingUI/StaminaBar2.png";
     private static final String CHAR_GIF_BASE_PATH = "/assets/FightingUI/Mimala_Characters/";
@@ -433,7 +437,7 @@ public class GameScreen extends JPanel {
         int p2_X_Stamina = panelWidth - PADDING - BAR_WIDTH - 50;
         player2StaminaBar.setBounds(p2_X_Stamina, p2_Y_Stamina, BAR_WIDTH, STAMINA_BAR_HEIGHT);
         int p2_Char_X = panelWidth - PADDING - 250 - CHARACTER_WIDTH;
-        int p2_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 80; // position character
+        int p2_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 150; // position character
         player2CharacterLabel.setBounds(p2_Char_X, p2_Char_Y, CHARACTER_WIDTH, CHARACTER_HEIGHT);
         int p2_Skill_X = panelWidth - PADDING - SKILL_BUTTON_WIDTH;
         int p2_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT;
@@ -757,10 +761,10 @@ public class GameScreen extends JPanel {
                         // Check for victory or defeat after the AI action
                         if (player2CurrentHp <= 0) {
                             // Player 1 wins, show victory screen
-                            frame.setContentPane(new GameOverScreen(frame, true));  // Pass true for victory
+                            frame.setContentPane(new ResultScreen(frame, true,firstPlayerCharacterName,secondPlayerCharacterName,selectedMapPath,gameMode));  // Pass true for victory
                         } else if (player1CurrentHp <= 0) {
                             // Player 2 wins, show defeat screen
-                            frame.setContentPane(new GameOverScreen(frame, false)); // Pass false for defeat
+                            frame.setContentPane(new ResultScreen(frame, false, firstPlayerCharacterName,secondPlayerCharacterName,selectedMapPath,gameMode)); // Pass false for defeat
                         }
 
                         frame.revalidate();
@@ -860,15 +864,15 @@ public class GameScreen extends JPanel {
             if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
                 deathSequenceTimer.stop();
             }
-            deathSequenceTimer = new javax.swing.Timer(deathAnimDuration, evt -> {
+            deathSequenceTimer = new javax.swing.Timer(deathAnimDuration, e -> { // Use 'e' or 'evt'
                 System.out.println("Death sequence timer finished. Transitioning...");
-                transitionToGameOverScreen();
+                // --- CALL THE RENAMED METHOD ---
+                transitionToResultScreen();
             });
             deathSequenceTimer.setRepeats(false);
             deathSequenceTimer.start();
-
-            // IMPORTANT: Return here to prevent the invokeLater(switchTurn) below
             return;
+
         }
         // Switch back to Player 1's turn AFTER AI action completes
         // Use invokeLater to ensure UI updates and checks happen correctly on EDT
@@ -877,23 +881,31 @@ public class GameScreen extends JPanel {
     /**
      * Cleans up game state and switches the view to the GameOverScreen.
      */
-    private void transitionToGameOverScreen() {
-        System.out.println("Executing transitionToGameOverScreen...");
+    private void transitionToResultScreen() {
+        System.out.println("Executing transitionToResultScreen...");
         // Ensure all timers are stopped
         stopTurnTimer();
         if (player1AnimTimer != null) player1AnimTimer.stop();
         if (player2AnimTimer != null) player2AnimTimer.stop();
-        if (deathSequenceTimer != null) deathSequenceTimer.stop(); // Stop itself just in case
+        if (deathSequenceTimer != null) deathSequenceTimer.stop();
 
-        // Determine the result of the game (victory or defeat)
-        boolean player1Won = player2CurrentHp <= 0; // Assuming player 1 wins if player 2's HP is 0 or less
+        // Determine the result (which player won?)
+        // Note: If max rounds reached, might need different logic here passed from endGame()
+        boolean p1Wins = player2CurrentHp <= 0 && player1CurrentHp > 0;
+        boolean p2Wins = player1CurrentHp <= 0 && player2CurrentHp > 0;
+        // Default to player 1 winning if it's a draw or P2 HP is 0 (adjust logic as needed)
+        boolean player1Won = p1Wins || (!p2Wins && player2CurrentHp <= 0);
 
-        // Create and set the new panel with the appropriate win condition
-        GameOverScreen gameOverScreen = new GameOverScreen(frame, player1Won); // Pass the frame and victory condition
-        frame.setContentPane(gameOverScreen);
+
+        System.out.println("Player 1 Won: " + player1Won);
+
+        // Create and set the new ResultScreen panel
+        // Pass details needed for rematch LATER if you implement it
+        ResultScreen resultScreen = new ResultScreen(frame, player1Won, firstPlayerCharacterName, secondPlayerCharacterName, selectedMapPath, gameMode );
+        frame.setContentPane(resultScreen);
         frame.revalidate();
         frame.repaint();
-        System.out.println("Switched to GameOverScreen.");
+        System.out.println("Switched to ResultScreen.");
     }
 
     // Make sure endGame is removed or no longer called on death by HP

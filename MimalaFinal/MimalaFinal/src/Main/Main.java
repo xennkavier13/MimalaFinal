@@ -1,7 +1,7 @@
 package Main;
 
 import javax.swing.*;
-import state.IntroScreen;
+import state.UI.IntroScreen;
 
 public class Main {
     public static void main(String[] args) {
