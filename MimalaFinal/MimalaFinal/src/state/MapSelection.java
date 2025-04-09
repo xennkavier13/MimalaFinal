@@ -1,15 +1,20 @@
 package state;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL; // Import URL class
 import java.util.Random;
 
 public class MapSelection extends JPanel {
     private final JFrame frame;
+    private Clip music;
 
     // Use forward slashes, relative to the classpath root
     // Assuming 'assets' is in a source/resource folder.
@@ -66,6 +71,8 @@ public class MapSelection extends JPanel {
         setBackground(Color.WHITE); // Use a solid background color
 
         setupComponents();
+
+        playMusic("/assets/MainMenuScreen/Sounds/MimalaMainMenuMusic.wav");
     }
 
     private void setupComponents() {
@@ -136,13 +143,20 @@ public class MapSelection extends JPanel {
         // Select Button Action (Mouse Listeners remain the same)
         selectButton.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseEntered(MouseEvent e) { selectButton.setBorder(buttonHoverBorder); }
+            public void mouseEntered(MouseEvent e) {
+                selectButton.setBorder(buttonHoverBorder);
+            }
+
             @Override
-            public void mouseExited(MouseEvent e) { selectButton.setBorder(buttonIdleBorder); }
+            public void mouseExited(MouseEvent e) {
+                selectButton.setBorder(buttonIdleBorder);
+            }
+
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (selectedMapPath != null) {
                     System.out.println("Selected Map Resource Path: " + selectedMapPath);
+                    stopMusic(); // Stop the music before transitioning
                     transitionToGameScreen(selectedMapPath);
                 } else {
                     JOptionPane.showMessageDialog(frame, "Please select a map first.", "No Map Selected", JOptionPane.WARNING_MESSAGE);
@@ -150,6 +164,7 @@ public class MapSelection extends JPanel {
                 }
             }
         });
+
 
         // Random Button Action (Mouse Listeners remain the same)
         randomButton.addMouseListener(new MouseAdapter() {
@@ -281,18 +296,59 @@ public class MapSelection extends JPanel {
             System.err.println("Error: Attempted to transition with null mapResourcePath.");
             return;
         }
-        // Ensure GameScreen knows how to handle a resource path (it might also need to use getResource)
-        // Or, GameScreen might just need the name/index, and it looks up its own background resource path. Adjust as needed.
-        frame.setContentPane(new GameScreen(
-                frame,
-                firstPlayerSelection,
-                secondPlayerSelection,
-                mapResourcePath,
-                gameMode// Pass the resource path
-        ));
-        frame.revalidate();
-        frame.repaint();
+
+        // Stop the music before transitioning to the next screen
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                stopMusic();
+
+                // Now transition to the game screen
+                frame.setContentPane(new GameScreen(
+                        frame,
+                        firstPlayerSelection,
+                        secondPlayerSelection,
+                        mapResourcePath,
+                        gameMode
+                ));
+                frame.revalidate();
+                frame.repaint();
+            }
+        });
     }
+
+    private void playMusic(String filePath) {
+        try {
+            // Load from resources (classpath)
+            InputStream audioSrc = getClass().getResourceAsStream(filePath);
+            if (audioSrc == null) {
+                System.err.println("Music file not found in resources: " + filePath);
+                return;
+            }
+
+            InputStream bufferedIn = new BufferedInputStream(audioSrc);
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn);
+
+            music = AudioSystem.getClip();
+            music.open(audioStream);
+            music.loop(Clip.LOOP_CONTINUOUSLY);
+            music.start();
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void stopMusic() {
+        if (music != null) {
+            if (music.isRunning()) {
+                music.stop();  // Stop the music if it's playing
+            }
+            music.close();  // Close the clip and release resources
+            music = null;   // Clear the reference to the clip
+        }
+    }
+
 
     @Override
     protected void paintComponent(Graphics g) {

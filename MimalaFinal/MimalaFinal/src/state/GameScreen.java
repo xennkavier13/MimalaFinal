@@ -139,8 +139,8 @@ public class GameScreen extends JPanel {
         SwingUtilities.invokeLater(this::requestFocusInWindow);
 
         playMusic("assets/FightingUI/music/fightmusic.wav");
-
     }
+
     private void loadCharacterStats() {
         System.out.println("Loading character stats...");
         player1Stats = CharacterDataLoader.getStats(firstPlayerCharacterName);
@@ -1055,8 +1055,17 @@ public class GameScreen extends JPanel {
 
             music = AudioSystem.getClip();
             music.open(audioStream);
-            music.loop(Clip.LOOP_CONTINUOUSLY);
-            music.start();
+            music.loop(Clip.LOOP_CONTINUOUSLY);  // Ensure looping
+            music.start();  // Start playing
+
+            if (music != null && music.isRunning()) {
+                System.out.println("Music is playing.");
+            } else {
+                System.out.println("Music failed to start.");
+            }
+
+
+            System.out.println("Music started successfully");
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             e.printStackTrace();
         }
@@ -1069,5 +1078,4 @@ public class GameScreen extends JPanel {
             music.close();
         }
     }
-
 }

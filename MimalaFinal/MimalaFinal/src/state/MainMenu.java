@@ -34,9 +34,6 @@ public class MainMenu extends JPanel {
                 "assets/MainMenuScreen/Start/Start_off.png",
                 "assets/MainMenuScreen/Start/Start_hover.png",
                 450, () -> {
-
-                    stopMusic();
-
                     // Transition smoothly with black background
                     JPanel newScreen = new ModeSelection(frame);
                     newScreen.setOpaque(true);
@@ -50,6 +47,9 @@ public class MainMenu extends JPanel {
                         frame.revalidate();
                         frame.repaint();
                     });
+
+                    // Stop music after the Map Selection Screen is shown
+                    SwingUtilities.invokeLater(() -> stopMusic());
                 }
         );
 
@@ -57,9 +57,6 @@ public class MainMenu extends JPanel {
                 "assets/MainMenuScreen/End/End_off.png",
                 "assets/MainMenuScreen/End/End_hover.png",
                 525, () -> {
-
-                    stopMusic();
-
                     stopMusic(); // Stop music when exiting
                     System.exit(0);
                 }
@@ -140,7 +137,6 @@ public class MainMenu extends JPanel {
             e.printStackTrace();
         }
     }
-
 
     private void stopMusic() {
         if (music != null && music.isRunning()) {

@@ -2,10 +2,14 @@ package state;
 
 import state.CharacterScreen.*;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Random;
 
 public class CharacterSelection extends JPanel {
@@ -19,7 +23,7 @@ public class CharacterSelection extends JPanel {
     private String player2Selection = null;
     private static final String AI_PLAYER_NAME = "Computer";
     private final String mode;
-
+    private Clip music;
 
     public CharacterSelection(JFrame frame, String mode) {
         this.frame = frame;
@@ -34,6 +38,8 @@ public class CharacterSelection extends JPanel {
         setLayout(null);  // Absolute layout
         setPreferredSize(new Dimension(1920, 1080));
         setupButtons();
+
+        playMusic("/assets/MainMenuScreen/Sounds/MimalaMainMenuMusic.wav");
     }
 
     private void setupButtons() {
@@ -122,6 +128,35 @@ public class CharacterSelection extends JPanel {
     private String selectRandomCharacter() {
         Random random = new Random();
         return characterNames[random.nextInt(characterNames.length)];
+    }
+
+    private void playMusic(String filePath) {
+        try {
+            // Load from resources (classpath)
+            InputStream audioSrc = getClass().getResourceAsStream(filePath);
+            if (audioSrc == null) {
+                System.err.println("Music file not found in resources: " + filePath);
+                return;
+            }
+
+            InputStream bufferedIn = new BufferedInputStream(audioSrc);
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn);
+
+            music = AudioSystem.getClip();
+            music.open(audioStream);
+            music.loop(Clip.LOOP_CONTINUOUSLY);
+            music.start();
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void stopMusic() {
+        if (music != null && music.isRunning()) {
+            music.stop();
+            music.close();
+        }
     }
 
     @Override

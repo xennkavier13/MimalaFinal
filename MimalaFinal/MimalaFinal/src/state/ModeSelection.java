@@ -1,11 +1,16 @@
 package state;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class ModeSelection extends JPanel {
     private final ImageIcon modeSelectionBg;
     private final JFrame frame;
+    private Clip music;
 
     public ModeSelection(JFrame gameFrame) {
         this.frame = gameFrame;
@@ -13,6 +18,8 @@ public class ModeSelection extends JPanel {
         setLayout(null);
         setPreferredSize(new Dimension(1920, 1080));
         setupButtons();
+
+        playMusic("/assets/MainMenuScreen/Sounds/MimalaMainMenuMusic.wav");
     }
 
     private void setupButtons() {
@@ -63,6 +70,35 @@ public class ModeSelection extends JPanel {
             }
         });
         return button;
+    }
+
+    private void playMusic(String filePath) {
+        try {
+            // Load from resources (classpath)
+            InputStream audioSrc = getClass().getResourceAsStream(filePath);
+            if (audioSrc == null) {
+                System.err.println("Music file not found in resources: " + filePath);
+                return;
+            }
+
+            InputStream bufferedIn = new BufferedInputStream(audioSrc);
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn);
+
+            music = AudioSystem.getClip();
+            music.open(audioStream);
+            music.loop(Clip.LOOP_CONTINUOUSLY);
+            music.start();
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void stopMusic() {
+        if (music != null && music.isRunning()) {
+            music.stop();
+            music.close();
+        }
     }
 
     @Override
