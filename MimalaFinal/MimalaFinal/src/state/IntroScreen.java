@@ -6,11 +6,10 @@ import java.awt.event.*;
 
 public class IntroScreen extends JPanel {
     private final JFrame frame;
-    private final ImageIcon[] gifs;
-    private final int[] realDurations;
-    private int currentIndex = 0;
-    private final Timer[] gifTimers;
+    private final ImageIcon gif;
+    private final int gifDuration = 20500; // Duration of the new single GIF in milliseconds
     private Image currentImage;
+    private Timer gifTimer;
 
     public IntroScreen(JFrame frame) {
         this.frame = frame;
@@ -18,18 +17,12 @@ public class IntroScreen extends JPanel {
         setBackground(Color.BLACK); // Ensure the background is black during the intro
         setFocusable(true);
 
-        gifs = new ImageIcon[] {
-                loadIcon("assets/MainMenuScreen/MimalaIntroFirst.gif"),
-                loadIcon("assets/MainMenuScreen/MimalaIntroSecond.gif"),
-                loadIcon("assets/MainMenuScreen/MimalaIntroThird.gif")
-        };
-
-        realDurations = new int[]{7000, 8000, 6000}; // first gif, second gif, third gif
-        gifTimers = new Timer[gifs.length];
+        // Use only one GIF instead of three
+        gif = loadIcon("assets/MainMenuScreen/MimalaIntro.gif");
 
         setBounds(0, 0, frame.getWidth(), frame.getHeight());
 
-        playNextGIF();
+        playGIF();
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -47,32 +40,24 @@ public class IntroScreen extends JPanel {
         }
     }
 
-    private void playNextGIF() {
-        if (currentIndex < gifs.length) {
-            ImageIcon icon = gifs[currentIndex];
-            currentImage = icon.getImage();
-            repaint();
+    private void playGIF() {
+        currentImage = gif.getImage();
+        repaint();
 
-            gifTimers[currentIndex] = new Timer(realDurations[currentIndex], e -> {
-                currentIndex++;
-                playNextGIF();
-            });
-            gifTimers[currentIndex].setRepeats(false);
-            gifTimers[currentIndex].start();
-        } else {
-            skipToMainMenu();
-        }
+        // Timer to handle the duration of the GIF
+        gifTimer = new Timer(gifDuration, e -> skipToMainMenu());
+        gifTimer.setRepeats(false);
+        gifTimer.start();
     }
 
     private void skipToMainMenu() {
-        // Stop all timers to prevent any unnecessary actions
-        for (Timer t : gifTimers) {
-            if (t != null) t.stop();
+        if (gifTimer != null) {
+            gifTimer.stop(); // Stop the timer if it is running
         }
         JPanel newScreen = new MainMenu(frame);
         SwingUtilities.invokeLater(() -> {
             frame.getContentPane().removeAll();
-            frame.setBackground(Color.BLACK);  // Make sure to keep the background black during the transition
+            frame.setBackground(Color.BLACK); // Make sure to keep the background black during the transition
             frame.setContentPane(newScreen);
             frame.revalidate();
             frame.repaint();
