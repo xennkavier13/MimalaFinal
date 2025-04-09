@@ -196,7 +196,7 @@ public class GameScreen extends JPanel {
         try {
             URL imageURL = getClass().getResource("/" + selectedMapPath);
             if (imageURL != null) {
-                mapImage = new ImageIcon(imageURL);
+                mapImage = new ImageIcon(imageURL); // This works for GIF as well
                 System.out.println("Map loaded: " + imageURL);
             } else {
                 System.err.println("Error: GameScreen Map image resource not found: /" + selectedMapPath);

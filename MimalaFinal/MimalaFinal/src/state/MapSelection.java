@@ -17,6 +17,15 @@ public class MapSelection extends JPanel {
     private Clip music;
 
     private final String[] mapPaths = {
+            "assets/StageMap/Chambers.gif",
+            "assets/StageMap/China.gif",
+            "assets/StageMap/DesertedLand.gif",
+            "assets/StageMap/DragonLair.gif",
+            "assets/StageMap/King'sThrone.gif",
+            "assets/StageMap/RoyalPalace.gif"
+    };
+
+    private final String[] mapPreviewPaths = {
             "assets/StageMap/Chambers.png",
             "assets/StageMap/China.png",
             "assets/StageMap/DesertedLand.png",
@@ -24,11 +33,10 @@ public class MapSelection extends JPanel {
             "assets/StageMap/King'sThrone.png",
             "assets/StageMap/RoyalPalace.png"
     };
+
     private final String[] mapNames = {
             "Chambers", "China", "DesertedLand", "DragonLair", "King'sThrone", "RoyalPalace"
     };
-
-    private final String[] mapPreviewPaths = mapPaths;
 
     private String selectedMapPath = null;
     private JLabel currentlySelectedMapLabel = null;
@@ -81,6 +89,7 @@ public class MapSelection extends JPanel {
         if (startX < 0) startX = 10;
         if (startY < 0) startY = 10;
 
+        // Create map preview buttons using PNG images
         createMapPreviewButton(mapNames[0], mapPreviewPaths[0], startX, startY, mapWidth, mapHeight);
         createMapPreviewButton(mapNames[1], mapPreviewPaths[1], startX + mapWidth + spacingX, startY, mapWidth, mapHeight);
         createMapPreviewButton(mapNames[2], mapPreviewPaths[2], startX + 2 * (mapWidth + spacingX), startY, mapWidth, mapHeight);
@@ -185,12 +194,14 @@ public class MapSelection extends JPanel {
                     finalButton.setBorder(hoverBorder);
                 }
             }
+
             @Override
             public void mouseExited(MouseEvent e) {
                 if (currentlySelectedMapLabel != finalButton) {
                     finalButton.setBorder(null);
                 }
             }
+
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (currentlySelectedMapLabel != null) {
