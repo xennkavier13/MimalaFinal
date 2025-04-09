@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.util.Random;
 import state.character.CharacterDataLoader;
 import state.character.CharacterStats;
+import util.RoundManager;
 // Removed: import javax.swing.Timer; // We are replacing this
 
 public class GameScreen extends JPanel {
