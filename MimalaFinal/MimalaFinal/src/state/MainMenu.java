@@ -3,8 +3,10 @@ package state;
 import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class MainMenu extends JPanel {
     private final ImageIcon mainMenuGif;
@@ -22,6 +24,8 @@ public class MainMenu extends JPanel {
         // Apply smooth transition background (avoids flash)
         frame.setBackground(Color.BLACK);
 
+        playMusic("/assets/MainMenuScreen/Sounds/MimalaMainMenuMusic.wav");
+
         setupButtons();
     }
 
@@ -30,6 +34,9 @@ public class MainMenu extends JPanel {
                 "assets/MainMenuScreen/Start/Start_off.png",
                 "assets/MainMenuScreen/Start/Start_hover.png",
                 450, () -> {
+
+                    stopMusic();
+
                     // Transition smoothly with black background
                     JPanel newScreen = new ModeSelection(frame);
                     newScreen.setOpaque(true);
@@ -50,6 +57,9 @@ public class MainMenu extends JPanel {
                 "assets/MainMenuScreen/End/End_off.png",
                 "assets/MainMenuScreen/End/End_hover.png",
                 525, () -> {
+
+                    stopMusic();
+
                     stopMusic(); // Stop music when exiting
                     System.exit(0);
                 }
@@ -112,13 +122,16 @@ public class MainMenu extends JPanel {
 
     private void playMusic(String filePath) {
         try {
-            File musicFile = new File(filePath);
-            if (!musicFile.exists()) {
-                System.err.println("Music file not found: " + filePath);
+            // Load from resources (classpath)
+            InputStream audioSrc = getClass().getResourceAsStream(filePath);
+            if (audioSrc == null) {
+                System.err.println("Music file not found in resources: " + filePath);
                 return;
             }
 
-            AudioInputStream audioStream = AudioSystem.getAudioInputStream(musicFile);
+            InputStream bufferedIn = new BufferedInputStream(audioSrc);
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn);
+
             music = AudioSystem.getClip();
             music.open(audioStream);
             music.loop(Clip.LOOP_CONTINUOUSLY);
@@ -127,6 +140,7 @@ public class MainMenu extends JPanel {
             e.printStackTrace();
         }
     }
+
 
     private void stopMusic() {
         if (music != null && music.isRunning()) {

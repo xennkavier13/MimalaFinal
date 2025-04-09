@@ -1,10 +1,14 @@
 package state;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.awt.event.ActionEvent;
 import java.util.Random;
@@ -92,6 +96,9 @@ public class GameScreen extends JPanel {
 
     private final String gameMode; // <<< ADD field for game mode
 
+
+    private Clip music;
+
     public GameScreen(JFrame frame, String firstPlayerCharacter, String secondPlayerCharacter, String selectedMapResourcePath, String gameMode) {
         this.frame = frame;
         this.firstPlayerCharacterName = firstPlayerCharacter;
@@ -130,6 +137,9 @@ public class GameScreen extends JPanel {
 
         // --- Request Focus ---
         SwingUtilities.invokeLater(this::requestFocusInWindow);
+
+        playMusic("assets/FightingUI/music/fightmusic.wav");
+
     }
     private void loadCharacterStats() {
         System.out.println("Loading character stats...");
@@ -1029,4 +1039,35 @@ public class GameScreen extends JPanel {
         stopTurnTimer(); // Explicitly stop the timer thread
         // Remove listeners? Not strictly necessary if the panel/frame is disposed.
     }
+
+
+    private void playMusic(String filePath) {
+        try {
+            // Load from resources (classpath)
+            InputStream audioSrc = getClass().getResourceAsStream(filePath);
+            if (audioSrc == null) {
+                System.err.println("Music file not found in resources: " + filePath);
+                return;
+            }
+
+            InputStream bufferedIn = new BufferedInputStream(audioSrc);
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn);
+
+            music = AudioSystem.getClip();
+            music.open(audioStream);
+            music.loop(Clip.LOOP_CONTINUOUSLY);
+            music.start();
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void stopMusic() {
+        if (music != null && music.isRunning()) {
+            music.stop();
+            music.close();
+        }
+    }
+
 }

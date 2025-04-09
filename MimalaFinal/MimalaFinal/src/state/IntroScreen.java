@@ -1,8 +1,13 @@
 package state;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class IntroScreen extends JPanel {
     private final JFrame frame;
@@ -10,6 +15,7 @@ public class IntroScreen extends JPanel {
     private final int gifDuration = 20500; // Duration of the new single GIF in milliseconds
     private Image currentImage;
     private Timer gifTimer;
+    private Clip music;
 
     public IntroScreen(JFrame frame) {
         this.frame = frame;
@@ -30,7 +36,9 @@ public class IntroScreen extends JPanel {
                 skipToMainMenu();
             }
         });
+
     }
+
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -48,12 +56,42 @@ public class IntroScreen extends JPanel {
         gifTimer = new Timer(gifDuration, e -> skipToMainMenu());
         gifTimer.setRepeats(false);
         gifTimer.start();
+
+        playIntroMusic();
+
+
     }
+
+    private void playIntroMusic() {
+        try {
+            InputStream audioSrc = getClass().getResourceAsStream("/assets/MainMenuScreen/Sounds/intro_music.wav");
+            if (audioSrc == null) {
+                System.err.println("Audio file not found!");
+                return;
+            }
+
+            InputStream bufferedIn = new BufferedInputStream(audioSrc);
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn);
+            music = AudioSystem.getClip();
+            music.open(audioStream);
+            music.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     private void skipToMainMenu() {
         if (gifTimer != null) {
             gifTimer.stop(); // Stop the timer if it is running
         }
+
+        if (music != null && music.isRunning()) {
+            music.stop();
+            music.close();
+        }
+
         JPanel newScreen = new MainMenu(frame);
         SwingUtilities.invokeLater(() -> {
             frame.getContentPane().removeAll();
