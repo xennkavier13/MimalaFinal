@@ -424,7 +424,7 @@ public class GameScreen extends JPanel {
         int p1_Y_Stamina = p1_Y_HP + HP_BAR_HEIGHT + BAR_SPACING;
         player1StaminaBar.setBounds(p1_X, p1_Y_Stamina, BAR_WIDTH, STAMINA_BAR_HEIGHT);
         int p1_Char_X = PADDING + 250;
-        int p1_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 80;
+        int p1_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 50; // position character
         player1CharacterLabel.setBounds(p1_Char_X, p1_Char_Y, CHARACTER_WIDTH, CHARACTER_HEIGHT);
         int p1_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT;
         int p1_Skill_X = PADDING;
@@ -440,7 +440,7 @@ public class GameScreen extends JPanel {
         int p2_X_Stamina = panelWidth - PADDING - BAR_WIDTH - 50;
         player2StaminaBar.setBounds(p2_X_Stamina, p2_Y_Stamina, BAR_WIDTH, STAMINA_BAR_HEIGHT);
         int p2_Char_X = panelWidth - PADDING - 250 - CHARACTER_WIDTH;
-        int p2_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 80;
+        int p2_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 50; // position character
         player2CharacterLabel.setBounds(p2_Char_X, p2_Char_Y, CHARACTER_WIDTH, CHARACTER_HEIGHT);
         int p2_Skill_X = panelWidth - PADDING - SKILL_BUTTON_WIDTH;
         int p2_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT;
@@ -935,9 +935,9 @@ public class GameScreen extends JPanel {
         turnIndicatorLabel.setText(isPlayer1Turn ? firstPlayerCharacterName + "'s Turn" : secondPlayerCharacterName + "'s Turn");
 
         // Update highlight border
-        player1CharacterLabel.setBorder(isPlayer1Turn ? BorderFactory.createLineBorder(Color.YELLOW, 3) : null);
+        //player1CharacterLabel.setBorder(isPlayer1Turn ? BorderFactory.createLineBorder(Color.YELLOW, 3) : null);
         // Only highlight P2 if it's their turn (human or AI)
-        player2CharacterLabel.setBorder(!isPlayer1Turn ? BorderFactory.createLineBorder(Color.YELLOW, 3) : null);
+        //player2CharacterLabel.setBorder(!isPlayer1Turn ? BorderFactory.createLineBorder(Color.YELLOW, 3) : null);
 
         // Ensure panel has focus for key bindings when a human player's turn starts
         if ((isPlayer1Turn || (!isPlayer1Turn && isHumanP2))) {
