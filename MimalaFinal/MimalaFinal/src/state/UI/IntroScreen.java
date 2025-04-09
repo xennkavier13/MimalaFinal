@@ -12,7 +12,7 @@ import java.io.InputStream;
 public class IntroScreen extends JPanel {
     private final JFrame frame;
     private final ImageIcon gif;
-    private final int gifDuration = 20500; // Duration of the new single GIF in milliseconds
+    private final int gifDuration = 23500; // Duration of the new single GIF in milliseconds
     private Image currentImage;
     private Timer gifTimer;
     private Clip music;
