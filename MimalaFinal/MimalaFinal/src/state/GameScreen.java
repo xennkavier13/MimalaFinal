@@ -72,8 +72,8 @@ public class GameScreen extends JPanel {
     // ... (rest of the layout constants)
 
     // --- Asset Path Constants --- (Keep as they are)
-    private static final String HP_BAR_BG_BASE_PATH = "/assets/FightingUI/HealthBar_EachCharacters/Azurox.png";
-    private static final String HP_BAR_FG_PATH = "/assets/FightingUI/HealthBar_EachCharacters/HealthBar_AllCharacters1.png";
+    private static final String HP_BAR_BG_BASE_PATH = "/assets/FightingUI/HealthBarBorder.png";
+    private static final String HP_BAR_FG_PATH = "/assets/FightingUI/HealthBar_EachCharacters/HealthBar_AllCharacters.png";
     private static final String STAMINA_BAR_BG_PATH = "/assets/FightingUI/StaminaBar1.png";
     private static final String STAMINA_BAR_FG_PATH = "/assets/FightingUI/StaminaBar2.png";
     private static final String CHAR_GIF_BASE_PATH = "/assets/FightingUI/Mimala_Characters/";
@@ -96,6 +96,7 @@ public class GameScreen extends JPanel {
 
     private final String gameMode; // <<< ADD field for game mode
 
+    private Pause pause;
 
     private Clip music;
 
@@ -138,7 +139,8 @@ public class GameScreen extends JPanel {
         // --- Request Focus ---
         SwingUtilities.invokeLater(this::requestFocusInWindow);
 
-        playMusic("assets/FightingUI/music/fightmusic.wav");
+        playMusic("assets/FightingUI/fightmusic.wav");
+
     }
 
     private void loadCharacterStats() {
@@ -394,11 +396,11 @@ public class GameScreen extends JPanel {
 
     private int getAnimationDuration(String animationType) {
         switch (animationType) {
-            case "Skill1": return 3000; // 1 second
-            case "Skill2": return 3000; // 1.2 seconds
-            case "Skill3": return 3000; // 2.0 seconds
+            case "Skill1": return 2000; // 1 second
+            case "Skill2": return 2000; // 1.2 seconds
+            case "Skill3": return 2000; // 2.0 seconds
             case "GetHit": return 1000;  // 0.8 seconds
-            case "Death":  return 2000;// Death animation duration not needed here as we don't auto-revert it
+            case "Death":  return 1000;// Death animation duration not needed here as we don't auto-revert it
             default:       return 1000; // Default duration
         }
     }
@@ -513,6 +515,21 @@ public class GameScreen extends JPanel {
                 }
             }
         });
+
+
+        inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        actionMap = getActionMap();
+
+        // Bind ESCAPE key
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "pauseGame");
+
+        actionMap.put("pauseGame", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                transitionToPause(selectedMapPath);  // Call your existing method
+            }
+        });
+
         System.out.println("Key bindings set up.");
     }
 
@@ -1026,33 +1043,23 @@ public class GameScreen extends JPanel {
 
     private void playMusic(String filePath) {
         try {
-            // Load from resources (classpath)
-            InputStream audioSrc = getClass().getResourceAsStream(filePath);
+            InputStream audioSrc = getClass().getResourceAsStream("/" + filePath); // Leading slash is important
             if (audioSrc == null) {
                 System.err.println("Music file not found in resources: " + filePath);
                 return;
             }
-
             InputStream bufferedIn = new BufferedInputStream(audioSrc);
             AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn);
-
             music = AudioSystem.getClip();
             music.open(audioStream);
-            music.loop(Clip.LOOP_CONTINUOUSLY);  // Ensure looping
-            music.start();  // Start playing
-
-            if (music != null && music.isRunning()) {
-                System.out.println("Music is playing.");
-            } else {
-                System.out.println("Music failed to start.");
-            }
-
-
+            music.loop(Clip.LOOP_CONTINUOUSLY);
+            music.start();
             System.out.println("Music started successfully");
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             e.printStackTrace();
         }
     }
+
 
 
     private void stopMusic() {
@@ -1061,4 +1068,19 @@ public class GameScreen extends JPanel {
             music.close();
         }
     }
+
+
+    private void transitionToPause(String mapResourcePath) {
+        if (mapResourcePath == null) return;
+
+        SwingUtilities.invokeLater(() -> {
+            stopMusic();
+            Pause pauseScreen = new Pause(frame, this); // Pass reference to GameScreen so it can resume
+            frame.setContentPane(pauseScreen);
+            frame.revalidate();
+            frame.repaint();
+        });
+    }
+
+
 }

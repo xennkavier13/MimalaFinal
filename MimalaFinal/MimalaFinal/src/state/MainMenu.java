@@ -34,6 +34,9 @@ public class MainMenu extends JPanel {
                 "assets/MainMenuScreen/Start/Start_off.png",
                 "assets/MainMenuScreen/Start/Start_hover.png",
                 450, () -> {
+
+                    stopMusic();
+
                     // Transition smoothly with black background
                     JPanel newScreen = new ModeSelection(frame);
                     newScreen.setOpaque(true);
@@ -66,6 +69,8 @@ public class MainMenu extends JPanel {
                 "assets/MainMenuScreen/Credits/Credits_off.png",
                 "assets/MainMenuScreen/Credits/Credits_hover.png",
                 600, () -> {
+                    stopMusic();
+
                     // Show credits screen on click
                     JPanel newScreen = new CreditsScreen(frame);
                     newScreen.setBackground(Color.BLACK); // Prevent flash during transition

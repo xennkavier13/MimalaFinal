@@ -39,7 +39,7 @@ public class CharacterSelection extends JPanel {
         setPreferredSize(new Dimension(1920, 1080));
         setupButtons();
 
-        playMusic("/assets/MainMenuScreen/Sounds/MimalaMainMenuMusic.wav");
+//        playMusic("/assets/MainMenuScreen/Sounds/MimalaMainMenuMusic.wav");
     }
 
     private void setupButtons() {

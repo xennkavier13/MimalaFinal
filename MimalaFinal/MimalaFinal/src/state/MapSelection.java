@@ -60,7 +60,7 @@ public class MapSelection extends JPanel {
         setBackground(Color.WHITE);
 
         setupComponents();
-        playMusic("/assets/MainMenuScreen/Sounds/MimalaMainMenuMusic.wav");
+//        playMusic("/assets/MainMenuScreen/Sounds/MimalaMainMenuMusic.wav");
     }
 
     @Override
@@ -119,6 +119,7 @@ public class MapSelection extends JPanel {
                 "/assets/MapSelectionScreen/Random_hover.png",
                 secondRowY + mapHeight + 50,
                 () -> {
+                    stopMusic();
                     int randomIndex = random.nextInt(mapPaths.length);
                     transitionToGameScreen(mapPaths[randomIndex]);
                 }
