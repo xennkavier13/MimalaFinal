@@ -21,32 +21,32 @@ public class MapSelection extends JPanel {
     // *** IMPORTANT: Ensure 'assets' folder is marked as a 'Resources Root' in your IDE
     // or placed in 'src/main/resources' if using Maven/Gradle. ***
     private final String[] mapPaths = {
-            "assets/StageMap/FieldMap.png",    // Index 0 - Field
-            "assets/StageMap/BuddhaMap.png",   // Index 1 - Buddha
-            "assets/StageMap/ArenaMap.png",    // Index 2 - Arena
-            "assets/StageMap/HauntedMap.png", // Index 3 - Haunted (Note the underscore, matching preview)
-            "assets/StageMap/SnowMap.png",     // Index 4 - Snow
-            "assets/StageMap/VolcanoMap.png"   // Index 5 - Volcano
+            "assets/StageMap/Chambers.png",    // Index 0 - Chambers
+            "assets/StageMap/China.png",   // Index 1 - China
+            "assets/StageMap/DesertedLand.png",    // Index 2 - DesertedLand
+            "assets/StageMap/DragonLair.png", // Index 3 - DragonLair (Note the underscore, matching preview)
+            "assets/StageMap/King'sThrone.png",     // Index 4 - King'sThrone
+            "assets/StageMap/RoyalPalace.png"   // Index 5 - RoyalPalace
     };
     // Map Names corresponding to mapPaths indices for easier lookup
     private final String[] mapNames = {
-            "FieldMap", "BuddhaMap", "ArenaMap", "HauntedMap", "SnowMap", "VolcanoMap"
+            "Chambers", "China", "DesertedLand", "DragonLair", "King'sThrone", "RoyalPalace"
     };
 
     // Image paths for the map previews (relative to classpath root)
     private final String[] mapPreviewPaths = {
-            "assets/StageMap/FieldMap.png",    // Preview for Field
-            "assets/StageMap/BuddhaMap.png",   // Preview for Buddha
-            "assets/StageMap/ArenaMap.png",    // Preview for Arena
-            "assets/StageMap/HauntedMap.png", // Preview for Haunted
-            "assets/StageMap/SnowMap.png",     // Preview for Snow
-            "assets/StageMap/VolcanoMap.png"   // Preview for Volcano
+            "assets/StageMap/Chambers.png",    // Preview for Field
+            "assets/StageMap/China.png",   // Preview for Buddha
+            "assets/StageMap/DesertedLand.png",    // Preview for Arena
+            "assets/StageMap/DragonLair.png", // Preview for Haunted
+            "assets/StageMap/King'sThrone.png",     // Preview for Snow
+            "assets/StageMap/RoyalPalace.png"   // Preview for Volcano
     };
 
     private String selectedMapPath = null; // Store the *resource path* of the selected map
     private JLabel currentlySelectedMapLabel = null;
     private final Border selectionBorder = BorderFactory.createLineBorder(Color.YELLOW, 3);
-    private final Border hoverBorder = BorderFactory.createLineBorder(Color.CYAN, 2);
+    private final Border hoverBorder = BorderFactory.createLineBorder(Color.YELLOW, 2);
     private final Border buttonHoverBorder = BorderFactory.createLineBorder(Color.GRAY, 2);
     private final Border buttonIdleBorder = BorderFactory.createLineBorder(Color.BLACK, 1);
 
@@ -358,7 +358,7 @@ public class MapSelection extends JPanel {
         // Uncomment and adjust path if needed. Ensure SampleBg.png is also in assets/StageMap/
 
         try {
-            String bgResourcePath = "/assets/StageMap/MapSelect.png"; // Relative to classpath root
+            String bgResourcePath = "/assets/StageMap/MapSelectBG.png"; // Relative to classpath root
             URL bgURL = getClass().getResource(bgResourcePath);
             if(bgURL != null) {
                 Image bgImage = new ImageIcon(bgURL).getImage();
