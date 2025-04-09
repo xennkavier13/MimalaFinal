@@ -2,22 +2,21 @@ package state;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 
 public class IntroScreen extends JPanel {
     private final JFrame frame;
     private final ImageIcon[] gifs;
-    private final int[] durations; // Milliseconds per GIF
+    private final int[] realDurations;
     private int currentIndex = 0;
-    private Timer gifTimer;
-    private JLabel gifLabel;
+    private final Timer[] gifTimers;
+    private Image currentImage;
 
     public IntroScreen(JFrame frame) {
         this.frame = frame;
-
-        setLayout(new BorderLayout());
+        setLayout(null); // No layout manager
         setBackground(Color.BLACK);
+        setFocusable(true);
 
         gifs = new ImageIcon[]{
                 loadIcon("assets/MainMenuScreen/MimalaIntroFirst.gif"),
@@ -25,27 +24,12 @@ public class IntroScreen extends JPanel {
                 loadIcon("assets/MainMenuScreen/MimalaIntroThird.gif")
         };
 
-        durations = new int[]{
-                5500, // First GIF duration
-                5500, // Second GIF duration
-                5000  // Third GIF duration
-        };
+        realDurations = new int[]{7000, 8000, 6000}; // first gif, second gif, third gif
+        gifTimers = new Timer[gifs.length];
 
-        gifLabel = new JLabel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Image image = gifs[currentIndex].getImage();
-                g.drawImage(image, 0, 0, getWidth(), getHeight(), this); // scale to fit
-            }
-        };
+        setBounds(0, 0, frame.getWidth(), frame.getHeight());
 
-        gifLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        gifLabel.setVerticalAlignment(SwingConstants.CENTER);
-        add(gifLabel, BorderLayout.CENTER);
-
-        gifLabel.setIcon(gifs[0]); // set first gif
-        startGifTimer();
+        playNextGIF();
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -55,26 +39,36 @@ public class IntroScreen extends JPanel {
         });
     }
 
-    private void startGifTimer() {
-        gifTimer = new Timer(durations[currentIndex], e -> {
-            currentIndex++;
-            if (currentIndex < gifs.length) {
-                gifLabel.setIcon(gifs[currentIndex]); // update GIF
-                gifLabel.repaint(); // force repaint with scaling
-                gifTimer.setDelay(durations[currentIndex]);
-                gifTimer.restart();
-            } else {
-                skipToMainMenu();
-            }
-        });
-        gifTimer.setRepeats(false);
-        gifTimer.start();
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (currentImage != null) {
+            g.drawImage(currentImage, 0, 0, getWidth(), getHeight(), this); // Stretch to fit
+        }
+    }
+
+    private void playNextGIF() {
+        if (currentIndex < gifs.length) {
+            ImageIcon icon = gifs[currentIndex];
+            currentImage = icon.getImage();
+            repaint();
+
+            gifTimers[currentIndex] = new Timer(realDurations[currentIndex], e -> {
+                currentIndex++;
+                playNextGIF();
+            });
+            gifTimers[currentIndex].setRepeats(false);
+            gifTimers[currentIndex].start();
+        } else {
+            skipToMainMenu();
+        }
     }
 
     private void skipToMainMenu() {
-        if (gifTimer != null) gifTimer.stop();
+        for (Timer t : gifTimers) {
+            if (t != null) t.stop();
+        }
         JPanel newScreen = new MainMenu(frame);
-
         SwingUtilities.invokeLater(() -> {
             frame.getContentPane().removeAll();
             frame.setContentPane(newScreen);
