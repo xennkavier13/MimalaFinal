@@ -19,26 +19,26 @@ public class MainMenu extends JPanel {
         requestFocusInWindow();
         setPreferredSize(new Dimension(1920, 1080));
 
-        // Play the music using AudioManager (ensuring it doesn't restart if already playing)
+        // Apply smooth transition background (avoids flash)
+        frame.setBackground(Color.BLACK);
 
         setupButtons();
     }
 
     private void setupButtons() {
-        // Transition to ModeSelection
         JLabel startButton = createButton(
                 "assets/MainMenuScreen/Start/Start_off.png",
                 "assets/MainMenuScreen/Start/Start_hover.png",
                 450, () -> {
-                    // Create the new panel off-screen
+                    // Transition smoothly with black background
                     JPanel newScreen = new ModeSelection(frame);
                     newScreen.setOpaque(true);
-                    newScreen.setBackground(Color.BLACK); // Force the background to black
+                    newScreen.setBackground(Color.BLACK);
 
-                    // Swap the content pane smoothly
+                    // Smooth transition to new screen
                     SwingUtilities.invokeLater(() -> {
                         frame.getContentPane().removeAll();  // Clear old components first
-                        frame.setBackground(Color.BLACK);   // Prevent white flashing
+                        frame.setBackground(Color.BLACK);   // Prevent white flash
                         frame.setContentPane(newScreen);
                         frame.revalidate();
                         frame.repaint();
@@ -58,7 +58,20 @@ public class MainMenu extends JPanel {
         JLabel creditsButton = createButton(
                 "assets/MainMenuScreen/Credits/Credits_off.png",
                 "assets/MainMenuScreen/Credits/Credits_hover.png",
-                600, () -> System.out.println("Credits Clicked")
+                600, () -> {
+                    // Show credits screen on click
+                    JPanel newScreen = new CreditsScreen(frame);
+                    newScreen.setBackground(Color.BLACK); // Prevent flash during transition
+
+                    // Smooth transition to credits screen
+                    SwingUtilities.invokeLater(() -> {
+                        frame.getContentPane().removeAll();
+                        frame.setBackground(Color.BLACK); // Avoid flash
+                        frame.setContentPane(newScreen);
+                        frame.revalidate();
+                        frame.repaint();
+                    });
+                }
         );
 
         add(startButton);
@@ -77,10 +90,12 @@ public class MainMenu extends JPanel {
             public void mouseEntered(java.awt.event.MouseEvent e) {
                 button.setIcon(hoverIcon);
             }
+
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
                 button.setIcon(offIcon);
             }
+
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 action.run();

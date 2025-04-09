@@ -15,10 +15,10 @@ public class IntroScreen extends JPanel {
     public IntroScreen(JFrame frame) {
         this.frame = frame;
         setLayout(null); // No layout manager
-        setBackground(Color.BLACK);
+        setBackground(Color.BLACK); // Ensure the background is black during the intro
         setFocusable(true);
 
-        gifs = new ImageIcon[]{
+        gifs = new ImageIcon[] {
                 loadIcon("assets/MainMenuScreen/MimalaIntroFirst.gif"),
                 loadIcon("assets/MainMenuScreen/MimalaIntroSecond.gif"),
                 loadIcon("assets/MainMenuScreen/MimalaIntroThird.gif")
@@ -65,12 +65,14 @@ public class IntroScreen extends JPanel {
     }
 
     private void skipToMainMenu() {
+        // Stop all timers to prevent any unnecessary actions
         for (Timer t : gifTimers) {
             if (t != null) t.stop();
         }
         JPanel newScreen = new MainMenu(frame);
         SwingUtilities.invokeLater(() -> {
             frame.getContentPane().removeAll();
+            frame.setBackground(Color.BLACK);  // Make sure to keep the background black during the transition
             frame.setContentPane(newScreen);
             frame.revalidate();
             frame.repaint();
