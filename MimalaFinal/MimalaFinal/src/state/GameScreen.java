@@ -71,8 +71,8 @@ public class GameScreen extends JPanel {
     private static final int STAMINA_BAR_HEIGHT = 40;
     private static final int BAR_SPACING = 5;
     private static final int CHARACTER_Y_OFFSET = 30;
-    private static final int CHARACTER_WIDTH = 768;
-    private static final int CHARACTER_HEIGHT = 768;
+    private static final int CHARACTER_WIDTH = 1920;
+    private static final int CHARACTER_HEIGHT = 1080;
     private static final int SKILL_BUTTON_WIDTH = 200;
     private static final int SKILL_BUTTON_HEIGHT = 60;
     private static final int SKILL_SPACING = 10;
@@ -120,7 +120,7 @@ public class GameScreen extends JPanel {
         System.out.println("GameScreen initialized. Mode: " + this.gameMode + ", Is Vs AI: " + this.isVsAI);
 
         // --- Initialize Round Manager FIRST ---
-        this.roundManager = new RoundManager(MAX_ROUNDS); // Initialize here!
+        this.roundManager = new RoundManager(10); // Initialize here! TURNS
 
         // --- Load Character Stats ---
         loadCharacterStats(); // Now safe to call
@@ -424,8 +424,8 @@ public class GameScreen extends JPanel {
         player1HpBar.setBounds(p1_X, p1_Y_HP, BAR_WIDTH, HP_BAR_HEIGHT);
         int p1_Y_Stamina = p1_Y_HP + HP_BAR_HEIGHT + BAR_SPACING;
         player1StaminaBar.setBounds(p1_X, p1_Y_Stamina, BAR_WIDTH, STAMINA_BAR_HEIGHT);
-        int p1_Char_X = PADDING + 250;
-        int p1_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 150; // position character
+        int p1_Char_X = -450;
+        int p1_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN + 40; // position character
         player1CharacterLabel.setBounds(p1_Char_X, p1_Char_Y, CHARACTER_WIDTH, CHARACTER_HEIGHT);
         int p1_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT;
         int p1_Skill_X = PADDING;
@@ -440,8 +440,8 @@ public class GameScreen extends JPanel {
         int p2_Y_Stamina = p2_Y_HP + HP_BAR_HEIGHT + BAR_SPACING;
         int p2_X_Stamina = panelWidth - PADDING - BAR_WIDTH - 50;
         player2StaminaBar.setBounds(p2_X_Stamina, p2_Y_Stamina, BAR_WIDTH, STAMINA_BAR_HEIGHT);
-        int p2_Char_X = panelWidth - PADDING - 250 - CHARACTER_WIDTH;
-        int p2_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN - 150; // position character
+        int p2_Char_X = panelWidth + 480 - CHARACTER_WIDTH;
+        int p2_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN + 40; // position character
         player2CharacterLabel.setBounds(p2_Char_X, p2_Char_Y, CHARACTER_WIDTH, CHARACTER_HEIGHT);
         int p2_Skill_X = panelWidth - PADDING - SKILL_BUTTON_WIDTH;
         int p2_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT;
@@ -742,8 +742,8 @@ public class GameScreen extends JPanel {
                 updateHpBars();
                 updateStaminaBars();
 
-                boolean p1Died = player1CurrentHp <= 0;
-                boolean p2Died = player2CurrentHp <= 0;
+                boolean p1Died = player1CurrentHp == 0;
+                boolean p2Died = player2CurrentHp == 0;
                 String winner = "";
 
                 if (p1Died) {
@@ -753,14 +753,48 @@ public class GameScreen extends JPanel {
                     winner = "Player 2";
                     new GameLog().recordGame(winner);
                     new GameLog().saveStatsToFile();
+
+                    // Stop game and timers
+                    gameRunning = false;
+                    stopTurnTimer();
+                    if (player1AnimTimer != null) player1AnimTimer.stop();
+                    if (player2AnimTimer != null) player2AnimTimer.stop();
+
+                    // Start death sequence timer
+                    if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
+                        deathSequenceTimer.stop();
+                    }
+                    deathSequenceTimer = new javax.swing.Timer(getAnimationDuration("Death"), e -> {
+                        transitionToResultScreen();
+                    });
+                    deathSequenceTimer.setRepeats(false);
+                    deathSequenceTimer.start();
+                    return; // Exit early since game is over
                 }
-                if (p2Died){
+                if (p2Died) {
                     playAnimation(player2CharacterLabel, secondPlayerCharacterName, "Death", false, player2IdleIcon);
                     p2Lose++;
                     p1Wins++;
                     winner = "Player 1";
                     new GameLog().recordGame(winner);
                     new GameLog().saveStatsToFile();
+
+                    // Stop game and timers
+                    gameRunning = false;
+                    stopTurnTimer();
+                    if (player1AnimTimer != null) player1AnimTimer.stop();
+                    if (player2AnimTimer != null) player2AnimTimer.stop();
+
+                    // Start death sequence timer
+                    if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
+                        deathSequenceTimer.stop();
+                    }
+                    deathSequenceTimer = new javax.swing.Timer(getAnimationDuration("Death"), e -> {
+                        transitionToResultScreen();
+                    });
+                    deathSequenceTimer.setRepeats(false);
+                    deathSequenceTimer.start();
+                    return; // Exit early since game is over
                 }
 
                 switchTurn();
@@ -847,7 +881,6 @@ public class GameScreen extends JPanel {
             if (player1AnimTimer != null) player1AnimTimer.stop();
             if (player2AnimTimer != null) player2AnimTimer.stop();
 
-
             if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
                 deathSequenceTimer.stop();
             }
@@ -878,11 +911,10 @@ public class GameScreen extends JPanel {
 
         // Determine the result (which player won?)
         // Note: If max rounds reached, might need different logic here passed from endGame()
-        boolean p1Wins = player2CurrentHp <= 0 && player1CurrentHp > 0;
-        boolean p2Wins = player1CurrentHp <= 0 && player2CurrentHp > 0;
+        boolean p1Wins = player2CurrentHp == 0 && player1CurrentHp > 0;
+        boolean p2Wins = player1CurrentHp == 0 && player2CurrentHp > 0;
         // Default to player 1 winning if it's a draw or P2 HP is 0 (adjust logic as needed)
-        boolean player1Won = p1Wins || (!p2Wins && player2CurrentHp <= 0);
-
+        boolean player1Won = p1Wins || (!p2Wins && player2CurrentHp == 0);
 
         System.out.println("Player 1 Won: " + player1Won);
 
@@ -892,6 +924,7 @@ public class GameScreen extends JPanel {
         frame.setContentPane(resultScreen);
         frame.revalidate();
         frame.repaint();
+        stopMusic();
         System.out.println("Switched to ResultScreen.");
     }
 
@@ -989,7 +1022,6 @@ public class GameScreen extends JPanel {
             return "It's a Draw!";
         }
     }
-
 
     private void addAllComponents() {
         // Ensure all components are added. Add order doesn't usually matter for null layout.

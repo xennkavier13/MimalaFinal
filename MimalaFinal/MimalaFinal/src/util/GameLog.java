@@ -48,10 +48,10 @@ public class GameLog {
 
     public void saveStatsToFile() {
         try (FileWriter writer = new FileWriter(statsFile)) {
-            writer.write("player1Wins = " + player1Wins + "\n");
-            writer.write("player1Losses = " + player1Losses + "\n");
-            writer.write("player2Wins = " + player2Wins + "\n");
-            writer.write("player2Losses = " + player2Losses + "\n");
+            writer.write("Player 1 - Wins: " + player1Wins + "\n");
+            writer.write("Player 1 - Losses: " + player1Losses + "\n");
+            writer.write("Player 2 - Wins: " + player2Wins + "\n");
+            writer.write("Player 2 - Losses: " + player2Losses + "\n");
         } catch (IOException e) {
             System.out.println("Failed to save stats: " + e.getMessage());
         }
