@@ -742,8 +742,8 @@ public class GameScreen extends JPanel {
                 updateHpBars();
                 updateStaminaBars();
 
-                boolean p1Died = player1CurrentHp == 0;
-                boolean p2Died = player2CurrentHp == 0;
+                boolean p1Died = player1CurrentHp <= 0;
+                boolean p2Died = player2CurrentHp <= 0;
                 String winner = "";
 
                 if (p1Died) {
@@ -911,8 +911,8 @@ public class GameScreen extends JPanel {
 
         // Determine the result (which player won?)
         // Note: If max rounds reached, might need different logic here passed from endGame()
-        boolean p1Wins = player2CurrentHp == 0 && player1CurrentHp > 0;
-        boolean p2Wins = player1CurrentHp == 0 && player2CurrentHp > 0;
+        boolean p1Wins = player2CurrentHp <= 0 && player1CurrentHp > 0;
+        boolean p2Wins = player1CurrentHp <= 0 && player2CurrentHp > 0;
         // Default to player 1 winning if it's a draw or P2 HP is 0 (adjust logic as needed)
         boolean player1Won = p1Wins || (!p2Wins && player2CurrentHp == 0);
 

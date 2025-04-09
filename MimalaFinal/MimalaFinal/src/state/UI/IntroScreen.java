@@ -36,7 +36,6 @@ public class IntroScreen extends JPanel {
                 skipToMainMenu();
             }
         });
-
     }
 
 
