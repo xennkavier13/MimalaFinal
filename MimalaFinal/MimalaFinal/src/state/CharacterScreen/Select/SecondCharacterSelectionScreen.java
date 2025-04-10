@@ -59,7 +59,6 @@ public class SecondCharacterSelectionScreen extends JPanel {
 
         setupButtons();
 
-        // Optional: Add title indicating whose turn and which character
     }
 
     // Dynamically determines the GIF path based on character name

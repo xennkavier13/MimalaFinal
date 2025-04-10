@@ -12,7 +12,6 @@ public class CreditsScreen extends JPanel {
     private final ImageIcon creditsGif;
     private final JLabel gifLabel;
 
-    // Duration of the Credits GIF in milliseconds (adjust this to match your GIF)
     private final int gifDuration = 27000; // 27 seconds (adjust as necessary)
 
     public CreditsScreen(JFrame frame) {

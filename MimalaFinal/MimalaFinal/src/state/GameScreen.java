@@ -375,17 +375,12 @@ public class GameScreen extends JPanel {
         ActionListener revertAction = e -> {
             // Check if the label and idle icon are still valid
             if (idleIcon != null && characterLabel != null) {
-                // Optional safety check: only revert if the icon is still the animation one
-                // This helps prevent reverting if another animation started very quickly.
-                // Comment out if it causes issues.
-                // if (characterLabel.getIcon() == animationIcon) {
+
                 characterLabel.setIcon(idleIcon);
                 System.out.println("Reverted " + characterName + " to Idle after " + animationType);
-                // } else {
-                //     System.out.println("Skipped revert for " + characterName + " as icon already changed.");
-                // }
+
             }
-            // Nullify the timer reference for this player once done? Optional.
+
              if (isPlayer1) player1AnimTimer = null; else player2AnimTimer = null;
         };
 
@@ -1010,7 +1005,7 @@ public class GameScreen extends JPanel {
         roundDisplayLabel.setText("Final Round: " + roundManager.getCurrentRound());
         System.out.println("Game Over! " + winnerMessage + " (Ended on Round " + roundManager.getCurrentRound() + ")");
 
-        // Optional: Add a "Return to Menu" button or similar functionality here
+
     }
 
     private String determineWinnerByHp(double p1Hp, double p2Hp) {
@@ -1063,7 +1058,7 @@ public class GameScreen extends JPanel {
         // Swing components (labels, buttons, bars) are painted *after* this method
     }
 
-    // Optional: Cleanup method if needed when the panel is removed
+
     public void cleanup() {
         System.out.println("Cleaning up GameScreen...");
         gameRunning = false; // Ensure flag is set

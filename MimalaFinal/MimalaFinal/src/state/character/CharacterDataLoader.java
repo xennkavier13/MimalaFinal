@@ -8,10 +8,7 @@ public class CharacterDataLoader {
 
     private static final Map<String, CharacterStats> characterStatsMap = new HashMap<>();
 
-    // Static block to load data when the class is loaded
     static {
-        // --- Define Stats Here ---
-        // Example Stats (Replace with your actual balanced values)
         characterStatsMap.put("Azurox", new CharacterStats("Azurox",
                 100.0, 100.0, // Max HP, Max Stamina
                 20.0, 25.0,   // Skill 1 Damage, Cost
@@ -63,10 +60,6 @@ public class CharacterDataLoader {
                 35.0, 40.0    // Skill 3 Damage, Cost
         ));
 
-        // Add stats for all your characters...
-
-        // Add stats for the AI placeholder if needed, perhaps mirroring P1 or having default stats
-        // For simplicity, let's assume AI uses the stats of the character it represents (secondPlayerCharacter)
     }
 
     public static CharacterStats getStats(String characterName) {
@@ -79,17 +72,12 @@ public class CharacterDataLoader {
         return characterStatsMap.get(characterName);
     }
 
-    // Optional: Add a method to handle AI stat retrieval if it needs special logic
     public static CharacterStats getStatsForPlayer(String characterName, boolean isAI) {
         if (isAI && characterName.equals(AI_PLAYER_NAME)) {
-            // Decide AI stats logic. Here, we return null, expecting GameScreen to handle it.
-            // Or you could return stats for a default AI character, etc.
             System.out.println("AI player detected - Stats will be based on chosen character for P2.");
-            return null; // Signal that GameScreen needs to use P2's chosen character stats
+            return null;
         }
         return getStats(characterName);
     }
-
-    // Need AI_PLAYER_NAME constant if using getStatsForPlayer
     private static final String AI_PLAYER_NAME = "Computer";
 }
