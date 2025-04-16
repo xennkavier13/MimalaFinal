@@ -118,18 +118,7 @@ public class GameOverScreen extends JPanel {
             // Move backgroundLabel to the highest index (painted first/bottom)
             setComponentZOrder(backgroundLabel, getComponentCount() - 1);
         }
-        // Optional: Explicitly move buttons to the top (lowest indices)
-        // This is usually not needed if the background is forced to the bottom,
-        // but can be added for extra certainty.
-        // if (rematchButton != null && rematchButton.getParent() == this) {
-        //     setComponentZOrder(rematchButton, 0); // Paint last (topmost)
-        // }
-        // if (menuButton != null && menuButton.getParent() == this) {
-        //     setComponentZOrder(menuButton, 1); // Paint next-to-last (just below topmost)
-        // }
-        // Note: If you uncomment the explicit button Z-order setting, make sure
-        // the indices (0, 1) are correct relative to other components you might add.
-        // Setting only the background to the bottom is generally safer.
+
     }
 
     // Modified createButton to accept a Component for MediaTracker

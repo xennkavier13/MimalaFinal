@@ -45,7 +45,7 @@ public abstract class CharacterSelectionScreen extends JPanel {
             System.err.println("CRITICAL: Failed to load background GIF: " + getGifPath());
         }
         setupButtons();
-        // Optional: Add a visual indicator that it's P2's turn if needed
+
     }
 
     public CharacterSelectionScreen(JFrame frame, String mode) {
