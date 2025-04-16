@@ -1,6 +1,7 @@
 package state;
 
 import state.CharacterScreen.Select.CharacterSelection;
+import state.CharacterScreen.Select.SecondPlayerSelection;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
@@ -20,40 +21,56 @@ public class ModeSelection extends JPanel {
         setLayout(null);
         setPreferredSize(new Dimension(1920, 1080));
         setupButtons();
-
 //        playMusic("/assets/MainMenuScreen/Sounds/MimalaMainMenuMusic.wav");
     }
 
     private void setupButtons() {
+        // Back button
+        JLabel backButton = createButton(
+                "/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_off.png",
+                "/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_hover.png",
+                50, 57,
+                () -> {
+                    frame.setContentPane(new MainMenu(frame));
+                    frame.revalidate();
+                    frame.repaint();
+                }
+        );
+        add(backButton);
+
+        // PVP button
         JLabel pvpButton = createButton(
                 "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVP/PVP_off.png",
                 "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVP/PVP_hover.png",
-                450, () -> {
-                    frame.setContentPane(new CharacterSelection(frame, "PVP")); // Pass mode
+                680, 450,
+                () -> {
+                    frame.setContentPane(new CharacterSelection(frame, "PVP"));
                     frame.revalidate();
                     frame.repaint();
                 }
         );
+        add(pvpButton);
 
+        // PVC button
         JLabel pvcButton = createButton(
                 "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PvAI/PvAI_off.png",
                 "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PvAI/PvAI_hover.png",
-                530, () -> {
-                    frame.setContentPane(new CharacterSelection(frame, "PVC")); // Pass mode
+                680, 530,
+                () -> {
+                    frame.setContentPane(new CharacterSelection(frame, "PVC"));
                     frame.revalidate();
                     frame.repaint();
                 }
         );
-
-        add(pvpButton);
         add(pvcButton);
     }
 
-    private JLabel createButton(String offPath, String hoverPath, int y, Runnable action) {
+
+    private JLabel createButton(String offPath, String hoverPath, int x, int y, Runnable action) {
         ImageIcon offIcon = new ImageIcon(offPath);
         ImageIcon hoverIcon = new ImageIcon(hoverPath);
         JLabel button = new JLabel(offIcon);
-        button.setBounds(680, y, offIcon.getIconWidth(), offIcon.getIconHeight());
+        button.setBounds(x, y, offIcon.getIconWidth(), offIcon.getIconHeight());
 
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override

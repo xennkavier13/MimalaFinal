@@ -2,6 +2,7 @@ package state.CharacterScreen.Select;
 
 import state.CharacterScreen.*;
 import state.MapSelection;
+import state.ModeSelection;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
@@ -43,7 +44,22 @@ public class CharacterSelection extends JPanel {
 //        playMusic("/assets/MainMenuScreen/Sounds/MimalaMainMenuMusic.wav");
     }
 
+    // Inside the CharacterSelection class, update the setupButtons() method
+
     private void setupButtons() {
+        // Back button
+        JLabel backButton = createButton(
+                "src/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_off.png",
+                "src/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_hover.png",
+                50, 50,
+                () -> {
+                    frame.setContentPane(new ModeSelection(frame));
+                    frame.revalidate();
+                    frame.repaint();
+                }
+        );
+        add(backButton);
+
         // Create hover buttons for each character
         createCharacterButton("Pyrothar", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Pyrothar_hover.png", 614, 223);
         createCharacterButton("Azurox", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Azurox_hover.png", 325, 243);
@@ -54,6 +70,36 @@ public class CharacterSelection extends JPanel {
         createCharacterButton("Varkos", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Varkos_hover.png", 847, 614);
         createCharacterButton("Ignisveil", "MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\Character_hover\\Ignisveil_hover.png", 1249, 535);
     }
+
+    private JLabel createButton(String normalImagePath, String hoverImagePath, int x, int y, Runnable onClickAction) {
+        ImageIcon normalIcon = new ImageIcon(normalImagePath);
+        ImageIcon hoverIcon = new ImageIcon(hoverImagePath);
+
+        JLabel button = new JLabel(normalIcon);
+        button.setBounds(x, y, normalIcon.getIconWidth(), normalIcon.getIconHeight());
+
+        // Mouse listener for hover effects and click action
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setIcon(hoverIcon);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setIcon(normalIcon);
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                onClickAction.run();
+            }
+        });
+
+        return button;
+    }
+
+
 
     private void createCharacterButton(String characterName, String hoverImagePath, int x, int y) {
         ImageIcon hoverIcon = new ImageIcon(hoverImagePath);
