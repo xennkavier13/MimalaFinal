@@ -1,4 +1,0 @@
-Player 1 - Wins: 0
-Player 1 - Losses: 0
-Player 2 - Wins: 0
-Player 2 - Losses: 0
