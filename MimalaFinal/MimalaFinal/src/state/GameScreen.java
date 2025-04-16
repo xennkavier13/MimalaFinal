@@ -62,7 +62,7 @@ public class GameScreen extends JPanel {
 
     private JLabel timerDisplayLabel;
     private JLabel turnIndicatorLabel;
-    private JLabel roundDisplayLabel; // New label for rounds
+    //private JLabel roundDisplayLabel; // New label for rounds
 
     // --- Layout Constants --- (Keep as they are)
     private static final int PADDING = 30;
@@ -296,10 +296,10 @@ public class GameScreen extends JPanel {
         turnIndicatorLabel.setForeground(Color.YELLOW);
         turnIndicatorLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        roundDisplayLabel = new JLabel("Round: - /" + roundManager.getMaxRounds());
-        roundDisplayLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        roundDisplayLabel.setForeground(Color.CYAN);
-        roundDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
+//        roundDisplayLabel = new JLabel("Round: - /" + roundManager.getMaxRounds());
+//        roundDisplayLabel.setFont(new Font("Arial", Font.BOLD, 24));
+//        roundDisplayLabel.setForeground(Color.CYAN);
+//        roundDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
 
         player1IdleIcon = (ImageIcon) player1CharacterLabel.getIcon();
@@ -429,9 +429,9 @@ public class GameScreen extends JPanel {
         player1CharacterLabel.setBounds(p1_Char_X, p1_Char_Y, CHARACTER_WIDTH, CHARACTER_HEIGHT);
         int p1_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT;
         int p1_Skill_X = PADDING;
-        player1Skill3.setBounds(p1_Skill_X, p1_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
-        player1Skill2.setBounds(p1_Skill_X, p1_Skill_Y_Start - SKILL_BUTTON_HEIGHT - SKILL_SPACING, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
-        player1Skill1.setBounds(p1_Skill_X, p1_Skill_Y_Start - 2 * (SKILL_BUTTON_HEIGHT + SKILL_SPACING), SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
+        player1Skill1.setBounds(p1_Skill_X, p1_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
+        player1Skill2.setBounds(p1_Skill_X + SKILL_BUTTON_WIDTH + SKILL_SPACING, p1_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
+        player1Skill3.setBounds(p1_Skill_X + 2 * (SKILL_BUTTON_WIDTH + SKILL_SPACING), p1_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
 
         // --- Player 2 Positions --- (Keep existing positioning logic)
         int p2_X_HP = panelWidth - PADDING - BAR_WIDTH - 50;
@@ -446,8 +446,8 @@ public class GameScreen extends JPanel {
         int p2_Skill_X = panelWidth - PADDING - SKILL_BUTTON_WIDTH;
         int p2_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT;
         player2Skill3.setBounds(p2_Skill_X, p2_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
-        player2Skill2.setBounds(p2_Skill_X, p2_Skill_Y_Start - SKILL_BUTTON_HEIGHT - SKILL_SPACING, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
-        player2Skill1.setBounds(p2_Skill_X, p2_Skill_Y_Start - 2 * (SKILL_BUTTON_HEIGHT + SKILL_SPACING), SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
+        player2Skill2.setBounds(p2_Skill_X - SKILL_BUTTON_WIDTH - SKILL_SPACING, p2_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
+        player2Skill1.setBounds(p2_Skill_X - 2 *  (SKILL_BUTTON_WIDTH + SKILL_SPACING ), p2_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
 
         // --- Center HUD Positions ---
         int timerWidth = 100; int timerHeight = 60;
@@ -459,7 +459,7 @@ public class GameScreen extends JPanel {
 
         int roundLabelWidth = 250; int roundLabelHeight = 40;
         // Position round display above timer
-        roundDisplayLabel.setBounds(panelWidth / 2 - roundLabelWidth / 2, PADDING - roundLabelHeight + 15 , roundLabelWidth, roundLabelHeight);
+        //roundDisplayLabel.setBounds(panelWidth / 2 - roundLabelWidth / 2, PADDING - roundLabelHeight + 15 , roundLabelWidth, roundLabelHeight);
 
 
         System.out.println("UI Components Positioned.");
@@ -614,7 +614,7 @@ public class GameScreen extends JPanel {
         isPlayer1Turn = roundManager.determineStartingPlayer();
 
         // 4. Update UI for the new round and starting player
-        roundDisplayLabel.setText("Round: " + roundManager.getCurrentRound() + "/" + roundManager.getMaxRounds());
+        //roundDisplayLabel.setText("Round: " + roundManager.getCurrentRound() + "/" + roundManager.getMaxRounds());
         updateUIBasedOnTurn(); // Set enabled buttons, highlights, turn indicator
 
         // 5. Start the first turn of the round
@@ -1007,7 +1007,7 @@ public class GameScreen extends JPanel {
         turnIndicatorLabel.setText("GAME OVER: " + winnerMessage);
         turnIndicatorLabel.setForeground(Color.RED);
         // Display the round the game ended on
-        roundDisplayLabel.setText("Final Round: " + roundManager.getCurrentRound());
+        //roundDisplayLabel.setText("Final Round: " + roundManager.getCurrentRound());
         System.out.println("Game Over! " + winnerMessage + " (Ended on Round " + roundManager.getCurrentRound() + ")");
 
         // Optional: Add a "Return to Menu" button or similar functionality here
@@ -1042,7 +1042,7 @@ public class GameScreen extends JPanel {
 
         add(timerDisplayLabel);
         add(turnIndicatorLabel);
-        add(roundDisplayLabel); // Add the new round label
+        //add(roundDisplayLabel); // Add the new round label
         System.out.println("Components added.");
         System.out.println("Component count: " + getComponentCount());
     }
