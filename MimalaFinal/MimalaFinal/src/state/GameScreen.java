@@ -399,10 +399,10 @@ public class GameScreen extends JPanel {
 
     private int getAnimationDuration(String animationType) {
         switch (animationType) {
-            case "Skill1": return 2000; // 1 second
-            case "Skill2": return 2000; // 1.2 seconds
-            case "Skill3": return 2000; // 2.0 seconds
-            case "GetHit": return 1000;  // 0.8 seconds
+            case "Skill1": return 2000; // 2 seconds
+            case "Skill2": return 2000; // 2 seconds
+            case "Skill3": return 2500; // 2.5 seconds
+            case "GetHit": return 1000;  // 1 seconds
             case "Death":  return 1000;// Death animation duration not needed here as we don't auto-revert it
             default:       return 1000; // Default duration
         }
