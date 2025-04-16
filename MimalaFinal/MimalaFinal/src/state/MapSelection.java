@@ -17,7 +17,7 @@ public class MapSelection extends JPanel {
     private Clip music;
 
     private final String[] mapPaths = {
-            "assets/StageMap/Chambers.gif",
+            "assets/StageMap/Waters.gif",
             "assets/StageMap/China.gif",
             "assets/StageMap/DesertedLand.gif",
             "assets/StageMap/DragonLair.gif",
@@ -26,7 +26,7 @@ public class MapSelection extends JPanel {
     };
 
     private final String[] mapPreviewPaths = {
-            "assets/StageMap/Chambers.png",
+            "assets/StageMap/Waters.png",
             "assets/StageMap/China.png",
             "assets/StageMap/DesertedLand.png",
             "assets/StageMap/DragonLair.png",

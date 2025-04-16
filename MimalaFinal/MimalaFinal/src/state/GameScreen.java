@@ -414,32 +414,31 @@ public class GameScreen extends JPanel {
         int panelHeight = getPreferredSize().height > 0 ? getPreferredSize().height : 1080;
 
         // --- Player 1 Positions --- (Keep existing positioning logic)
-        int p1_X = PADDING + 50;
-        int p1_Y_HP = PADDING;
+        int p1_X = PADDING + 50 + 5;
+        int p1_Y_HP = PADDING + 24;
         player1HpBar.setBounds(p1_X, p1_Y_HP, BAR_WIDTH, HP_BAR_HEIGHT);
         int p1_Y_Stamina = p1_Y_HP + HP_BAR_HEIGHT + BAR_SPACING;
         player1StaminaBar.setBounds(p1_X, p1_Y_Stamina, BAR_WIDTH, STAMINA_BAR_HEIGHT);
         int p1_Char_X = -450;
         int p1_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN + 40; // position character
         player1CharacterLabel.setBounds(p1_Char_X, p1_Char_Y, CHARACTER_WIDTH, CHARACTER_HEIGHT);
-        int p1_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT;
-        int p1_Skill_X = PADDING;
+        int p1_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT - 130;
+        int p1_Skill_X = PADDING + 50;
         player1Skill1.setBounds(p1_Skill_X, p1_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
         player1Skill2.setBounds(p1_Skill_X + SKILL_BUTTON_WIDTH + SKILL_SPACING, p1_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
         player1Skill3.setBounds(p1_Skill_X + 2 * (SKILL_BUTTON_WIDTH + SKILL_SPACING), p1_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
 
         // --- Player 2 Positions --- (Keep existing positioning logic)
-        int p2_X_HP = panelWidth - PADDING - BAR_WIDTH - 50;
-        int p2_Y_HP = PADDING;
-        player2HpBar.setBounds(p2_X_HP, p2_Y_HP, BAR_WIDTH, HP_BAR_HEIGHT);
+        int p2_X = panelWidth - PADDING - BAR_WIDTH - 50 - 5;
+        int p2_Y_HP = PADDING + 24;
+        player2HpBar.setBounds(p2_X, p2_Y_HP, BAR_WIDTH, HP_BAR_HEIGHT);
         int p2_Y_Stamina = p2_Y_HP + HP_BAR_HEIGHT + BAR_SPACING;
-        int p2_X_Stamina = panelWidth - PADDING - BAR_WIDTH - 50;
-        player2StaminaBar.setBounds(p2_X_Stamina, p2_Y_Stamina, BAR_WIDTH, STAMINA_BAR_HEIGHT);
+        player2StaminaBar.setBounds(p2_X, p2_Y_Stamina, BAR_WIDTH, STAMINA_BAR_HEIGHT);
         int p2_Char_X = panelWidth + 480 - CHARACTER_WIDTH;
         int p2_Char_Y = panelHeight - CHARACTER_HEIGHT - SKILL_AREA_BOTTOM_MARGIN + 40; // position character
         player2CharacterLabel.setBounds(p2_Char_X, p2_Char_Y, CHARACTER_WIDTH, CHARACTER_HEIGHT);
-        int p2_Skill_X = panelWidth - PADDING - SKILL_BUTTON_WIDTH;
-        int p2_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT;
+        int p2_Skill_X = panelWidth - PADDING - SKILL_BUTTON_WIDTH - 50;
+        int p2_Skill_Y_Start = panelHeight - SKILL_AREA_BOTTOM_MARGIN - SKILL_BUTTON_HEIGHT - 130;
         player2Skill3.setBounds(p2_Skill_X, p2_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
         player2Skill2.setBounds(p2_Skill_X - SKILL_BUTTON_WIDTH - SKILL_SPACING, p2_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
         player2Skill1.setBounds(p2_Skill_X - 2 *  (SKILL_BUTTON_WIDTH + SKILL_SPACING ), p2_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
