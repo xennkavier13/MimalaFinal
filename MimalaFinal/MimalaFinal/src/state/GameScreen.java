@@ -897,30 +897,51 @@ public class GameScreen extends JPanel {
      */
     private void transitionToResultScreen() {
         System.out.println("Executing transitionToResultScreen...");
-        // Ensure all timers are stopped
-        stopTurnTimer();
-        if (player1AnimTimer != null) player1AnimTimer.stop();
-        if (player2AnimTimer != null) player2AnimTimer.stop();
-        if (deathSequenceTimer != null) deathSequenceTimer.stop();
 
-        // Determine the result (which player won?)
-        // Note: If max rounds reached, might need different logic here passed from endGame()
+        // Stop all timers
+        stopTurnTimer();
+        if (player1AnimTimer != null) {
+            player1AnimTimer.stop();
+            System.out.println("Stopped player1AnimTimer");
+        }
+        if (player2AnimTimer != null) {
+            player2AnimTimer.stop();
+            System.out.println("Stopped player2AnimTimer");
+        }
+        if (deathSequenceTimer != null) {
+            deathSequenceTimer.stop();
+            System.out.println("Stopped deathSequenceTimer");
+        }
+
+        // Determine result
         boolean p1Wins = player2CurrentHp <= 0 && player1CurrentHp > 0;
         boolean p2Wins = player1CurrentHp <= 0 && player2CurrentHp > 0;
-        // Default to player 1 winning if it's a draw or P2 HP is 0 (adjust logic as needed)
-        boolean player1Won = p1Wins || (!p2Wins && player2CurrentHp == 0);
+        boolean isDraw = player1CurrentHp <= 0 && player2CurrentHp <= 0;
+        boolean player1Won = !isDraw && (p1Wins || (!p2Wins && player2CurrentHp == 0));
 
+        System.out.println("Player 1 HP: " + player1CurrentHp);
+        System.out.println("Player 2 HP: " + player2CurrentHp);
+        System.out.println("Player 1 Wins: " + p1Wins);
+        System.out.println("Player 2 Wins: " + p2Wins);
+        System.out.println("Is Draw: " + isDraw);
         System.out.println("Player 1 Won: " + player1Won);
+        System.out.println("Selected map path: " + selectedMapPath);
+        System.out.println("Characters: " + firstPlayerCharacterName + " vs " + secondPlayerCharacterName);
 
-        // Create and set the new ResultScreen panel
-        // Pass details needed for rematch LATER if you implement it
-        ResultScreen resultScreen = new ResultScreen(frame, player1Won, firstPlayerCharacterName, secondPlayerCharacterName, selectedMapPath, gameMode );
-        frame.setContentPane(resultScreen);
-        frame.revalidate();
-        frame.repaint();
+        // Transition to ResultScreen
+        ResultScreen resultOverlay = new ResultScreen(frame, player1Won, firstPlayerCharacterName, secondPlayerCharacterName, selectedMapPath, gameMode);
+
+        // Add it on top of the current game panel
+        frame.getLayeredPane().add(resultOverlay, JLayeredPane.POPUP_LAYER); // Or DRAG_LAYER if needed
+        resultOverlay.repaint();
+        resultOverlay.showGameResult(player1Won);
+
         stopMusic();
+        System.out.println("Background music stopped.");
         System.out.println("Switched to ResultScreen.");
     }
+
+
 
     // Make sure endGame is removed or no longer called on death by HP
     // public void endGame(boolean maxRoundsReached) { ... } // Keep if needed for MAX_ROUNDS end condition
