@@ -287,14 +287,14 @@ public class GameScreen extends JPanel {
 
         // --- Center HUD ---
         timerDisplayLabel = new JLabel(String.valueOf(TURN_DURATION_SECONDS));
-        timerDisplayLabel.setFont(new Font("Arial", Font.BOLD, 48));
+        timerDisplayLabel.setFont(new Font("Arial", Font.BOLD, 90));
         timerDisplayLabel.setForeground(Color.WHITE);
         timerDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        turnIndicatorLabel = new JLabel(); // Text set in updateUIBasedOnTurn
-        turnIndicatorLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        turnIndicatorLabel.setForeground(Color.YELLOW);
-        turnIndicatorLabel.setHorizontalAlignment(SwingConstants.CENTER);
+//        turnIndicatorLabel = new JLabel(); // Text set in updateUIBasedOnTurn
+//        turnIndicatorLabel.setFont(new Font("Arial", Font.BOLD, 24));
+//        turnIndicatorLabel.setForeground(Color.YELLOW);
+//        turnIndicatorLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
 //        roundDisplayLabel = new JLabel("Round: - /" + roundManager.getMaxRounds());
 //        roundDisplayLabel.setFont(new Font("Arial", Font.BOLD, 24));
@@ -444,12 +444,12 @@ public class GameScreen extends JPanel {
         player2Skill1.setBounds(p2_Skill_X - 2 *  (SKILL_BUTTON_WIDTH + SKILL_SPACING ), p2_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
 
         // --- Center HUD Positions ---
-        int timerWidth = 100; int timerHeight = 60;
-        timerDisplayLabel.setBounds(panelWidth / 2 - timerWidth / 2, PADDING, timerWidth, timerHeight);
+        int timerWidth = 100; int timerHeight = 100;
+        timerDisplayLabel.setBounds(panelWidth / 2 - timerWidth / 2, PADDING + 50, timerWidth, timerHeight);
 
         int indicatorWidth = 300; int indicatorHeight = 40;
         // Move turn indicator down slightly to make room for round display
-        turnIndicatorLabel.setBounds(panelWidth / 2 - indicatorWidth / 2, PADDING + timerHeight + BAR_SPACING + 25, indicatorWidth, indicatorHeight);
+        //turnIndicatorLabel.setBounds(panelWidth / 2 - indicatorWidth / 2, PADDING + timerHeight + BAR_SPACING + 25, indicatorWidth, indicatorHeight);
 
         int roundLabelWidth = 250; int roundLabelHeight = 40;
         // Position round display above timer
@@ -958,7 +958,7 @@ public class GameScreen extends JPanel {
         player2Skill3.setEnabled(!isPlayer1Turn && isHumanP2);
 
         // Update turn indicator text
-        turnIndicatorLabel.setText(isPlayer1Turn ? firstPlayerCharacterName + "'s Turn" : secondPlayerCharacterName + "'s Turn");
+        //turnIndicatorLabel.setText(isPlayer1Turn ? firstPlayerCharacterName + "'s Turn" : secondPlayerCharacterName + "'s Turn");
 
         // Update highlight border
         //player1CharacterLabel.setBorder(isPlayer1Turn ? BorderFactory.createLineBorder(Color.YELLOW, 3) : null);
@@ -1035,7 +1035,7 @@ public class GameScreen extends JPanel {
         add(player2Skill3);
 
         add(timerDisplayLabel);
-        add(turnIndicatorLabel);
+        //add(turnIndicatorLabel);
         //add(roundDisplayLabel); // Add the new round label
         System.out.println("Components added.");
         System.out.println("Component count: " + getComponentCount());
