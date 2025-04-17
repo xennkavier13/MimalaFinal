@@ -1,6 +1,7 @@
 package state.UI;
 
 import state.GameOverScreen;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -14,7 +15,7 @@ public class ResultScreen extends JPanel {
     private boolean player1Won = false; // Needed to pass to GameOverScreen
     private String p1Name, p2Name, mapPath, gameMode;
 
-    public static boolean isVsAI = false; // Keep for compatibility with your existing logic
+    public static boolean isVsAI = false;
 
     public ResultScreen(JFrame frame, boolean player1Won, String p1Name, String p2Name, String mapPath, String gameMode) {
         this.frame = frame;
@@ -24,9 +25,11 @@ public class ResultScreen extends JPanel {
         this.mapPath = mapPath;
         this.gameMode = gameMode;
 
-        setOpaque(false); // Make panel transparent
+        isVsAI = gameMode.equals("PVC");
+
+        setOpaque(false); // Transparent
         setLayout(null);
-        setBounds(0, 0, 1920, 1080); // Same size as the game panel
+        setBounds(0, 0, 1920, 1080); // Same size as game panel
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -41,14 +44,22 @@ public class ResultScreen extends JPanel {
     }
 
     /**
-     * Call this method when the game ends to show a result overlay.
-     * @param player1Won True if player 1 wins, false if player 2 wins
+     * Shows the correct result overlay based on game mode and outcome.
      */
     public void showGameResult(boolean player1Won) {
         this.player1Won = player1Won;
-        String resultPath = player1Won
-                ? "/assets/FightingUI/PVP/player1WinsTest.png"
-                : "/assets/FightingUI/PVP/player2WinsTest.png";
+
+        String resultPath;
+
+        if (isVsAI) {
+            resultPath = player1Won
+                    ? "/assets/FightingUI/AI/VictoryScreen.png"
+                    : "/assets/FightingUI/AI/DefeatScreen.png";
+        } else {
+            resultPath = player1Won
+                    ? "/assets/FightingUI/PVP/player1WinsTest.png"
+                    : "/assets/FightingUI/PVP/player2WinsTest.png";
+        }
 
         java.net.URL imageURL = getClass().getResource(resultPath);
         if (imageURL != null) {
@@ -61,47 +72,41 @@ public class ResultScreen extends JPanel {
     }
 
     /**
-     * Transitions to GameOverScreen after click
+     * After click, transitions to GameOverScreen.
      */
     private void transitionToGameOverScreen() {
         System.out.println("Transitioning to GameOverScreen...");
 
-        // Remove the ResultScreen from the layered pane to ensure it's no longer visible
         JLayeredPane layeredPane = frame.getLayeredPane();
         Component[] components = layeredPane.getComponentsInLayer(JLayeredPane.POPUP_LAYER);
         for (Component comp : components) {
             if (comp instanceof ResultScreen) {
                 layeredPane.remove(comp);
-                break; // Only remove the first ResultScreen found
+                break;
             }
         }
 
-        // Revalidate and repaint the frame to ensure the ResultScreen is no longer there
         frame.revalidate();
         frame.repaint();
 
-        // Now transition to the GameOverScreen
         GameOverScreen gameOver = new GameOverScreen(frame, player1Won, p1Name, p2Name, mapPath, gameMode);
         frame.setContentPane(gameOver);
         frame.revalidate();
         frame.repaint();
     }
 
-
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // --- Your existing game rendering logic would go here ---
-
         if (showResultOverlay && resultOverlayImage != null) {
             Graphics2D g2d = (Graphics2D) g;
 
-            // Dim background
+            // Dim the background
             g2d.setColor(new Color(0, 0, 0, 180));
             g2d.fillRect(0, 0, getWidth(), getHeight());
 
-            // Draw result image full screen
+            // Draw the result overlay full screen
             g2d.drawImage(resultOverlayImage.getImage(), 0, 0, getWidth(), getHeight(), this);
         }
     }
