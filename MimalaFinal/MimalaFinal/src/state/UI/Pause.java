@@ -5,63 +5,121 @@ import state.MainMenu;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.net.URL;
 
 public class Pause extends JPanel {
 
-    private JFrame frame;
-    private Image pauseBackground;
-    private JButton resumeButton, exitButton;
+    private final JFrame frame;
+    private final Image pauseBackground;
+    private final GameScreen gameScreen;
+
+    private final String resumeOffPath = "assets/PauseScreen/PAUSE/Resume/Resume_Off.png";
+    private final String resumeHoverPath = "assets/PauseScreen/PAUSE/Resume/Resume_Hover.png";
+    private final String exitOffPath = "assets/PauseScreen/PAUSE/Exit/Exit_off.png";
+    private final String exitHoverPath = "assets/PauseScreen/PAUSE/Exit/Exit_hover.png";
 
     public Pause(JFrame frame, GameScreen gameScreen) {
         this.frame = frame;
+        this.gameScreen = gameScreen;
         setLayout(null);
         setPreferredSize(new Dimension(1920, 1080));
 
-        // Load background image
         pauseBackground = new ImageIcon(getClass().getResource("/assets/PauseScreen/PAUSE/PauseScreen_nobutton.png")).getImage();
 
-        // --- Resume Button ---
-        resumeButton = new JButton(new ImageIcon(getClass().getResource("/assets/PauseScreen/PAUSE/Resume/Resume_off.png")));
-        resumeButton.setRolloverIcon(new ImageIcon(getClass().getResource("/assets/PauseScreen/PAUSE/Resume/Resume_hover.png")));
-        resumeButton.setBorderPainted(false);
-        resumeButton.setContentAreaFilled(false);
-        resumeButton.setFocusPainted(false);
-        resumeButton.setBounds(700, 400, 500, 100); // Adjust position & size
+        // Resume Button
+        JLabel resumeButton = createButton(
+                resumeOffPath, resumeHoverPath,
+                850, 567, // off position
+                418, 548, // hover position
+                () -> {
+                    frame.setContentPane(gameScreen);
+                    frame.revalidate();
+                    frame.repaint();
+                },
+                this
+        );
 
-        resumeButton.addActionListener(e -> {
-            frame.setContentPane(gameScreen); // Resume by going back to existing GameScreen
-            frame.revalidate();
-            frame.repaint();
-        });
-
-        // --- Exit Button ---
-        exitButton = new JButton(new ImageIcon(getClass().getResource("/assets/PauseScreen/PAUSE/Exit/Exit_off.png")));
-        exitButton.setRolloverIcon(new ImageIcon(getClass().getResource("/assets/PauseScreen/PAUSE/Exit/Exit_hover.png")));
-        exitButton.setBorderPainted(false);
-        exitButton.setContentAreaFilled(false);
-        exitButton.setFocusPainted(false);
-        exitButton.setBounds(700, 520, 500, 100); // Adjust position & size
-
-        exitButton.addActionListener(e -> {
-            // Transition smoothly with black background
-            JPanel newScreen = new MainMenu(frame);
-            newScreen.setOpaque(true);
-            newScreen.setBackground(Color.BLACK);
-
-            // Smooth transition to new screen
-            SwingUtilities.invokeLater(() -> {
-                frame.getContentPane().removeAll();  // Clear old components first
-                frame.setBackground(Color.BLACK);   // Prevent white flash
-                frame.setContentPane(newScreen);
-                frame.revalidate();
-                frame.repaint();
-            });
-
-
-        });
+        // Exit Button
+        JLabel exitButton = createButton(
+                exitOffPath, exitHoverPath,
+                585, 718, // off position
+                418, 700, // hover position
+                () -> {
+                    JPanel newScreen = new MainMenu(frame);
+                    newScreen.setOpaque(true);
+                    newScreen.setBackground(Color.BLACK);
+                    SwingUtilities.invokeLater(() -> {
+                        frame.getContentPane().removeAll();
+                        frame.setBackground(Color.BLACK);
+                        frame.setContentPane(newScreen);
+                        frame.revalidate();
+                        frame.repaint();
+                    });
+                },
+                this
+        );
 
         add(resumeButton);
         add(exitButton);
+    }
+
+    private JLabel createButton(String offPath, String hoverPath,
+                                int offX, int offY, int hoverX, int hoverY,
+                                Runnable action, Component componentForTracker) {
+
+        final ImageIcon offIcon = loadImageIconResource("/" + offPath, -1, -1, componentForTracker);
+        final ImageIcon hoverIcon = loadImageIconResource("/" + hoverPath, -1, -1, componentForTracker);
+
+        if (offIcon == null) {
+            System.err.println("Failed to load off icon: " + offPath);
+            return new JLabel("Load Error");
+        }
+
+        final int offWidth = offIcon.getIconWidth();
+        final int offHeight = offIcon.getIconHeight();
+        final int hoverWidth = hoverIcon.getIconWidth();
+        final int hoverHeight = hoverIcon.getIconHeight();
+
+        final JLabel button = new JLabel(offIcon);
+        button.setBounds(offX, offY, offWidth, offHeight);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setIcon(hoverIcon);
+                button.setBounds(hoverX, hoverY, hoverWidth, hoverHeight);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setIcon(offIcon);
+                button.setBounds(offX, offY, offWidth, offHeight);
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (action != null) action.run();
+            }
+        });
+
+        return button;
+    }
+
+    private ImageIcon loadImageIconResource(String resourcePath, int width, int height, Component component) {
+        URL imgURL = getClass().getResource(resourcePath);
+        if (imgURL == null) {
+            System.err.println("Image not found: " + resourcePath);
+            return null;
+        }
+        ImageIcon icon = new ImageIcon(imgURL);
+        if (width > 0 && height > 0) {
+            Image scaled = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+            return new ImageIcon(scaled);
+        }
+        return icon;
     }
 
     @Override
