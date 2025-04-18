@@ -39,17 +39,30 @@ public class ModeSelection extends JPanel {
         add(backButton);
 
         // PVP button
+        // PVP button
         JLabel pvpButton = createButton(
                 "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVP/PVP_off.png",
                 "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVP/PVP_hover.png",
                 680, 450,
                 () -> {
-                    frame.setContentPane(new CharacterSelection(frame, "PVP"));
+                    // Show Player1Name input screen first
+                    frame.setContentPane(new util.Player1Name(frame, () -> {
+                        // After Player 1 enters their name, show Player2Name screen
+                        frame.setContentPane(new util.Player2Name(frame, () -> {
+                            // After both are done, start Character Selection screen
+                            frame.setContentPane(new CharacterSelection(frame, "PVP"));
+                            frame.revalidate();
+                            frame.repaint();
+                        }));
+                        frame.revalidate();
+                        frame.repaint();
+                    }));
                     frame.revalidate();
                     frame.repaint();
                 }
         );
         add(pvpButton);
+
 
         // PVC button
         JLabel pvcButton = createButton(
@@ -57,12 +70,19 @@ public class ModeSelection extends JPanel {
                 "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PvAI/PvAI_hover.png",
                 680, 530,
                 () -> {
-                    frame.setContentPane(new CharacterSelection(frame, "PVC"));
+                    // Show PlayerName input screen first
+                    frame.setContentPane(new util.PlayerName(frame, () -> {
+                        // After name entry, proceed to character selection for PVC
+                        frame.setContentPane(new CharacterSelection(frame, "PVC"));
+                        frame.revalidate();
+                        frame.repaint();
+                    }));
                     frame.revalidate();
                     frame.repaint();
                 }
         );
         add(pvcButton);
+
     }
 
 
