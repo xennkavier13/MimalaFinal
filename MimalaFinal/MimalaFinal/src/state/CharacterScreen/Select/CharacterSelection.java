@@ -49,9 +49,9 @@ public class CharacterSelection extends JPanel {
     private void setupButtons() {
         // Back button
         JLabel backButton = createButton(
-                "src/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_off.png",
-                "src/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_hover.png",
-                50, 50,
+                "MimalaFinal/MimalaFinal/src/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_off.png",
+                "MimalaFinal/MimalaFinal/src/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_hover.png",
+                50, 57,
                 () -> {
                     frame.setContentPane(new ModeSelection(frame));
                     frame.revalidate();
