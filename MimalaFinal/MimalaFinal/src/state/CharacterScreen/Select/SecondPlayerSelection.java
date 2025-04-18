@@ -30,13 +30,13 @@ public class SecondPlayerSelection extends JPanel {
         this.frame = frame;
         this.firstPlayerSelection = firstPlayerSelection;
         this.mode = mode; // Should be "PVP"
-        characterSelectionBg = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\CharacterSelect_BGcombine.png");
+        characterSelectionBg = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\CharacterSelect_BGcombine.gif");
 
         setLayout(null);
         setPreferredSize(new Dimension(1920, 1080));
         setupButtons();
 
-        characterNameLabel.setBounds(760, 950, 400, 100); // default position, adjust as needed
+        characterNameLabel.setBounds(760, 945, 400, 100); // default position, adjust as needed
         characterNameLabel.setHorizontalAlignment(SwingConstants.CENTER);
         characterNameLabel.setVisible(false);
         add(characterNameLabel);
@@ -70,14 +70,14 @@ public class SecondPlayerSelection extends JPanel {
 
     private void setupButtons() {
         // Create hover buttons for each character
-        createCharacterButton("Pyrothar", "/assets/CharacterSelectionScreen/Character_hover/Pyrothar_hover.png", 614, 223);
-        createCharacterButton("Azurox", "/assets/CharacterSelectionScreen/Character_hover/Azurox_hover.png", 325, 243);
-        createCharacterButton("Zenfang", "/assets/CharacterSelectionScreen/Character_hover/Zenfang_hover.png", 982, 245);
-        createCharacterButton("Auricannon", "/assets/CharacterSelectionScreen/Character_hover/Auricannon_hover.png", 1140, 243);
-        createCharacterButton("Vexmorth", "/assets/CharacterSelectionScreen/Character_hover/Vexmorth_hover.png", 349, 610);
-        createCharacterButton("Astridra", "/assets/CharacterSelectionScreen/Character_hover/Astrida_hover.png", 657, 614);
-        createCharacterButton("Varkos", "/assets/CharacterSelectionScreen/Character_hover/Varkos_hover.png", 847, 614);
-        createCharacterButton("Ignisveil", "/assets/CharacterSelectionScreen/Character_hover/Ignisveil_hover.png", 1249, 535);
+        createCharacterButton("Pyrothar", "/assets/CharacterSelectionScreen/Character_hover/Pyrothar_hover.png", 630, 182);
+        createCharacterButton("Azurox", "/assets/CharacterSelectionScreen/Character_hover/Azurox_hover.png", 330, 203);
+        createCharacterButton("Zenfang", "/assets/CharacterSelectionScreen/Character_hover/Zenfang_hover.png", 1000, 203);
+        createCharacterButton("Auricannon", "/assets/CharacterSelectionScreen/Character_hover/Auricannon_hover.png", 1150, 203);
+        createCharacterButton("Vexmorth", "/assets/CharacterSelectionScreen/Character_hover/Vexmorth_hover.png", 352, 570);
+        createCharacterButton("Astridra", "/assets/CharacterSelectionScreen/Character_hover/Astridra_hover.png", 673, 575);
+        createCharacterButton("Varkos", "/assets/CharacterSelectionScreen/Character_hover/Varkos_hover.png", 866, 575);
+        createCharacterButton("Ignisveil", "/assets/CharacterSelectionScreen/Character_hover/Ignisveil_hover.png", 1260, 497);
     }
 
     private void createCharacterButton(String characterName, String hoverImagePath, int x, int y) {
