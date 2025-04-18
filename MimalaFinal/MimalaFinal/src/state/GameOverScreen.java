@@ -18,6 +18,7 @@ public class GameOverScreen extends JPanel {
     private final String rematchHoverPath = "assets/GameOver/Rematch/Rematch_Hover.png";
     private final String menuOffPath = "assets/GameOver/ReturnToMainMenu/MainMenu_off.png";
     private final String menuHoverPath = "assets/GameOver/ReturnToMainMenu/MainMenu_hover.png";
+    private final String leaderboardOffPath = "";
     private final String p1Name, p2Name, mapPath, gameMode;
     private final String bgPath = "assets/GameOver/GameOver.png";
 
