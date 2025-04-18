@@ -35,13 +35,14 @@ public class MapSelection extends JPanel {
     };
 
     private final String[] mapNames = {
-            "Chambers", "China", "DesertedLand", "DragonLair", "King'sThrone", "RoyalPalace"
+            "Waters", "Dojo", "DesertedLand", "DragonLair", "King'sThrone", "RoyalPalace"
     };
 
     private String selectedMapPath = null;
     private JLabel currentlySelectedMapLabel = null;
     private final Border selectionBorder = BorderFactory.createLineBorder(Color.YELLOW, 5);
-    private final Border hoverBorder = BorderFactory.createLineBorder(Color.YELLOW, 2);
+    private final Border hoverBorder = BorderFactory.createLineBorder(Color.YELLOW, 5);
+    private final Border defaultBorder = BorderFactory.createLineBorder(Color.BLACK, 5);
 
     private final String firstPlayerSelection;
     private final String secondPlayerSelection;
@@ -50,7 +51,7 @@ public class MapSelection extends JPanel {
 
     public MapSelection(JFrame frame, String firstPlayerSelection, String secondPlayerSelection, String mode) {
         this.frame = frame;
-        mapSelectionBg = new ImageIcon(getClass().getResource("/assets/StageMap/MapSelectBG.png"));
+        mapSelectionBg = new ImageIcon(getClass().getResource("/assets/StageMap/MapSelectBG.gif"));
         setLayout(null);
         setPreferredSize(new Dimension(1920, 1080));
         this.firstPlayerSelection = firstPlayerSelection;
@@ -89,7 +90,6 @@ public class MapSelection extends JPanel {
         if (startX < 0) startX = 10;
         if (startY < 0) startY = 10;
 
-        // Create map preview buttons using PNG images
         createMapPreviewButton(mapNames[0], mapPreviewPaths[0], startX, startY, mapWidth, mapHeight);
         createMapPreviewButton(mapNames[1], mapPreviewPaths[1], startX + mapWidth + spacingX, startY, mapWidth, mapHeight);
         createMapPreviewButton(mapNames[2], mapPreviewPaths[2], startX + 2 * (mapWidth + spacingX), startY, mapWidth, mapHeight);
@@ -99,7 +99,6 @@ public class MapSelection extends JPanel {
         createMapPreviewButton(mapNames[4], mapPreviewPaths[4], startX + mapWidth + spacingX, secondRowY, mapWidth, mapHeight);
         createMapPreviewButton(mapNames[5], mapPreviewPaths[5], startX + 2 * (mapWidth + spacingX), secondRowY, mapWidth, mapHeight);
 
-        // Create buttons using the createButton method
         JLabel selectButton = createButton(
                 "/assets/MapSelectionScreen/Select_off.png",
                 "/assets/MapSelectionScreen/Select_hover.png",
@@ -125,7 +124,6 @@ public class MapSelection extends JPanel {
                 }
         );
 
-        // Adjust button positions to be spaced evenly
         int buttonSpacing = 50;
         int selectButtonWidth = selectButton.getIcon().getIconWidth();
         int randomButtonWidth = randomButton.getIcon().getIconWidth();
@@ -187,6 +185,8 @@ public class MapSelection extends JPanel {
         }
 
         button.setBounds(x, y, width, height);
+        button.setBorder(defaultBorder);
+
         final JLabel finalButton = button;
         button.addMouseListener(new MouseAdapter() {
             @Override
@@ -199,14 +199,14 @@ public class MapSelection extends JPanel {
             @Override
             public void mouseExited(MouseEvent e) {
                 if (currentlySelectedMapLabel != finalButton) {
-                    finalButton.setBorder(null);
+                    finalButton.setBorder(defaultBorder);
                 }
             }
 
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (currentlySelectedMapLabel != null) {
-                    currentlySelectedMapLabel.setBorder(null);
+                    currentlySelectedMapLabel.setBorder(defaultBorder);
                 }
                 finalButton.setBorder(selectionBorder);
                 currentlySelectedMapLabel = finalButton;
