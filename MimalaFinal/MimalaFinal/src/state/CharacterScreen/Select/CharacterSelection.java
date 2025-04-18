@@ -27,6 +27,8 @@ public class CharacterSelection extends JPanel {
     private final String mode;
     private Clip music;
 
+    private final JLabel characterNameLabel = new JLabel();
+
     public CharacterSelection(JFrame frame, String mode) {
         this.frame = frame;
         this.mode = mode;
@@ -40,6 +42,11 @@ public class CharacterSelection extends JPanel {
         setLayout(null);  // Absolute layout
         setPreferredSize(new Dimension(1920, 1080));
         setupButtons();
+
+        characterNameLabel.setBounds(760, 950, 400, 100); // default position, adjust as needed
+        characterNameLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        characterNameLabel.setVisible(false);
+        add(characterNameLabel);
 
 //        playMusic("/assets/MainMenuScreen/Sounds/MimalaMainMenuMusic.wav");
     }
@@ -112,11 +119,16 @@ public class CharacterSelection extends JPanel {
             @Override
             public void mouseEntered(MouseEvent e) {
                 button.setIcon(hoverIcon);
+
+                ImageIcon nameIcon = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\CharacterNames\\" + characterName + ".png");
+                characterNameLabel.setIcon(nameIcon);
+                characterNameLabel.setVisible(true);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
                 button.setIcon(null);
+                characterNameLabel.setVisible(false);
             }
 
             @Override

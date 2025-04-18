@@ -15,6 +15,8 @@ public class SecondPlayerSelection extends JPanel {
     private final String firstPlayerSelection; // P1's choice is needed
     private final String mode; // Should always be PVP here
 
+    private final JLabel characterNameLabel = new JLabel();
+
     // Use the same names as CharacterSelection for consistency
     private final String[] characterNames = {
             "Pyrothar", "Azurox", "Zenfang", "Auricannon", // Or Auricannon?
@@ -33,6 +35,11 @@ public class SecondPlayerSelection extends JPanel {
         setLayout(null);
         setPreferredSize(new Dimension(1920, 1080));
         setupButtons();
+
+        characterNameLabel.setBounds(760, 950, 400, 100); // default position, adjust as needed
+        characterNameLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        characterNameLabel.setVisible(false);
+        add(characterNameLabel);
     }
 
     // Helper to generate hover paths (same as CharacterSelection)
@@ -87,11 +94,16 @@ public class SecondPlayerSelection extends JPanel {
                 @Override
                 public void mouseEntered(MouseEvent e) {
                     button.setIcon(hoverIcon);
+
+                    ImageIcon nameIcon = new ImageIcon("MimalaFinal\\MimalaFinal\\src\\assets\\CharacterSelectionScreen\\CharacterNames\\" + characterName + ".png");
+                    characterNameLabel.setIcon(nameIcon);
+                    characterNameLabel.setVisible(true);
                 }
 
                 @Override
                 public void mouseExited(MouseEvent e) {
                     button.setIcon(null);
+                    characterNameLabel.setVisible(false);
                 }
 
                 @Override
