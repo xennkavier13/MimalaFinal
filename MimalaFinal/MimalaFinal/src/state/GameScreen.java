@@ -150,6 +150,8 @@ public class GameScreen extends JPanel {
         // --- Request Focus ---
         SwingUtilities.invokeLater(this::requestFocusInWindow); // Ensure the panel gains focus
 
+        setupKeyBindings();
+
         // --- Play Background Music ---
         playMusic("assets/FightingUI/fightmusic.wav"); // Play background music
     }
@@ -494,16 +496,16 @@ public class GameScreen extends JPanel {
     // --- Keyboard Input Setup ---
     private void setupKeyBindings() {
         System.out.println("Setting up key bindings...");
+
         InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap actionMap = getActionMap();
 
-        // Bind keys 1, 2, 3 to call handleAction with the skill number
+        // Skill bindings
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_1, 0), "skill1Action");
         actionMap.put("skill1Action", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                handleAction(1); // Use skill 1
-
+                handleAction(1);
             }
         });
 
@@ -511,7 +513,7 @@ public class GameScreen extends JPanel {
         actionMap.put("skill2Action", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                handleAction(2); // Use skill 2
+                handleAction(2);
             }
         });
 
@@ -519,53 +521,41 @@ public class GameScreen extends JPanel {
         actionMap.put("skill3Action", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                handleAction(3); // Use skill 3
+                handleAction(3);
             }
         });
 
-        // --- Skip Turn (Spacebar) --- <<< NEW BINDING >>>
+        // Skip turn binding (Spacebar)
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "skipTurnAction");
         actionMap.put("skipTurnAction", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!gameRunning) return; // Don't skip if game over
+                if (!gameRunning) return;
 
-                boolean isHumanTurn = false;
-                if ("PVP".equals(gameMode)) {
-                    // In PVP, either player can skip
-                    isHumanTurn = true;
-                } else { // PVC mode
-                    // In PVC, only Player 1 can skip
-                    isHumanTurn = isPlayer1Turn;
-                }
+                boolean isHumanTurn = "PVP".equals(gameMode) || isPlayer1Turn;
 
                 if (isHumanTurn) {
                     System.out.println("Player " + (isPlayer1Turn ? "1" : "2") + " skipped turn.");
-                    // Directly switch turn without applying actions/costs
-                    stopTurnTimer(); // Stop timer immediately
-                    switchTurn();    // Go to next turn/round sequence
+                    stopTurnTimer();
+                    switchTurn();
                 } else {
                     System.out.println("Cannot skip turn (Not a human player's turn).");
                 }
             }
         });
 
-
-        inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        actionMap = getActionMap();
-
-        // Bind ESCAPE key
+        // Pause game binding (ESC key)
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "pauseGame");
-
         actionMap.put("pauseGame", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                transitionToPause(selectedMapPath);  // Call your existing method
+                transitionToPause(selectedMapPath);
             }
         });
 
         System.out.println("Key bindings set up.");
     }
+
 
     // MODIFIED: Uses Thread instead of Timer
     private void startTurnTimer() {
