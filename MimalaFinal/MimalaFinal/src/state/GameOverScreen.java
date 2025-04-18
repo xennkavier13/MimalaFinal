@@ -18,7 +18,8 @@ public class GameOverScreen extends JPanel {
     private final String rematchHoverPath = "assets/GameOver/Rematch/Rematch_Hover.png";
     private final String menuOffPath = "assets/GameOver/ReturnToMainMenu/MainMenu_off.png";
     private final String menuHoverPath = "assets/GameOver/ReturnToMainMenu/MainMenu_hover.png";
-    private final String leaderboardOffPath = "";
+    private final String leaderboardOffPath = "assets/GameOver/Leaderboard/Leaderboard_off.png";
+    private final String leaderboardHoverPath = "assets/GameOver/Leaderboard/Leaderboard_hover.png";
     private final String p1Name, p2Name, mapPath, gameMode;
     private final String bgPath = "assets/GameOver/GameOver.png";
 
@@ -75,9 +76,26 @@ public class GameOverScreen extends JPanel {
                 componentForTracker
         );
 
-        // Menu button positions
-        int menuOffX = 585, menuOffY = 718;
-        int menuHoverX = 418, menuHoverY = 700;
+        // Leaderboard button positions
+        int leaderboardOffX = 740, leaderboardOffY = 719;
+        int leaderboardHoverX = 418, leaderboardHoverY = 700;
+
+        JLabel leaderboardButton = createButton(
+                leaderboardOffPath,
+                leaderboardHoverPath,
+                leaderboardOffX, leaderboardOffY,
+                leaderboardHoverX, leaderboardHoverY,
+                () -> {
+                    System.out.println("Leaderboard button clicked");
+                    //frame.setContentPane(new MainMenu(frame));
+                    frame.revalidate();
+                    frame.repaint();
+                },
+                componentForTracker
+        );
+
+        int menuOffX = 585, menuOffY = 870;
+        int menuHoverX = 418, menuHoverY = 852;
 
         JLabel menuButton = createButton(
                 menuOffPath,
@@ -85,7 +103,7 @@ public class GameOverScreen extends JPanel {
                 menuOffX, menuOffY,
                 menuHoverX, menuHoverY,
                 () -> {
-                    System.out.println("Main Menu button clicked");
+                    System.out.println("Menu button clicked");
                     frame.setContentPane(new MainMenu(frame));
                     frame.revalidate();
                     frame.repaint();
@@ -97,6 +115,10 @@ public class GameOverScreen extends JPanel {
             add(rematchButton);
             stopMusic();
         }
+        if (leaderboardButton != null) {
+            add(leaderboardButton);
+        }
+
         if (menuButton != null) {
             add(menuButton);
         }
