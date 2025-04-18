@@ -108,6 +108,10 @@ public class GameScreen extends JPanel {
 
     private Clip music;
 
+    private JLabel player1WinsLabel;
+    private JLabel player2WinsLabel;
+
+
     public GameScreen(JFrame frame, String firstPlayerCharacter, String secondPlayerCharacter, String selectedMapResourcePath, String gameMode) {
         this.frame = frame;
         this.firstPlayerCharacterName = firstPlayerCharacter;
@@ -126,29 +130,28 @@ public class GameScreen extends JPanel {
         loadCharacterStats(); // Now safe to call
 
         // --- Basic Panel Setup ---
-        setLayout(null);
-        setPreferredSize(new Dimension(1920, 1080));
-        setFocusable(true);
+        setLayout(null); // Disable layout manager so you can manually position components
+        setPreferredSize(new Dimension(1920, 1080)); // Set the panel size
+        setFocusable(true); // Allow the panel to receive input focus
 
         // --- Load Assets ---
-        loadMapImage();
+        loadMapImage(); // Load the map for the game background
 
-        // --- Setup UI (Now safe to use roundManager here) ---
-        initializeUIComponents();
-        positionUIComponents();
-        setupKeyBindings();
+        // --- Setup UI ---
+        initializeUIComponents(); // Initialize all the UI components (like buttons, labels, etc.)
+        positionUIComponents(); // Set the positions of the components (e.g., player health bars, buttons)
 
-        // --- Add Components ---
-        addAllComponents(); // Add components AFTER positioning
+        // --- Add Components to the Panel ---
+        addAllComponents(); // Ensure all the components are added to the panel
 
         // --- Start Game Flow ---
         startNextRoundSequence(); // Start the first round
 
         // --- Request Focus ---
-        SwingUtilities.invokeLater(this::requestFocusInWindow);
+        SwingUtilities.invokeLater(this::requestFocusInWindow); // Ensure the panel gains focus
 
-        playMusic("assets/FightingUI/fightmusic.wav");
-
+        // --- Play Background Music ---
+        playMusic("assets/FightingUI/fightmusic.wav"); // Play background music
     }
 
     private void loadCharacterStats() {
@@ -301,6 +304,21 @@ public class GameScreen extends JPanel {
 //        roundDisplayLabel.setForeground(Color.CYAN);
 //        roundDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
+        // --- Win Counters ---
+        player1WinsLabel = new JLabel("Wins x0");
+        player1WinsLabel.setFont(new Font("Arial", Font.BOLD, 70));
+        player1WinsLabel.setForeground(new Color(79, 57, 51)); // #4f3933 color
+        player1WinsLabel.setHorizontalAlignment(SwingConstants.LEFT);
+
+        player2WinsLabel = new JLabel("Wins x0");
+        player2WinsLabel.setFont(new Font("Arial", Font.BOLD, 70));
+        player2WinsLabel.setForeground(new Color(79, 57, 51)); // #4f3933 color
+        player2WinsLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+
+
+        // --- Add to Panel ---
+        this.add(player1WinsLabel);
+        this.add(player2WinsLabel);
 
         player1IdleIcon = (ImageIcon) player1CharacterLabel.getIcon();
         player2IdleIcon = (ImageIcon) player2CharacterLabel.getIcon();
@@ -413,6 +431,7 @@ public class GameScreen extends JPanel {
         int panelWidth = getPreferredSize().width > 0 ? getPreferredSize().width : 1920;
         int panelHeight = getPreferredSize().height > 0 ? getPreferredSize().height : 1080;
 
+
         // --- Player 1 Positions --- (Keep existing positioning logic)
         int p1_X = PADDING + 50 + 5;
         int p1_Y_HP = PADDING + 24;
@@ -443,6 +462,14 @@ public class GameScreen extends JPanel {
         player2Skill2.setBounds(p2_Skill_X - SKILL_BUTTON_WIDTH - SKILL_SPACING, p2_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
         player2Skill1.setBounds(p2_Skill_X - 2 *  (SKILL_BUTTON_WIDTH + SKILL_SPACING ), p2_Skill_Y_Start, SKILL_BUTTON_WIDTH, SKILL_BUTTON_HEIGHT);
 
+        // --- Win Counter Positions ---
+        int winLabelWidth = 400;
+        int winLabelHeight = 100;
+        int winLabelY = panelHeight - 105; // 40px from the bottom
+
+        player1WinsLabel.setBounds(PADDING + 55, winLabelY, winLabelWidth, winLabelHeight);
+        player2WinsLabel.setBounds(panelWidth - winLabelWidth - PADDING - 60, winLabelY, winLabelWidth, winLabelHeight);
+
         // --- Center HUD Positions ---
         int timerWidth = 100; int timerHeight = 100;
         timerDisplayLabel.setBounds(panelWidth / 2 - timerWidth / 2, PADDING + 50, timerWidth, timerHeight);
@@ -455,9 +482,14 @@ public class GameScreen extends JPanel {
         // Position round display above timer
         //roundDisplayLabel.setBounds(panelWidth / 2 - roundLabelWidth / 2, PADDING - roundLabelHeight + 15 , roundLabelWidth, roundLabelHeight);
 
-
         System.out.println("UI Components Positioned.");
     }
+
+    public void updateWinCounters(int p1Wins, int p2Wins) {
+        player1WinsLabel.setText("Wins x" + p1Wins);
+        player2WinsLabel.setText("Wins x" + p2Wins);
+    }
+
 
     // --- Keyboard Input Setup ---
     private void setupKeyBindings() {
@@ -1024,8 +1056,6 @@ public class GameScreen extends JPanel {
         // Display the round the game ended on
         //roundDisplayLabel.setText("Final Round: " + roundManager.getCurrentRound());
         System.out.println("Game Over! " + winnerMessage + " (Ended on Round " + roundManager.getCurrentRound() + ")");
-
-
     }
 
     private String determineWinnerByHp(double p1Hp, double p2Hp) {
@@ -1039,27 +1069,30 @@ public class GameScreen extends JPanel {
     }
 
     private void addAllComponents() {
-        // Ensure all components are added. Add order doesn't usually matter for null layout.
-        System.out.println("Adding components to panel...");
-        add(player1HpBar);
-        add(player1StaminaBar);
-        add(player1CharacterLabel);
-        add(player1Skill1);
-        add(player1Skill2);
-        add(player1Skill3);
+        // Add Player 1 and Player 2 components to the GameScreen (this panel)
+        this.add(player1CharacterLabel);
+        this.add(player2CharacterLabel);
+        this.add(player1HpBar);
+        this.add(player2HpBar);
+        this.add(player1StaminaBar);
+        this.add(player2StaminaBar);
 
-        add(player2HpBar);
-        add(player2StaminaBar);
-        add(player2CharacterLabel);
-        add(player2Skill1);
-        add(player2Skill2);
-        add(player2Skill3);
+        // Add skill buttons
+        this.add(player1Skill1);
+        this.add(player1Skill2);
+        this.add(player1Skill3);
+        this.add(player2Skill1);
+        this.add(player2Skill2);
+        this.add(player2Skill3);
 
-        add(timerDisplayLabel);
-        //add(turnIndicatorLabel);
-        //add(roundDisplayLabel); // Add the new round label
-        System.out.println("Components added.");
-        System.out.println("Component count: " + getComponentCount());
+        // Add the win counters
+        this.add(player1WinsLabel);
+        this.add(player2WinsLabel);
+
+        // Add the timer display
+        this.add(timerDisplayLabel);
+
+        // (Add any other components like background images, special UI elements, etc.)
     }
 
     @Override
