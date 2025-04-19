@@ -24,6 +24,10 @@ public class CreditsScreen extends JPanel {
         gifLabel = new JLabel(creditsGif);
         gifLabel.setHorizontalAlignment(SwingConstants.CENTER);
         gifLabel.setVerticalAlignment(SwingConstants.CENTER);
+        gifLabel.setOpaque(true); // Important!
+        gifLabel.setBackground(Color.BLACK); // Prevent white flash behind GIF
+
+        add(gifLabel, BorderLayout.CENTER);
 
         add(gifLabel, BorderLayout.CENTER);
 
@@ -46,7 +50,8 @@ public class CreditsScreen extends JPanel {
         JPanel mainMenu = new MainMenu(frame);
         SwingUtilities.invokeLater(() -> {
             frame.getContentPane().removeAll();
-            frame.setBackground(Color.BLACK); // Avoid flash when returning
+            frame.getContentPane().setBackground(Color.BLACK); // Ensure content pane is black
+            frame.setBackground(Color.BLACK); // Set frame background to black as well
             frame.setContentPane(mainMenu);
             frame.revalidate();
             frame.repaint();
