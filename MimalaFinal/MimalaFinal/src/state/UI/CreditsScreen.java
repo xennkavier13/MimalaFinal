@@ -12,7 +12,7 @@ public class CreditsScreen extends JPanel {
     private final ImageIcon creditsGif;
     private final JLabel gifLabel;
 
-    private final int gifDuration = 27000; // 27 seconds (adjust as necessary)
+    private final int gifDuration = 25000; // 27 seconds (adjust as necessary)
 
     public CreditsScreen(JFrame frame) {
         this.frame = frame;
