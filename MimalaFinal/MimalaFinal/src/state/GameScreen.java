@@ -411,7 +411,7 @@ public class GameScreen extends JPanel {
 
             }
 
-             if (isPlayer1) player1AnimTimer = null; else player2AnimTimer = null;
+            if (isPlayer1) player1AnimTimer = null; else player2AnimTimer = null;
         };
 
         // Create and start the NEW timer instance for the specific player
@@ -499,8 +499,8 @@ public class GameScreen extends JPanel {
 
     public void updateWinCounters() {
         SwingUtilities.invokeLater(() -> {
-            player1WinsLabel.setText("Wins: " + player1RoundWins + "x");
-            player2WinsLabel.setText("Wins: " + player2RoundWins + "x");
+            player1WinsLabel.setText("Wins: x" + player1RoundWins);
+            player2WinsLabel.setText("Wins: x" + player2RoundWins);
             // Force the labels to repaint immediately
             player1WinsLabel.revalidate();
             player1WinsLabel.repaint();
@@ -777,19 +777,15 @@ public class GameScreen extends JPanel {
 
                 boolean p1Died = player1CurrentHp <= 0;
                 boolean p2Died = player2CurrentHp <= 0;
-                String winner = "";
 
                 if (p1Died || p2Died) {
                     // Determine round winner
                     if (p1Died) {
                         player2RoundWins++;
-                        updateWinCounters();
-                        System.out.println("Round won by Player 2. Score: " + player1RoundWins + "-" + player2RoundWins);
                     } else {
                         player1RoundWins++;
-                        updateWinCounters();
-                        System.out.println("Round won by Player 1. Score: " + player1RoundWins + "-" + player2RoundWins);
                     }
+                    updateWinCounters();
 
                     // Play death animation
                     if (p1Died) {
@@ -812,6 +808,15 @@ public class GameScreen extends JPanel {
                     deathSequenceTimer = new javax.swing.Timer(getAnimationDuration("Death"), e -> {
                         // Check if match is over (someone has 2 wins)
                         if (player1RoundWins >= ROUNDS_TO_WIN || player2RoundWins >= ROUNDS_TO_WIN) {
+                            // Only record the win when match is complete
+                            if (isVsAI) {
+                                boolean playerWon = player1RoundWins >= ROUNDS_TO_WIN;
+                                new GameLog().recordPVEGame(Player1Name.player1Name, playerWon);
+                            } else {
+                                String winner = player1RoundWins >= ROUNDS_TO_WIN ? Player1Name.player1Name : Player2Name.player2Name;
+                                new GameLog().recordGame(winner);
+                            }
+                            new GameLog().saveStatsToFile();
                             transitionToResultScreen();
                         } else {
                             // Start next round
@@ -823,63 +828,11 @@ public class GameScreen extends JPanel {
                     return;
                 }
 
-                if (p1Died) {
-                    playAnimation(player1CharacterLabel, firstPlayerCharacterName, "Death", true, player1IdleIcon);
-                    p1Lose++;
-                    p2Wins++;
-                    winner = "Player 2";
-                    new GameLog().recordGame(winner);
-                    new GameLog().saveStatsToFile();
-
-                    // Stop game and timers
-                    gameRunning = false;
-                    stopTurnTimer();
-                    if (player1AnimTimer != null) player1AnimTimer.stop();
-                    if (player2AnimTimer != null) player2AnimTimer.stop();
-
-                    // Start death sequence timer
-                    if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
-                        deathSequenceTimer.stop();
-                    }
-                    deathSequenceTimer = new javax.swing.Timer(getAnimationDuration("Death"), e -> {
-                        transitionToResultScreen();
-                    });
-                    deathSequenceTimer.setRepeats(false);
-                    deathSequenceTimer.start();
-                    return; // Exit early since game is over
-                }
-                if (p2Died) {
-                    playAnimation(player2CharacterLabel, secondPlayerCharacterName, "Death", false, player2IdleIcon);
-                    p2Lose++;
-                    p1Wins++;
-                    winner = "Player 1";
-                    new GameLog().recordGame(winner);
-                    new GameLog().saveStatsToFile();
-
-                    // Stop game and timers
-                    gameRunning = false;
-                    stopTurnTimer();
-                    if (player1AnimTimer != null) player1AnimTimer.stop();
-                    if (player2AnimTimer != null) player2AnimTimer.stop();
-
-                    // Start death sequence timer
-                    if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
-                        deathSequenceTimer.stop();
-                    }
-                    deathSequenceTimer = new javax.swing.Timer(getAnimationDuration("Death"), e -> {
-                        transitionToResultScreen();
-                    });
-                    deathSequenceTimer.setRepeats(false);
-                    deathSequenceTimer.start();
-                    return; // Exit early since game is over
-                }
-
                 switchTurn();
             });
 
             effectTimer.setRepeats(false);
             effectTimer.start();
-
         } else {
             System.out.println(actorName + ": Not enough stamina for Skill " + skillNumber);
         }
@@ -952,8 +905,8 @@ public class GameScreen extends JPanel {
     private void handleAiSkillExecution(int skillNumber) {
         if (!gameRunning || isPlayer1Turn) return; // Final check
 
-        playAnimation(player2CharacterLabel, secondPlayerCharacterName, "Skill" + skillNumber, false, player2IdleIcon); // AI Skill
-        playAnimation(player1CharacterLabel, firstPlayerCharacterName, "GetHit", true, player1IdleIcon);           // P1 Hit
+        playAnimation(player2CharacterLabel, secondPlayerCharacterName, "Skill" + skillNumber, false, player2IdleIcon);
+        playAnimation(player1CharacterLabel, firstPlayerCharacterName, "GetHit", true, player1IdleIcon);
 
         // --- Apply Effects ---
         double staminaCost = player2Stats.getSkillCost(skillNumber);
@@ -967,8 +920,6 @@ public class GameScreen extends JPanel {
         updateHpBars();
         updateStaminaBars();
         boolean p1Died = player1CurrentHp <= 0;
-
-        p1Died = player1CurrentHp <= 0;
 
         if (p1Died) {
             player2RoundWins++;
@@ -985,6 +936,13 @@ public class GameScreen extends JPanel {
 
             deathSequenceTimer = new javax.swing.Timer(getAnimationDuration("Death"), e -> {
                 if (player2RoundWins >= ROUNDS_TO_WIN) {
+                    // Only record the win when match is complete
+                    if (isVsAI) {
+                        new GameLog().recordPVEGame(Player1Name.player1Name, false);
+                    } else {
+                        new GameLog().recordGame(Player2Name.player2Name);
+                    }
+                    new GameLog().saveStatsToFile();
                     transitionToResultScreen();
                 } else {
                     resetForNewRound();
@@ -995,36 +953,7 @@ public class GameScreen extends JPanel {
             return;
         }
 
-
-        if (p1Died) {
-            System.out.println("Death detected (P1). Starting game over sequence...");
-            gameRunning = false; // Stop game logic
-            // AI's turn timer was already stopped before execution, but ensure main one is stopped
-            stopTurnTimer();
-
-            playAnimation(player1CharacterLabel, firstPlayerCharacterName, "Death", true, player1IdleIcon);
-
-            int deathAnimDuration = getAnimationDuration("Death");
-
-            // Stop any ongoing revert timers immediately
-            if (player1AnimTimer != null) player1AnimTimer.stop();
-            if (player2AnimTimer != null) player2AnimTimer.stop();
-
-            if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
-                deathSequenceTimer.stop();
-            }
-            deathSequenceTimer = new javax.swing.Timer(deathAnimDuration, e -> { // Use 'e' or 'evt'
-                System.out.println("Death sequence timer finished. Transitioning...");
-                // --- CALL THE RENAMED METHOD ---
-                transitionToResultScreen();
-            });
-            deathSequenceTimer.setRepeats(false);
-            deathSequenceTimer.start();
-            return;
-
-        }
         // Switch back to Player 1's turn AFTER AI action completes
-        // Use invokeLater to ensure UI updates and checks happen correctly on EDT
         SwingUtilities.invokeLater(this::switchTurn);
     }
     /**
@@ -1035,33 +964,24 @@ public class GameScreen extends JPanel {
 
         // Stop all timers
         stopTurnTimer();
-        if (player1AnimTimer != null) {
-            player1AnimTimer.stop();
-            System.out.println("Stopped player1AnimTimer");
-        }
-        if (player2AnimTimer != null) {
-            player2AnimTimer.stop();
-            System.out.println("Stopped player2AnimTimer");
-        }
-        if (deathSequenceTimer != null) {
-            deathSequenceTimer.stop();
-            System.out.println("Stopped deathSequenceTimer");
-        }
+        if (player1AnimTimer != null) player1AnimTimer.stop();
+        if (player2AnimTimer != null) player2AnimTimer.stop();
+        if (deathSequenceTimer != null) deathSequenceTimer.stop();
 
-        // Determine result
-        boolean player1WonMatch = player1RoundWins > player2RoundWins;
+        // Determine result - only update global stats if match is complete
+        boolean player1WonMatch = player1RoundWins >= ROUNDS_TO_WIN;
+        boolean matchComplete = player1RoundWins >= ROUNDS_TO_WIN || player2RoundWins >= ROUNDS_TO_WIN;
 
-        // Update global stats
-        if (player1WonMatch) {
-            GameScreen.p1Wins++;
-            GameScreen.p2Lose++;
-            GameScreen.lastWinner = 1;
-            new GameLog().recordGame(Player1Name.player1Name);
-        } else {
-            GameScreen.p2Wins++;
-            GameScreen.p1Lose++;
-            GameScreen.lastWinner = 2;
-            new GameLog().recordGame(Player2Name.player2Name);
+        if (matchComplete) {
+            if (player1WonMatch) {
+                GameScreen.p1Wins++;
+                GameScreen.p2Lose++;
+                GameScreen.lastWinner = 1;
+            } else {
+                GameScreen.p2Wins++;
+                GameScreen.p1Lose++;
+                GameScreen.lastWinner = 2;
+            }
         }
 
         // Transition to ResultScreen

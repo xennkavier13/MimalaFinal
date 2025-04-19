@@ -3,4 +3,4 @@ Rank  Player Name          Wins
 2     dadoy                6         
 3     xennkavier           5         
 4     xorreur              5         
-5     galaxy               4         
+5     galaxy               4
