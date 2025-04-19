@@ -9,6 +9,8 @@ import java.awt.*;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.awt.image.BufferedImage;
+
 
 public class ModeSelection extends JPanel {
     private final ImageIcon modeSelectionBg;
@@ -17,7 +19,7 @@ public class ModeSelection extends JPanel {
 
     public ModeSelection(JFrame gameFrame) {
         this.frame = gameFrame;
-        modeSelectionBg = new ImageIcon("MimalaFinal/MimalaFinal/src/assets/MainMenuScreen/MainMenuBG.gif");
+        modeSelectionBg = new ImageIcon("MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/ModeSelectBG.gif");
         setLayout(null);
         setPreferredSize(new Dimension(1920, 1080));
         setupButtons();
@@ -25,7 +27,7 @@ public class ModeSelection extends JPanel {
     }
 
     private void setupButtons() {
-        // Back button
+        // Back button (unchanged)
         JLabel backButton = createButton(
                 "MimalaFinal/MimalaFinal/src/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_off.png",
                 "MimalaFinal/MimalaFinal/src/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_hover.png",
@@ -38,18 +40,13 @@ public class ModeSelection extends JPanel {
         );
         add(backButton);
 
-        // PVP button
-        // PVP button
-        JLabel pvpButton = createButton(
-                "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVP/PVP_off.png",
-                "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVP/PVP_hover.png",
-                680, 450,
+        // New PVP Button
+        JLabel pvpButton = createHoverOnlyButton(
+                "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVP_hover.png",
+                88, 206, // SetBounds — adjust as needed
                 () -> {
-                    // Show Player1Name input screen first
                     frame.setContentPane(new util.Player1Name(frame, () -> {
-                        // After Player 1 enters their name, show Player2Name screen
                         frame.setContentPane(new util.Player2Name(frame, () -> {
-                            // After both are done, start Character Selection screen
                             frame.setContentPane(new CharacterSelection(frame, "PVP"));
                             frame.revalidate();
                             frame.repaint();
@@ -63,16 +60,12 @@ public class ModeSelection extends JPanel {
         );
         add(pvpButton);
 
-
-        // PVC button
-        JLabel pvcButton = createButton(
-                "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PvAI/PvAI_off.png",
-                "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PvAI/PvAI_hover.png",
-                680, 530,
+        // New PVE Button
+        JLabel pveButton = createHoverOnlyButton(
+                "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVE_hover.png",
+                704, 206, // SetBounds — adjust as needed
                 () -> {
-                    // Show PlayerName input screen first
                     frame.setContentPane(new util.PlayerName(frame, () -> {
-                        // After name entry, proceed to character selection for PVC
                         frame.setContentPane(new CharacterSelection(frame, "PVC"));
                         frame.revalidate();
                         frame.repaint();
@@ -81,9 +74,48 @@ public class ModeSelection extends JPanel {
                     frame.repaint();
                 }
         );
-        add(pvcButton);
+        add(pveButton);
 
+        // New Arcade Button
+        JLabel arcadeButton = createHoverOnlyButton(
+                "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/Arcade_hover.png",
+                1320, 206, // SetBounds — adjust as needed
+                () -> {
+                    // Placeholder logic — replace with actual action if needed
+                    JOptionPane.showMessageDialog(frame, "Arcade mode coming soon!");
+                }
+        );
+        add(arcadeButton);
     }
+
+    private JLabel createHoverOnlyButton(String hoverPath, int x, int y, Runnable action) {
+        // Transparent default image (1x1 transparent pixel or similar)
+        ImageIcon defaultIcon = new ImageIcon(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB));
+        ImageIcon hoverIcon = new ImageIcon(hoverPath);
+        JLabel button = new JLabel(defaultIcon);
+        button.setBounds(x, y, hoverIcon.getIconWidth(), hoverIcon.getIconHeight());
+
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                button.setIcon(hoverIcon);
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                button.setIcon(defaultIcon);
+            }
+
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                action.run();
+            }
+        });
+
+        return button;
+    }
+
+
 
 
     private JLabel createButton(String offPath, String hoverPath, int x, int y, Runnable action) {
