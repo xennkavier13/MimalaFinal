@@ -34,7 +34,7 @@ public class MainMenu extends JPanel {
         JLabel startButton = createButton(
                 "assets/MainMenuScreen/Start/Start_off.png",
                 "assets/MainMenuScreen/Start/Start_hover.png",
-                450, () -> {
+                500, () -> {
 
                     stopMusic();
 
@@ -57,10 +57,31 @@ public class MainMenu extends JPanel {
                 }
         );
 
+        JLabel leaderboardsButton = createButton(
+                "assets/MainMenuScreen/Leaderboards/Leaderboards_off.png",
+                "assets/MainMenuScreen/Leaderboards/Leaderboards_hover.png",
+                585, () -> {
+                    stopMusic();
+
+                    // Show credits screen on click
+                    JPanel newScreen = new CreditsScreen(frame);
+                    newScreen.setBackground(Color.BLACK); // Prevent flash during transition
+
+                    // Smooth transition to credits screen
+                    SwingUtilities.invokeLater(() -> {
+                        frame.getContentPane().removeAll();
+                        frame.setBackground(Color.BLACK); // Avoid flash
+                        frame.setContentPane(newScreen);
+                        frame.revalidate();
+                        frame.repaint();
+                    });
+                }
+        );
+
         JLabel endButton = createButton(
                 "assets/MainMenuScreen/End/End_off.png",
                 "assets/MainMenuScreen/End/End_hover.png",
-                525, () -> {
+                670, () -> {
                     stopMusic(); // Stop music when exiting
                     System.exit(0);
                 }
@@ -69,7 +90,7 @@ public class MainMenu extends JPanel {
         JLabel creditsButton = createButton(
                 "assets/MainMenuScreen/Credits/Credits_off.png",
                 "assets/MainMenuScreen/Credits/Credits_hover.png",
-                600, () -> {
+                760, () -> {
                     stopMusic();
 
                     // Show credits screen on click
@@ -89,6 +110,7 @@ public class MainMenu extends JPanel {
 
         add(startButton);
         add(endButton);
+        add(leaderboardsButton);
         add(creditsButton);
     }
 
@@ -96,7 +118,7 @@ public class MainMenu extends JPanel {
         ImageIcon offIcon = loadIcon(offPath);
         ImageIcon hoverIcon = loadIcon(hoverPath);
         JLabel button = new JLabel(offIcon);
-        button.setBounds(680, y, offIcon.getIconWidth(), offIcon.getIconHeight());
+        button.setBounds(500, y, offIcon.getIconWidth(), offIcon.getIconHeight());
 
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
