@@ -1,5 +1,7 @@
 package state;
 
+import state.UI.PVPLeaderboard;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -21,7 +23,7 @@ public class GameOverScreen extends JPanel {
     private final String leaderboardOffPath = "assets/GameOver/Leaderboard/Leaderboard_off.png";
     private final String leaderboardHoverPath = "assets/GameOver/Leaderboard/Leaderboard_hover.png";
     private final String p1Name, p2Name, mapPath, gameMode;
-    private final String bgPath = "assets/GameOver/GameOver.png";
+    private final String bgPath = "assets/GameOver/GameOver.gif";
 
     public GameOverScreen(JFrame frame, boolean player1Won, String p1, String p2, String map, String mode) {
         this.frame = frame;
@@ -55,8 +57,8 @@ public class GameOverScreen extends JPanel {
         Component componentForTracker = this;
 
         // Rematch button positions
-        int rematchOffX = 820, rematchOffY = 568;
-        int rematchHoverX = 418, rematchHoverY = 548;
+        int rematchOffX = 500, rematchOffY = 500;
+        int rematchHoverX = 500, rematchHoverY = 500;
 
         JLabel rematchButton = createButton(
                 rematchOffPath,
@@ -77,8 +79,8 @@ public class GameOverScreen extends JPanel {
         );
 
         // Leaderboard button positions
-        int leaderboardOffX = 740, leaderboardOffY = 719;
-        int leaderboardHoverX = 418, leaderboardHoverY = 700;
+        int leaderboardOffX = 500, leaderboardOffY = 585;
+        int leaderboardHoverX = 500, leaderboardHoverY = 585;
 
         JLabel leaderboardButton = createButton(
                 leaderboardOffPath,
@@ -87,15 +89,20 @@ public class GameOverScreen extends JPanel {
                 leaderboardHoverX, leaderboardHoverY,
                 () -> {
                     System.out.println("Leaderboard button clicked");
-                    //frame.setContentPane(new MainMenu(frame));
-                    frame.revalidate();
-                    frame.repaint();
+                    JPanel newScreen = new PVPLeaderboard(frame, this); // this = current screen
+                    newScreen.setBackground(Color.BLACK);
+                    SwingUtilities.invokeLater(() -> {
+                        frame.getContentPane().removeAll();
+                        frame.setContentPane(newScreen);
+                        frame.revalidate();
+                        frame.repaint();
+                    });
                 },
                 componentForTracker
         );
 
-        int menuOffX = 585, menuOffY = 870;
-        int menuHoverX = 418, menuHoverY = 852;
+        int menuOffX = 500, menuOffY = 675;
+        int menuHoverX = 500, menuHoverY = 675;
 
         JLabel menuButton = createButton(
                 menuOffPath,
@@ -193,6 +200,22 @@ public class GameOverScreen extends JPanel {
             return new ImageIcon(scaled);
         }
         return icon;
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+
+        // Re-add background GIF if missing
+        if (backgroundLabel != null && backgroundLabel.getParent() != this) {
+            add(backgroundLabel);
+            setComponentZOrder(backgroundLabel, getComponentCount() - 1); // Send to back
+        }
+
+        // Re-add buttons if missing
+        if (getComponentCount() <= 1) { // 1 because backgroundLabel counts as a component
+            setupButtons();
+        }
     }
 
     @Override

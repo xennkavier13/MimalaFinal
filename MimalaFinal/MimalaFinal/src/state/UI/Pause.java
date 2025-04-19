@@ -26,13 +26,13 @@ public class Pause extends JPanel {
         setLayout(null);
         setPreferredSize(new Dimension(1920, 1080));
 
-        pauseBackground = new ImageIcon(getClass().getResource("/assets/PauseScreen/PAUSE/PauseScreen_nobutton.png")).getImage();
+        pauseBackground = new ImageIcon(getClass().getResource("/assets/PauseScreen/PAUSE/PauseScreen.gif")).getImage();
 
         // Resume Button
         JLabel resumeButton = createButton(
                 resumeOffPath, resumeHoverPath,
-                850, 567, // off position
-                418, 548, // hover position
+                500, 548, // off position
+                500, 548, // hover position
                 () -> {
                     frame.setContentPane(gameScreen);
                     frame.revalidate();
@@ -44,8 +44,8 @@ public class Pause extends JPanel {
         // Exit Button
         JLabel exitButton = createButton(
                 exitOffPath, exitHoverPath,
-                585, 718, // off position
-                418, 700, // hover position
+                500, 636, // off position
+                500, 636, // hover position
                 () -> {
                     JPanel newScreen = new MainMenu(frame);
                     newScreen.setOpaque(true);

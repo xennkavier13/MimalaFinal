@@ -6,13 +6,15 @@ import java.awt.*;
 public class PVPLeaderboard extends JPanel {
     private final ImageIcon background;
     private final JFrame frame;
+    private final JPanel previousScreen;
 
-    public PVPLeaderboard(JFrame frame) {
+    public PVPLeaderboard(JFrame frame, JPanel previousScreen) {
         this.frame = frame;
+        this.previousScreen = previousScreen;
         this.setLayout(null);
         this.setFocusable(true);
         this.setPreferredSize(new Dimension(1920, 1080));
-        this.setBackground(Color.BLACK); // prevents white flash
+        this.setBackground(Color.BLACK);
 
         background = loadIcon("assets/Leaderboards/PVPLeaderboard_mainmenu.png");
 
@@ -25,8 +27,7 @@ public class PVPLeaderboard extends JPanel {
                 "assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_hover.png",
                 50, 57,
                 () -> {
-                    JPanel mainMenu = new state.MainMenu(frame);
-                    frame.setContentPane(mainMenu);
+                    frame.setContentPane(previousScreen);
                     frame.revalidate();
                     frame.repaint();
                 }
@@ -38,7 +39,7 @@ public class PVPLeaderboard extends JPanel {
                 "assets/Leaderboards/Buttons/RightBtn_hover.png",
                 1749, 476,
                 () -> {
-                    JPanel nextScreen = new PVELeaderboard(frame);
+                    JPanel nextScreen = new PVELeaderboard(frame, previousScreen);
                     frame.setContentPane(nextScreen);
                     frame.revalidate();
                     frame.repaint();

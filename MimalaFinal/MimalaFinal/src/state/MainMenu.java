@@ -1,6 +1,7 @@
 package state;
 
 import state.UI.CreditsScreen;
+import state.UI.PVPLeaderboard;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
@@ -62,7 +63,7 @@ public class MainMenu extends JPanel {
                 "assets/MainMenuScreen/Leaderboards/Leaderboards_hover.png",
                 585, () -> {
                     stopMusic();
-                    JPanel newScreen = new state.UI.PVPLeaderboard(frame);
+                    JPanel newScreen = new PVPLeaderboard(frame, this); // this = current screen
                     newScreen.setBackground(Color.BLACK);
                     SwingUtilities.invokeLater(() -> {
                         frame.getContentPane().removeAll();
@@ -107,6 +108,15 @@ public class MainMenu extends JPanel {
         add(endButton);
         add(leaderboardsButton);
         add(creditsButton);
+    }
+
+    @Override
+    public void addNotify() { // crucial for re-adding the buttons after going back from the leaderboards
+        super.addNotify();
+        // Re-add buttons if they are missing
+        if (getComponentCount() == 0) {
+            setupButtons();
+        }
     }
 
     private JLabel createButton(String offPath, String hoverPath, int y, Runnable action) {
