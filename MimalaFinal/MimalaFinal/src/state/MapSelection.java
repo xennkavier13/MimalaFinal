@@ -41,8 +41,8 @@ public class MapSelection extends JPanel {
     private String selectedMapPath = null;
     private JLabel currentlySelectedMapLabel = null;
     private final Border selectionBorder = BorderFactory.createLineBorder(Color.YELLOW, 5);
-    private final Border hoverBorder = BorderFactory.createLineBorder(Color.YELLOW, 5);
-    private final Border defaultBorder = BorderFactory.createLineBorder(Color.BLACK, 5);
+    private final Border hoverBorder = BorderFactory.createLineBorder(new Color(206, 144, 10), 10); // #ce900a
+    private final Border defaultBorder = BorderFactory.createLineBorder(Color.BLACK, 10);
 
     private final String firstPlayerSelection;
     private final String secondPlayerSelection;
