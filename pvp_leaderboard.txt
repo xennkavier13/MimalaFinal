@@ -1,3 +1,5 @@
 Rank  Player Name          Wins      
-1     terter               3         
-2     dadoy                2         
+1     terter               9         
+2     dadoy                6         
+3     xorreur              5         
+4     galaxy               4         
