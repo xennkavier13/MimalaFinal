@@ -123,6 +123,7 @@ public class GameScreen extends JPanel {
         this.isVsAI = this.gameMode.equals("PVC"); // <<< Use gameMode now
         System.out.println("GameScreen initialized. Mode: " + this.gameMode + ", Is Vs AI: " + this.isVsAI);
 
+
         // --- Initialize Round Manager FIRST ---
         this.roundManager = new RoundManager(10); // Initialize here! TURNS
 

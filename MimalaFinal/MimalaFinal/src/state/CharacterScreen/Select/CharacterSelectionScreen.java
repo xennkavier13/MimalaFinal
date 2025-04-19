@@ -246,7 +246,7 @@ public abstract class CharacterSelectionScreen extends JPanel {
             frame.setContentPane(new MapSelection(frame, this.firstPlayerSelection, currentCharacterSelection, "PVP"));
 
         } else {
-            // --- This means Player 1 is confirming (or it's PVC mode) ---
+            // --- This means Player 1 is confirming (or it's PVC mode or Arcade mode) ---
             String player1Choice = currentCharacterSelection; // P1 has confirmed this character
             System.out.println("Player 1 confirmed: " + player1Choice);
 
@@ -260,11 +260,31 @@ public abstract class CharacterSelectionScreen extends JPanel {
                 System.out.println("Mode is PVP. Proceeding to Second Player Selection.");
                 // Proceed to Player 2's selection screen, passing P1's confirmed choice
                 frame.setContentPane(new SecondPlayerSelection(frame, player1Choice, "PVP"));
+            } else if ("ARCADE".equalsIgnoreCase(this.mode)) {
+                // --- Arcade Mode Logic ---
+                System.out.println("Mode is Arcade. Selecting AI opponent and proceeding to Map Selection.");
+
+                // Randomly select a character for Player 2 (AI opponent)
+                String player2Selection = selectRandomCharacterForArcade(player1Choice);
+                System.out.println("Arcade Mode AI selected: " + player2Selection);
+
+                // Proceed to the Map Selection screen with Player 1 and AI opponent
+                frame.setContentPane(new MapSelection(frame, player1Choice, player2Selection, "ARCADE"));
             }
         }
 
         frame.revalidate();
         frame.repaint();
+    }
+
+    private String selectRandomCharacterForArcade(String player1Choice) {
+        // Arcade mode random selection - AI chooses from the available pool, ensuring not to pick Player 1's character
+        Random random = new Random();
+        String aiChoice;
+        do {
+            aiChoice = ALL_CHARACTER_NAMES[random.nextInt(ALL_CHARACTER_NAMES.length)];
+        } while (aiChoice.equals(player1Choice)); // Ensure AI doesn't pick the same character
+        return aiChoice;
     }
 
 

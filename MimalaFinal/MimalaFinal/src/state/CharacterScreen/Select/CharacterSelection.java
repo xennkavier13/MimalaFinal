@@ -39,6 +39,7 @@ public class CharacterSelection extends JPanel {
             System.out.println("PVC mode: Player 2 set to " + AI_PLAYER_NAME);
             // Potentially disable P2 selection UI elements here
         }
+
         setLayout(null);  // Absolute layout
         setPreferredSize(new Dimension(1920, 1080));
         setupButtons();
@@ -106,8 +107,6 @@ public class CharacterSelection extends JPanel {
         return button;
     }
 
-
-
     private void createCharacterButton(String characterName, String hoverImagePath, int x, int y) {
         ImageIcon hoverIcon = new ImageIcon(hoverImagePath);
 
@@ -170,6 +169,11 @@ public class CharacterSelection extends JPanel {
                     System.out.println(firstPlayerSelection + " selected by Player 1!");
                     if (mode.equals("PVP")) {
                         frame.setContentPane(new SecondPlayerSelection(frame, firstPlayerSelection, "PVP"));
+                    } else if ("Arcade".equals(mode)) {
+                        // Arcade Mode logic: Randomly select Player 2's character
+                        player2Selection = selectRandomCharacter();
+                        System.out.println(player2Selection + " selected for Player 2!");
+                        frame.setContentPane(new MapSelection(frame, firstPlayerSelection, player2Selection, "Arcade"));
                     } else {
                         String secondPlayerSelection = selectRandomCharacter();
                         System.out.println(secondPlayerSelection + " selected for Player 2!");
@@ -210,7 +214,6 @@ public class CharacterSelection extends JPanel {
         }
     }
 
-
     private void stopMusic() {
         if (music != null && music.isRunning()) {
             music.stop();
@@ -221,6 +224,6 @@ public class CharacterSelection extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.drawImage(characterSelectionBg.getImage(), 0, 0, getWidth(), getHeight(), this);
+        g.drawImage(characterSelectionBg.getImage(), 0, 0, this);
     }
 }
