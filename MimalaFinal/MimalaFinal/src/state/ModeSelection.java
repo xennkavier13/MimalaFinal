@@ -1,21 +1,13 @@
 package state;
 
 import state.CharacterScreen.Select.CharacterSelection;
-import state.CharacterScreen.Select.SecondPlayerSelection;
-
-import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.awt.image.BufferedImage;
-
+import util.PlayerName;
 
 public class ModeSelection extends JPanel {
     private final ImageIcon modeSelectionBg;
     private final JFrame frame;
-    private Clip music;
 
     public ModeSelection(JFrame gameFrame) {
         this.frame = gameFrame;
@@ -23,7 +15,6 @@ public class ModeSelection extends JPanel {
         setLayout(null);
         setPreferredSize(new Dimension(1920, 1080));
         setupButtons();
-//        playMusic("/assets/MainMenuScreen/Sounds/MimalaMainMenuMusic.wav");
     }
 
     private void setupButtons() {
@@ -65,7 +56,7 @@ public class ModeSelection extends JPanel {
                 "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/PVE_hover.png",
                 704, 206, // SetBounds — adjust as needed
                 () -> {
-                    frame.setContentPane(new util.PlayerName(frame, () -> {
+                    frame.setContentPane(new util.PlayerName(frame, "PVC", () -> {
                         frame.setContentPane(new CharacterSelection(frame, "PVC"));
                         frame.revalidate();
                         frame.repaint();
@@ -81,16 +72,23 @@ public class ModeSelection extends JPanel {
                 "MimalaFinal/MimalaFinal/src/assets/ModeSelectionScreen/Buttons/Arcade_hover.png",
                 1320, 206, // SetBounds — adjust as needed
                 () -> {
-                    // Placeholder logic — replace with actual action if needed
-                    JOptionPane.showMessageDialog(frame, "Arcade mode coming soon!");
+                    // Prompt for player name before going to Arcade mode
+                    frame.setContentPane(new util.PlayerName(frame, "Arcade", () -> {
+                        // After name input, go to CharacterSelection for Arcade mode
+                        frame.setContentPane(new CharacterSelection(frame, "Arcade"));
+                        frame.revalidate();
+                        frame.repaint();
+                    }));
+                    frame.revalidate();
+                    frame.repaint();
                 }
         );
         add(arcadeButton);
     }
 
     private JLabel createHoverOnlyButton(String hoverPath, int x, int y, Runnable action) {
-        // Transparent default image (1x1 transparent pixel or similar)
-        ImageIcon defaultIcon = new ImageIcon(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB));
+        // Use null as the default icon to avoid creating an empty image
+        ImageIcon defaultIcon = null;
         ImageIcon hoverIcon = new ImageIcon(hoverPath);
         JLabel button = new JLabel(defaultIcon);
         button.setBounds(x, y, hoverIcon.getIconWidth(), hoverIcon.getIconHeight());
@@ -115,9 +113,6 @@ public class ModeSelection extends JPanel {
         return button;
     }
 
-
-
-
     private JLabel createButton(String offPath, String hoverPath, int x, int y, Runnable action) {
         ImageIcon offIcon = new ImageIcon(offPath);
         ImageIcon hoverIcon = new ImageIcon(hoverPath);
@@ -141,35 +136,6 @@ public class ModeSelection extends JPanel {
             }
         });
         return button;
-    }
-
-    private void playMusic(String filePath) {
-        try {
-            // Load from resources (classpath)
-            InputStream audioSrc = getClass().getResourceAsStream(filePath);
-            if (audioSrc == null) {
-                System.err.println("Music file not found in resources: " + filePath);
-                return;
-            }
-
-            InputStream bufferedIn = new BufferedInputStream(audioSrc);
-            AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn);
-
-            music = AudioSystem.getClip();
-            music.open(audioStream);
-            music.loop(Clip.LOOP_CONTINUOUSLY);
-            music.start();
-        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    private void stopMusic() {
-        if (music != null && music.isRunning()) {
-            music.stop();
-            music.close();
-        }
     }
 
     @Override

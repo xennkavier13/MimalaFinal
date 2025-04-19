@@ -10,14 +10,26 @@ public class PlayerName extends JPanel {
     private JTextField nameField;
     private JButton submitButton;
     private Image backgroundImg;
+    private String mode; // To distinguish between PVC and Arcade
 
-    public PlayerName(JFrame frame, Runnable onSubmit) {
+    public PlayerName(JFrame frame, String mode, Runnable onSubmit) {
+        this.mode = mode; // "PVC" or "Arcade"
         setLayout(null); // Manual layout
         setFocusable(true);
         requestFocusInWindow();
 
-        // Load background image
-        backgroundImg = new ImageIcon("MimalaFinal/MimalaFinal/src/assets/InputName/player_entername.png").getImage();
+        // Load background image based on the mode
+        if (mode.equals("PVC")) {
+            backgroundImg = new ImageIcon("MimalaFinal/MimalaFinal/src/assets/InputName/player_entername.png").getImage();
+        } else if (mode.equals("Arcade")) {
+            // Try to load arcade image first
+            backgroundImg = new ImageIcon("MimalaFinal/MimalaFinal/src/assets/InputName/player_entername.png").getImage();
+            // If the arcade image is missing, fallback to the PVC image
+            if (backgroundImg == null) {
+                System.out.println("Arcade mode background missing, fallback to PVC image.");
+                backgroundImg = new ImageIcon("MimalaFinal/MimalaFinal/src/assets/InputName/player_entername.png").getImage();
+            }
+        }
 
         // --- Name input field ---
         nameField = new JTextField();
@@ -44,8 +56,8 @@ public class PlayerName extends JPanel {
         submitButton.addActionListener(e -> {
             playerName = nameField.getText().trim();
             if (!playerName.isEmpty()) {
-                System.out.println("Player Name (PVC): " + playerName);
-                onSubmit.run(); // Move to next screen
+                System.out.println("Player Name (" + mode + "): " + playerName);
+                onSubmit.run(); // Move to the next screen
             } else {
                 JOptionPane.showMessageDialog(this, "Please enter a name.");
             }
@@ -59,6 +71,9 @@ public class PlayerName extends JPanel {
         super.paintComponent(g);
         if (backgroundImg != null) {
             g.drawImage(backgroundImg, 0, 0, getWidth(), getHeight(), this);
+        } else {
+            // Fallback if image is not loaded properly
+            System.err.println("Background image failed to load.");
         }
     }
 }
