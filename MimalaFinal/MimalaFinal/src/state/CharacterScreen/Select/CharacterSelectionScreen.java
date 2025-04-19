@@ -79,7 +79,7 @@ public abstract class CharacterSelectionScreen extends JPanel {
         String infoBtnOff = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Info/info_off.png";
         String infoBtnHover = "/assets/CharacterSelectionScreen/CharacterScreenButtons/Info/info_hover.png";
 
-        infoButton = createButton(infoBtnOff, infoBtnHover, 1100, 825, () -> {
+        infoButton = createButton(infoBtnOff, infoBtnHover, 1110, 825, () -> {
             if (infoVisible && closeVisible) {
                 removeInfoPanel();
             } else {
