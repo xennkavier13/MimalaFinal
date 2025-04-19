@@ -131,7 +131,8 @@ public class PVPLeaderboard extends JPanel {
                 add(nameLabel);
                 add(winsLabel);
 
-                rank++; // Increment the rank for the next row
+                if (rank > 5) break;
+                else rank++; // Increment the rank for the next row
             }
         }
 
