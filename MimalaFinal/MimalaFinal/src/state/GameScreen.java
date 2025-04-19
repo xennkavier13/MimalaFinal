@@ -19,6 +19,8 @@ import state.UI.StatusBar;
 import state.character.CharacterDataLoader;
 import state.character.CharacterStats;
 import util.GameLog;
+import util.Player1Name;
+import util.Player2Name;
 import util.RoundManager;
 // Removed: import javax.swing.Timer; // We are replacing this
 
@@ -36,10 +38,6 @@ public class GameScreen extends JPanel {
     private javax.swing.Timer player1AnimTimer;
     private javax.swing.Timer player2AnimTimer;
     private javax.swing.Timer deathSequenceTimer;
-    public static int p1Wins = 0;
-    public static int p1Lose = 0;
-    public static int p2Wins = 0;
-    public static int p2Lose = 0;
     // --- Character Stats ---
     private CharacterStats player1Stats;
     private CharacterStats player2Stats;
@@ -110,6 +108,13 @@ public class GameScreen extends JPanel {
 
     private JLabel player1WinsLabel;
     private JLabel player2WinsLabel;
+
+    public static int p1Wins = 0;
+    public static int p1Lose = 0;
+    public static int p2Wins = 0;
+    public static int p2Lose = 0;
+    public static int lastWinner = 0; // 1 = Player 1 wins, 2 = Player 2 wins
+
 
 
     public GameScreen(JFrame frame, String firstPlayerCharacter, String secondPlayerCharacter, String selectedMapResourcePath, String gameMode) {
@@ -937,10 +942,27 @@ public class GameScreen extends JPanel {
         }
 
         // Determine result
-        boolean p1Wins = player2CurrentHp <= 0 && player1CurrentHp > 0;
-        boolean p2Wins = player1CurrentHp <= 0 && player2CurrentHp > 0;
+        boolean didP1WinThisRound = player2CurrentHp <= 0 && player1CurrentHp > 0;
+        boolean didP2WinThisRound  = player1CurrentHp <= 0 && player2CurrentHp > 0;
+        // Determine result
+        boolean p1WinsBool = player2CurrentHp <= 0 && player1CurrentHp > 0;
+        boolean p2WinsBool = player1CurrentHp <= 0 && player2CurrentHp > 0;
         boolean isDraw = player1CurrentHp <= 0 && player2CurrentHp <= 0;
-        boolean player1Won = !isDraw && (p1Wins || (!p2Wins && player2CurrentHp == 0));
+
+        boolean player1Won = p1WinsBool;
+        boolean player2Won = p2WinsBool;
+
+        if (didP1WinThisRound) {
+            GameScreen.p1Wins++;
+            GameScreen.p2Lose++;
+            GameScreen.lastWinner = 1;
+            new GameLog().recordGame(Player1Name.player1Name);
+        } else if (didP2WinThisRound) {
+            GameScreen.p2Wins++;
+            GameScreen.p1Lose++;
+            GameScreen.lastWinner = 2;
+            new GameLog().recordGame(Player2Name.player2Name);
+        }
 
         System.out.println("Player 1 HP: " + player1CurrentHp);
         System.out.println("Player 2 HP: " + player2CurrentHp);

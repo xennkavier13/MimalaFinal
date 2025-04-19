@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class Player1Name extends JPanel {
 
-    public static String player1Name = ""; // To be used later for leaderboard
+    public static String player1Name = "Player 1"; // To be used later for leaderboard
 
     private JTextField nameField;
     private JButton submitButton;

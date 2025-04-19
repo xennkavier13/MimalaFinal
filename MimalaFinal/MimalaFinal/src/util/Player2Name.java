@@ -6,7 +6,7 @@ import java.awt.event.*;
 
 public class Player2Name extends JPanel {
 
-    public static String player2Name = ""; // To be used in leaderboard logic later
+    public static String player2Name = "Player 2"; // To be used in leaderboard logic later
 
     private JTextField nameField;
     private JButton submitButton;
