@@ -116,6 +116,10 @@ public class GameScreen extends JPanel {
     public static int lastWinner = 0; // 1 = Player 1 wins, 2 = Player 2 wins
 
 
+    // Round logic
+    private int player1RoundWins = 0;
+    private int player2RoundWins = 0;
+    private static final int ROUNDS_TO_WIN = 2; // Best of 3 (first to 2 wins)
 
     public GameScreen(JFrame frame, String firstPlayerCharacter, String secondPlayerCharacter, String selectedMapResourcePath, String gameMode) {
         this.frame = frame;
@@ -493,9 +497,16 @@ public class GameScreen extends JPanel {
         System.out.println("UI Components Positioned.");
     }
 
-    public void updateWinCounters(int p1Wins, int p2Wins) {
-        player1WinsLabel.setText("Wins x" + p1Wins);
-        player2WinsLabel.setText("Wins x" + p2Wins);
+    public void updateWinCounters() {
+        SwingUtilities.invokeLater(() -> {
+            player1WinsLabel.setText("Wins: " + player1RoundWins + "x");
+            player2WinsLabel.setText("Wins: " + player2RoundWins + "x");
+            // Force the labels to repaint immediately
+            player1WinsLabel.revalidate();
+            player1WinsLabel.repaint();
+            player2WinsLabel.revalidate();
+            player2WinsLabel.repaint();
+        });
     }
 
 
@@ -768,6 +779,50 @@ public class GameScreen extends JPanel {
                 boolean p2Died = player2CurrentHp <= 0;
                 String winner = "";
 
+                if (p1Died || p2Died) {
+                    // Determine round winner
+                    if (p1Died) {
+                        player2RoundWins++;
+                        updateWinCounters();
+                        System.out.println("Round won by Player 2. Score: " + player1RoundWins + "-" + player2RoundWins);
+                    } else {
+                        player1RoundWins++;
+                        updateWinCounters();
+                        System.out.println("Round won by Player 1. Score: " + player1RoundWins + "-" + player2RoundWins);
+                    }
+
+                    // Play death animation
+                    if (p1Died) {
+                        playAnimation(player1CharacterLabel, firstPlayerCharacterName, "Death", true, player1IdleIcon);
+                    } else {
+                        playAnimation(player2CharacterLabel, secondPlayerCharacterName, "Death", false, player2IdleIcon);
+                    }
+
+                    // Stop timers
+                    gameRunning = false;
+                    stopTurnTimer();
+                    if (player1AnimTimer != null) player1AnimTimer.stop();
+                    if (player2AnimTimer != null) player2AnimTimer.stop();
+
+                    // Start death sequence timer
+                    if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
+                        deathSequenceTimer.stop();
+                    }
+
+                    deathSequenceTimer = new javax.swing.Timer(getAnimationDuration("Death"), e -> {
+                        // Check if match is over (someone has 2 wins)
+                        if (player1RoundWins >= ROUNDS_TO_WIN || player2RoundWins >= ROUNDS_TO_WIN) {
+                            transitionToResultScreen();
+                        } else {
+                            // Start next round
+                            resetForNewRound();
+                        }
+                    });
+                    deathSequenceTimer.setRepeats(false);
+                    deathSequenceTimer.start();
+                    return;
+                }
+
                 if (p1Died) {
                     playAnimation(player1CharacterLabel, firstPlayerCharacterName, "Death", true, player1IdleIcon);
                     p1Lose++;
@@ -830,6 +885,30 @@ public class GameScreen extends JPanel {
         }
     }
 
+
+    private void resetForNewRound() {
+        // Reset character stats
+        player1CurrentHp = player1Stats.getMaxHp();
+        player1CurrentStamina = player1Stats.getMaxStamina();
+        player2CurrentHp = player2Stats.getMaxHp();
+        player2CurrentStamina = player2Stats.getMaxStamina();
+
+        // Update UI
+        updateHpBars();
+        updateStaminaBars();
+        updateWinCounters();
+
+        // Reset animations
+        player1CharacterLabel.setIcon(player1IdleIcon);
+        player2CharacterLabel.setIcon(player2IdleIcon);
+
+        // Reset game state
+        gameRunning = true;
+
+        // Start next round
+        startNextRoundSequence();
+    }
+
     // MODIFIED: AI Logic uses stats and skill numbers
     private void performAiAction() {
         if (!gameRunning || isPlayer1Turn) return; // Should only run on AI's turn
@@ -889,6 +968,34 @@ public class GameScreen extends JPanel {
         updateStaminaBars();
         boolean p1Died = player1CurrentHp <= 0;
 
+        p1Died = player1CurrentHp <= 0;
+
+        if (p1Died) {
+            player2RoundWins++;
+            updateWinCounters();
+            System.out.println("Round won by Player 2. Score: " + player1RoundWins + "-" + player2RoundWins);
+
+            gameRunning = false;
+            stopTurnTimer();
+            playAnimation(player1CharacterLabel, firstPlayerCharacterName, "Death", true, player1IdleIcon);
+
+            if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
+                deathSequenceTimer.stop();
+            }
+
+            deathSequenceTimer = new javax.swing.Timer(getAnimationDuration("Death"), e -> {
+                if (player2RoundWins >= ROUNDS_TO_WIN) {
+                    transitionToResultScreen();
+                } else {
+                    resetForNewRound();
+                }
+            });
+            deathSequenceTimer.setRepeats(false);
+            deathSequenceTimer.start();
+            return;
+        }
+
+
         if (p1Died) {
             System.out.println("Death detected (P1). Starting game over sequence...");
             gameRunning = false; // Stop game logic
@@ -942,48 +1049,31 @@ public class GameScreen extends JPanel {
         }
 
         // Determine result
-        boolean didP1WinThisRound = player2CurrentHp <= 0 && player1CurrentHp > 0;
-        boolean didP2WinThisRound  = player1CurrentHp <= 0 && player2CurrentHp > 0;
-        // Determine result
-        boolean p1WinsBool = player2CurrentHp <= 0 && player1CurrentHp > 0;
-        boolean p2WinsBool = player1CurrentHp <= 0 && player2CurrentHp > 0;
-        boolean isDraw = player1CurrentHp <= 0 && player2CurrentHp <= 0;
+        boolean player1WonMatch = player1RoundWins > player2RoundWins;
 
-        boolean player1Won = p1WinsBool;
-        boolean player2Won = p2WinsBool;
-
-        if (didP1WinThisRound) {
+        // Update global stats
+        if (player1WonMatch) {
             GameScreen.p1Wins++;
             GameScreen.p2Lose++;
             GameScreen.lastWinner = 1;
             new GameLog().recordGame(Player1Name.player1Name);
-        } else if (didP2WinThisRound) {
+        } else {
             GameScreen.p2Wins++;
             GameScreen.p1Lose++;
             GameScreen.lastWinner = 2;
             new GameLog().recordGame(Player2Name.player2Name);
         }
 
-        System.out.println("Player 1 HP: " + player1CurrentHp);
-        System.out.println("Player 2 HP: " + player2CurrentHp);
-        System.out.println("Player 1 Wins: " + p1Wins);
-        System.out.println("Player 2 Wins: " + p2Wins);
-        System.out.println("Is Draw: " + isDraw);
-        System.out.println("Player 1 Won: " + player1Won);
-        System.out.println("Selected map path: " + selectedMapPath);
-        System.out.println("Characters: " + firstPlayerCharacterName + " vs " + secondPlayerCharacterName);
-
         // Transition to ResultScreen
-        ResultScreen resultOverlay = new ResultScreen(frame, player1Won, firstPlayerCharacterName, secondPlayerCharacterName, selectedMapPath, gameMode);
+        ResultScreen resultOverlay = new ResultScreen(frame, player1WonMatch,
+                firstPlayerCharacterName, secondPlayerCharacterName,
+                selectedMapPath, gameMode);
 
-        // Add it on top of the current game panel
-        frame.getLayeredPane().add(resultOverlay, JLayeredPane.POPUP_LAYER); // Or DRAG_LAYER if needed
+        frame.getLayeredPane().add(resultOverlay, JLayeredPane.POPUP_LAYER);
         resultOverlay.repaint();
-        resultOverlay.showGameResult(player1Won);
+        resultOverlay.showGameResult(player1WonMatch);
 
         stopMusic();
-        System.out.println("Background music stopped.");
-        System.out.println("Switched to ResultScreen.");
     }
 
 
