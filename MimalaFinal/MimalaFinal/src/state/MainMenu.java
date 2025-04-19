@@ -62,15 +62,10 @@ public class MainMenu extends JPanel {
                 "assets/MainMenuScreen/Leaderboards/Leaderboards_hover.png",
                 585, () -> {
                     stopMusic();
-
-                    // Show credits screen on click
-                    JPanel newScreen = new CreditsScreen(frame);
-                    newScreen.setBackground(Color.BLACK); // Prevent flash during transition
-
-                    // Smooth transition to credits screen
+                    JPanel newScreen = new state.UI.PVPLeaderboard(frame);
+                    newScreen.setBackground(Color.BLACK);
                     SwingUtilities.invokeLater(() -> {
                         frame.getContentPane().removeAll();
-                        frame.setBackground(Color.BLACK); // Avoid flash
                         frame.setContentPane(newScreen);
                         frame.revalidate();
                         frame.repaint();
