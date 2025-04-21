@@ -3,18 +3,17 @@ package state;
 import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.awt.event.ActionEvent;
 import java.util.*; // <<< ADD IMPORT FOR List, Set, etc.
 import java.util.List;
 import java.util.stream.Collectors; // <<< ADD IMPORT
-
+import javax.swing.SwingUtilities;
+import javax.swing.JLayeredPane;
 
 import state.UI.Pause;
 import state.UI.ResultScreen;
@@ -84,7 +83,9 @@ public class GameScreen extends JPanel {
     private static final String STAMINA_BAR_BG_PATH = "/assets/FightingUI/StaminaBar1.png";
     private static final String STAMINA_BAR_FG_PATH = "/assets/FightingUI/StaminaBar2.png";
     private static final String CHAR_GIF_BASE_PATH = "/assets/FightingUI/Mimala_Characters/";
-
+    private static final String ARCADE_VICTORY_IMG_PATH = "/assets/FightingUI/AI/VictoryScreen.png";
+    private JLabel victoryOverlayLabel = null; // To hold the temporary victory overlay
+    private MouseAdapter victoryClickListener = null;
 
     // --- Game State ---
     private volatile boolean isPlayer1Turn = true; // Tracks whose turn it is NOW
@@ -797,44 +798,169 @@ public class GameScreen extends JPanel {
 
     private void handleMatchEnd(boolean player1WonMatch) {
         System.out.println("Match ended. Player 1 Won: " + player1WonMatch);
-        stopMusic();
+        stopMusic(); // Stop fight music
 
         if (gameMode.equals("Arcade")) {
             if (player1WonMatch) {
-                // ... (Win logic - unchanged) ...
+                // --- Player WON Arcade Match ---
                 arcadeWins++;
-                System.out.println("Arcade win! Streak: " + arcadeWins + ". Setting up next opponent...");
-                String nextOpponent = selectRandomOpponent(firstPlayerCharacterName);
-                String nextMap = selectRandomMap();
-                if (nextOpponent == null || nextMap == null) {
-                    System.err.println("Error selecting next opponent/map. Ending Arcade run.");
-                    // Record score before ending due to error
-                    // <<< USE CORRECT PLAYER NAME VARIABLE >>>
-                    gameLog.recordArcadeRun(PlayerName.playerName, arcadeWins); // Use PlayerName.playerName
-                    transitionToResultScreen(false);
-                    return;
-                }
-                System.out.println("Next Opponent: " + nextOpponent);
-                System.out.println("Next Map: " + nextMap);
-                SwingUtilities.invokeLater(() -> {
-                    frame.setContentPane(new GameScreen(frame, firstPlayerCharacterName, nextOpponent, nextMap, "Arcade"));
-                    frame.revalidate();
-                    frame.repaint();
-                });
+                System.out.println("Arcade win! Streak: " + arcadeWins + ". Showing victory screen (Click to continue)...");
+
+                // --- Display Victory Screen and Add Click Listener ---
+                // The listener will handle proceeding to the next fight
+                showTemporaryVictoryOverlayWithClickListener();
+
+                // --- REMOVED Timer Logic ---
+                /*
+                int victoryScreenDuration = 2500;
+                javax.swing.Timer nextFightTimer = new javax.swing.Timer(victoryScreenDuration, e -> { ... });
+                nextFightTimer.setRepeats(false);
+                nextFightTimer.start();
+                */
+
             } else {
-                // Player lost the Arcade match, end the run
+                // --- Player LOST Arcade Match ---
                 System.out.println("Arcade run ended. Final Wins: " + arcadeWins);
-
-                // <<< USE CORRECT PLAYER NAME VARIABLE >>>
-                gameLog.recordArcadeRun(PlayerName.playerName, arcadeWins); // Use PlayerName.playerName
-
-                transitionToResultScreen(false);
+                gameLog.recordArcadeRun(PlayerName.playerName, arcadeWins);
+                transitionToResultScreen(false); // Show standard defeat result screen
             }
         } else {
-            // PVP or PVC mode: transition normally
-            transitionToResultScreen(player1WonMatch);
+            // --- PVP or PVC mode ---
+            transitionToResultScreen(player1WonMatch); // Show standard result screen
         }
     }
+    private void showTemporaryVictoryOverlayWithClickListener() {
+        SwingUtilities.invokeLater(() -> {
+            if (victoryOverlayLabel != null) {
+                hideTemporaryVictoryOverlay(); // Clean up previous if any
+            }
+
+            // Load Icon
+            ImageIcon victoryIcon = null;
+            try {
+                java.net.URL imgUrl = getClass().getResource(ARCADE_VICTORY_IMG_PATH);
+                if (imgUrl != null) {
+                    victoryIcon = new ImageIcon(imgUrl);
+                } else {
+                    System.err.println("Victory overlay image not found: " + ARCADE_VICTORY_IMG_PATH);
+                    // Maybe proceed without overlay? Or show error? For now, just return.
+                    proceedToNextArcadeFight(); // Or handle error differently
+                    return;
+                }
+            } catch (Exception e) {
+                System.err.println("Error loading victory overlay image: " + e);
+                proceedToNextArcadeFight(); // Proceed without overlay on error
+                return;
+            }
+
+            // Create Label
+            victoryOverlayLabel = new JLabel(victoryIcon);
+            victoryOverlayLabel.setBounds(0, 0, frame.getWidth(), frame.getHeight());
+            victoryOverlayLabel.setOpaque(false);
+
+            // --- Create and Add Mouse Listener ---
+            victoryClickListener = new MouseAdapter() {
+                private boolean clicked = false; // Prevent multiple triggers
+
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (clicked) return; // Only proceed once
+                    clicked = true;
+
+                    System.out.println("Victory overlay clicked. Proceeding to next fight...");
+                    hideTemporaryVictoryOverlay(); // Remove the overlay
+                    proceedToNextArcadeFight(); // Execute the next fight logic
+                }
+            };
+            victoryOverlayLabel.addMouseListener(victoryClickListener);
+            // --- End Listener ---
+
+            // Add to Layered Pane
+            frame.getLayeredPane().add(victoryOverlayLabel, JLayeredPane.POPUP_LAYER);
+            frame.getLayeredPane().revalidate();
+            frame.getLayeredPane().repaint();
+            victoryOverlayLabel.requestFocusInWindow(); // Try to ensure it can receive clicks
+        });
+    }
+
+    // <<< NEW Helper Method containing the logic to start the next fight >>>
+    // This was previously inside the timer's action listener
+    private void proceedToNextArcadeFight() {
+        System.out.println("Setting up next opponent...");
+        String nextOpponent = selectRandomOpponent(firstPlayerCharacterName);
+        String nextMap = selectRandomMap();
+
+        if (nextOpponent == null || nextMap == null) {
+            System.err.println("Error selecting next opponent/map. Ending Arcade run.");
+            // Record score achieved *before* ending due to error
+            gameLog.recordArcadeRun(PlayerName.playerName, arcadeWins);
+            // Transition to the standard ResultScreen showing defeat
+            transitionToResultScreen(false);
+            return;
+        }
+
+        System.out.println("Next Opponent: " + nextOpponent);
+        System.out.println("Next Map: " + nextMap);
+
+        // Transition to a new GameScreen instance
+        SwingUtilities.invokeLater(() -> {
+            frame.setContentPane(new GameScreen(frame, firstPlayerCharacterName, nextOpponent, nextMap, "Arcade"));
+            frame.revalidate();
+            frame.repaint();
+        });
+    }
+
+    private void showTemporaryVictoryOverlay() {
+        // Ensure running on EDT for UI modification
+        SwingUtilities.invokeLater(() -> {
+            if (victoryOverlayLabel != null) { // Remove previous if any somehow exists
+                hideTemporaryVictoryOverlay();
+            }
+            ImageIcon victoryIcon = null;
+            try {
+                java.net.URL imgUrl = getClass().getResource(ARCADE_VICTORY_IMG_PATH);
+                if (imgUrl != null) {
+                    victoryIcon = new ImageIcon(imgUrl);
+                } else {
+                    System.err.println("Victory overlay image not found: " + ARCADE_VICTORY_IMG_PATH);
+                    return; // Don't show overlay if image missing
+                }
+            } catch (Exception e) {
+                System.err.println("Error loading victory overlay image: " + e);
+                return;
+            }
+
+
+            victoryOverlayLabel = new JLabel(victoryIcon);
+            // Set bounds to cover the entire frame
+            victoryOverlayLabel.setBounds(0, 0, frame.getWidth(), frame.getHeight());
+            victoryOverlayLabel.setOpaque(false); // Make label transparent if image has transparency
+
+            // Add to the popup layer of the frame's layered pane
+            frame.getLayeredPane().add(victoryOverlayLabel, JLayeredPane.POPUP_LAYER);
+            frame.getLayeredPane().revalidate();
+            frame.getLayeredPane().repaint();
+        });
+    }
+
+    // <<< NEW Helper Method to hide victory overlay >>>
+    private void hideTemporaryVictoryOverlay() {
+        SwingUtilities.invokeLater(() -> {
+            if (victoryOverlayLabel != null) {
+                // Remove listener to prevent further clicks and memory leaks
+                if (victoryClickListener != null) {
+                    victoryOverlayLabel.removeMouseListener(victoryClickListener);
+                    victoryClickListener = null; // Clear reference
+                }
+                // Remove label from pane
+                frame.getLayeredPane().remove(victoryOverlayLabel);
+                frame.getLayeredPane().revalidate();
+                frame.getLayeredPane().repaint();
+                victoryOverlayLabel = null; // Release reference
+            }
+        });
+    }
+
     private String selectRandomOpponent(String playerCharacter) {
         Set<String> allNames = CharacterDataLoader.getAllCharacterNames();
         if (allNames.isEmpty()) return null;
@@ -1048,43 +1174,33 @@ public class GameScreen extends JPanel {
     private void transitionToResultScreen(boolean player1WonMatch) {
         System.out.println("Executing transitionToResultScreen... Mode: " + gameMode + ", P1 Won: " + player1WonMatch);
 
-        // Stop timers (already done in handleAction/handleAiSkillExecution before calling handleMatchEnd, but double-check)
+        // (Stop timers logic might be redundant if already stopped in handleMatchEnd, but safe to keep)
         stopTurnTimer();
         if (player1AnimTimer != null) player1AnimTimer.stop();
         if (player2AnimTimer != null) player2AnimTimer.stop();
         if (deathSequenceTimer != null) deathSequenceTimer.stop();
 
-
-        // --- Log Game Results (Example) ---
-        if (!gameMode.equals("Arcade")) { // Only log standard modes here
-            if (isVsAI) { // PVC
-                // Ensure Player1Name is accessible or passed appropriately
-                // new GameLog().recordPVEGame(Player1Name.player1Name, player1WonMatch);
-            } else { // PVP
-                // Ensure names are accessible
-                // String winner = player1WonMatch ? Player1Name.player1Name : Player2Name.player2Name;
-                // new GameLog().recordGame(winner);
-            }
-            // new GameLog().saveStatsToFile();
-        } else {
-            // Arcade loss logging happened in handleMatchEnd
-            System.out.println("Showing result screen for Arcade loss.");
+        // --- Log Game Results (if needed, e.g., for PVP/PVC) ---
+        // ... (logging logic if applicable to non-arcade or arcade loss) ...
+        if (!gameMode.equals("Arcade")) { // Log non-arcade results
+            // Example: Log PVP/PVC results here using GameLog
+        } else { // This is an Arcade Loss
+            System.out.println("Showing final result screen for Arcade loss.");
+            // Arcade score was already logged in handleMatchEnd
         }
 
-
-        // --- Transition to ResultScreen UI ---
-        // ResultScreen now acts as an overlay *before* GameOverScreen
+        // --- Transition to ResultScreen UI (Overlay before GameOverScreen) ---
         ResultScreen resultOverlay = new ResultScreen(frame, player1WonMatch,
                 firstPlayerCharacterName, secondPlayerCharacterName,
-                selectedMapPath, gameMode); // Pass gameMode
+                selectedMapPath, gameMode);
 
-        frame.getLayeredPane().add(resultOverlay, JLayeredPane.POPUP_LAYER);
-        resultOverlay.revalidate(); // Ensure layout is correct
-        resultOverlay.repaint();
-        // resultOverlay.showGameResult(player1WonMatch); // This might be redundant if constructor handles it
-
-        // The ResultScreen itself will handle the transition to GameOverScreen on click.
-        // stopMusic(); // Music was stopped in handleMatchEnd
+        // Ensure UI updates are on EDT
+        SwingUtilities.invokeLater(() -> {
+            frame.getLayeredPane().add(resultOverlay, JLayeredPane.POPUP_LAYER);
+            frame.getLayeredPane().revalidate();
+            frame.getLayeredPane().repaint();
+            // ResultScreen handles showing the correct image internally
+        });
     }
 
 
