@@ -1,14 +1,16 @@
 package state.character;
 
-
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set; // <<< ADD THIS IMPORT
 
 public class CharacterDataLoader {
 
     private static final Map<String, CharacterStats> characterStatsMap = new HashMap<>();
+    private static final String AI_PLAYER_NAME = "Computer"; // Keep consistent
 
     static {
+        // --- NO CHANGES HERE ---
         characterStatsMap.put("Azurox", new CharacterStats("Azurox",
                 100.0, 100.0, // Max HP, Max Stamina
                 20.0, 25.0,   // Skill 1 Damage, Cost
@@ -59,25 +61,26 @@ public class CharacterDataLoader {
                 30.0, 30.0,   // Skill 2 Damage, Cost
                 35.0, 40.0    // Skill 3 Damage, Cost
         ));
-
     }
 
     public static CharacterStats getStats(String characterName) {
-        // Handle potential missing stats, maybe return a default or throw error
+        // --- NO CHANGES HERE ---
         if (!characterStatsMap.containsKey(characterName)) {
             System.err.println("WARNING: Stats not found for character: " + characterName + ". Returning default.");
-            // Return a default placeholder or throw an exception
             return new CharacterStats("Default", 100, 100, 10, 10, 10, 10, 10, 10);
         }
         return characterStatsMap.get(characterName);
     }
 
-    public static CharacterStats getStatsForPlayer(String characterName, boolean isAI) {
-        if (isAI && characterName.equals(AI_PLAYER_NAME)) {
-            System.out.println("AI player detected - Stats will be based on chosen character for P2.");
-            return null;
-        }
-        return getStats(characterName);
+    // Method getStatsForPlayer seems unused based on GameScreen, can be ignored or removed
+    // public static CharacterStats getStatsForPlayer(String characterName, boolean isAI) { ... }
+
+    // <<< NEW METHOD >>>
+    /**
+     * Returns a set of all defined character names.
+     * @return A Set containing the names of all characters with loaded stats.
+     */
+    public static Set<String> getAllCharacterNames() {
+        return characterStatsMap.keySet();
     }
-    private static final String AI_PLAYER_NAME = "Computer";
 }

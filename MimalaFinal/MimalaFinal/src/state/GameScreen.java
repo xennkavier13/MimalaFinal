@@ -11,25 +11,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.awt.event.ActionEvent;
-import java.util.Random;
+import java.util.*; // <<< ADD IMPORT FOR List, Set, etc.
+import java.util.List;
+import java.util.stream.Collectors; // <<< ADD IMPORT
+
 
 import state.UI.Pause;
 import state.UI.ResultScreen;
 import state.UI.StatusBar;
 import state.character.CharacterDataLoader;
 import state.character.CharacterStats;
-import util.GameLog;
-import util.Player1Name;
-import util.Player2Name;
-import util.RoundManager;
+import util.*;
 // Removed: import javax.swing.Timer; // We are replacing this
 
 public class GameScreen extends JPanel {
     private final JFrame frame;
-    private final String firstPlayerCharacterName; // Renamed for clarity
-    private final String secondPlayerCharacterName; // Renamed for clarity
-    private final String selectedMapPath;
-    private ImageIcon mapImage;
+    private final String firstPlayerCharacterName; // Player's chosen character
+    private final String secondPlayerCharacterName; // Current AI opponent
+    private final String selectedMapPath; // Current map
+    private final String gameMode; // "PVP", "PVC", or "Arcade"
+    private final Random random = new Random(); // Use this instance
     // --- Animation State ---
     private ImageIcon player1IdleIcon; // To store the idle state easily
     private ImageIcon player2IdleIcon;
@@ -91,16 +92,14 @@ public class GameScreen extends JPanel {
     private Thread turnTimerThread;
     private volatile int remainingTime;
     private static final int TURN_DURATION_SECONDS = 15;
-    private final Random random = new Random(); // Still needed for AI, maybe other things
     private static final String AI_PLAYER_NAME = "Computer";
     public static boolean isVsAI;
-
+    public static int arcadeWins = 0;
+    private GameLog gameLog = new GameLog();
     // --- Rounds & Stamina Recovery
     private static final int MAX_ROUNDS = 10;
     private RoundManager roundManager;
     private static final double STAMINA_RECOVERY_PER_ROUND = 10.0; // Recover 30 stamina points
-
-    private final String gameMode; // <<< ADD field for game mode
 
     private Pause pause;
 
@@ -129,9 +128,13 @@ public class GameScreen extends JPanel {
         this.gameMode = gameMode;
 
         // --- Set isVsAI based on gameMode ---
-        this.isVsAI = this.gameMode.equals("PVC"); // <<< Use gameMode now
-        System.out.println("GameScreen initialized. Mode: " + this.gameMode + ", Is Vs AI: " + this.isVsAI);
+        isVsAI = this.gameMode.equals("PVC") || this.gameMode.equals("Arcade");
+        ResultScreen.isVsAI = isVsAI; // <<< ALSO UPDATE ResultScreen's static flag if it relies on it
 
+        System.out.println("GameScreen initialized. Mode: " + this.gameMode + ", Is Vs AI: " + this.isVsAI);
+        if (this.gameMode.equals("Arcade")) {
+            System.out.println("Current Arcade Wins: " + arcadeWins);
+        }
 
         // --- Initialize Round Manager FIRST ---
         this.roundManager = new RoundManager(10); // Initialize here! TURNS
@@ -166,23 +169,30 @@ public class GameScreen extends JPanel {
         playMusic("assets/FightingUI/fightmusic.wav"); // Play background music
     }
 
+    private static final String[] mapPaths = { // Should match MapSelection
+            "assets/StageMap/Waters.gif",
+            "assets/StageMap/Dojo.gif",
+            "assets/StageMap/DesertedLand.gif",
+            "assets/StageMap/DragonLair.gif",
+            "assets/StageMap/King'sThrone.gif",
+            "assets/StageMap/RoyalPalace.gif"
+    };
+
+    private ImageIcon mapImage;
+
     private void loadCharacterStats() {
         System.out.println("Loading character stats...");
         player1Stats = CharacterDataLoader.getStats(firstPlayerCharacterName);
-        // If P2 is AI, load stats for P1's character initially for placeholder? No, load the character AI *will* be.
-        // The AI *is* the second character selected, just controlled by computer.
+        // In PVC/Arcade, secondPlayerCharacterName IS the specific AI opponent
         player2Stats = CharacterDataLoader.getStats(secondPlayerCharacterName);
 
         if (player1Stats == null || player2Stats == null) {
-            // Handle error - perhaps show a message and go back to selection?
-            System.err.println("FATAL ERROR: Could not load stats for selected characters!");
-            // For now, use defaults to avoid NullPointerException, but this is bad practice
-            if (player1Stats == null) player1Stats = CharacterDataLoader.getStats("Default"); // Assuming Default exists
+            System.err.println("FATAL ERROR: Could not load stats for selected characters! P1: " + firstPlayerCharacterName + ", P2: " + secondPlayerCharacterName);
+            // Handle error more gracefully if possible
+            if (player1Stats == null) player1Stats = CharacterDataLoader.getStats("Default");
             if (player2Stats == null) player2Stats = CharacterDataLoader.getStats("Default");
-            // A real game should prevent starting with invalid characters.
         }
 
-        // Set initial current HP/Stamina based on loaded max values
         player1CurrentHp = player1Stats.getMaxHp();
         player1CurrentStamina = player1Stats.getMaxStamina();
         player2CurrentHp = player2Stats.getMaxHp();
@@ -263,7 +273,7 @@ public class GameScreen extends JPanel {
 
 
     private void initializeUIComponents() {
-        System.out.println("Initializing UI Components...");
+        // ... (Load HP/Stamina bars, GIFs, Skill Buttons - unchanged) ...
         // --- Player 1 ---
         String p1HpBgPath = getHpBackgroundPath(firstPlayerCharacterName, true);
         player1HpBar = new StatusBar(p1HpBgPath, HP_BAR_FG_PATH);
@@ -306,48 +316,164 @@ public class GameScreen extends JPanel {
         timerDisplayLabel.setForeground(Color.WHITE);
         timerDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-//        turnIndicatorLabel = new JLabel(); // Text set in updateUIBasedOnTurn
-//        turnIndicatorLabel.setFont(new Font("Arial", Font.BOLD, 24));
-//        turnIndicatorLabel.setForeground(Color.YELLOW);
-//        turnIndicatorLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
-//        roundDisplayLabel = new JLabel("Round: - /" + roundManager.getMaxRounds());
-//        roundDisplayLabel.setFont(new Font("Arial", Font.BOLD, 24));
-//        roundDisplayLabel.setForeground(Color.CYAN);
-//        roundDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
         // --- Win Counters ---
-        player1WinsLabel = new JLabel("Wins x0");
-        player1WinsLabel.setFont(new Font("Arial", Font.BOLD, 70));
-        player1WinsLabel.setForeground(new Color(79, 57, 51)); // #4f3933 color
-        player1WinsLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        // Modify labels for Arcade mode to show current streak
+        if (gameMode.equals("Arcade")) {
+            player1WinsLabel = new JLabel("Streak: " + arcadeWins); // Show current streak
+            player1WinsLabel.setFont(new Font("Arial", Font.BOLD, 70));
+            player1WinsLabel.setForeground(new Color(79, 57, 51));
+            player1WinsLabel.setHorizontalAlignment(SwingConstants.LEFT);
+            // Hide P2 wins label in Arcade? Or repurpose it? Let's hide it for now.
+            player2WinsLabel = new JLabel();
+            player2WinsLabel.setVisible(false);
+        } else {
+            // Original labels for PVP/PVC (using round wins)
+            player1WinsLabel = new JLabel("Wins x" + player1RoundWins);
+            player1WinsLabel.setFont(new Font("Arial", Font.BOLD, 70));
+            player1WinsLabel.setForeground(new Color(79, 57, 51));
+            player1WinsLabel.setHorizontalAlignment(SwingConstants.LEFT);
 
-        player2WinsLabel = new JLabel("Wins x0");
-        player2WinsLabel.setFont(new Font("Arial", Font.BOLD, 70));
-        player2WinsLabel.setForeground(new Color(79, 57, 51)); // #4f3933 color
-        player2WinsLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+            player2WinsLabel = new JLabel("Wins x" + player2RoundWins);
+            player2WinsLabel.setFont(new Font("Arial", Font.BOLD, 70));
+            player2WinsLabel.setForeground(new Color(79, 57, 51));
+            player2WinsLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        }
 
 
         // --- Add to Panel ---
         this.add(player1WinsLabel);
-        this.add(player2WinsLabel);
+        this.add(player2WinsLabel); // Added even if hidden, for consistency
 
         player1IdleIcon = (ImageIcon) player1CharacterLabel.getIcon();
         player2IdleIcon = (ImageIcon) player2CharacterLabel.getIcon();
-        // --- Action Listeners ---
-        player1Skill1.addActionListener(e -> handleAction(1)); // Pass skill number
+
+        // Action Listeners (unchanged)
+        player1Skill1.addActionListener(e -> handleAction(1));
         player1Skill2.addActionListener(e -> handleAction(2));
         player1Skill3.addActionListener(e -> handleAction(3));
-
         player2Skill1.addActionListener(e -> handleAction(1));
         player2Skill2.addActionListener(e -> handleAction(2));
         player2Skill3.addActionListener(e -> handleAction(3));
 
-        // --- Set Initial Bar Values (based on current HP/Stamina which are initially max) ---
+        // Set Initial Bar Values (unchanged)
         updateHpBars();
         updateStaminaBars();
 
         System.out.println("UI Components Initialized.");
+    }
+
+
+    // --- handleAction (Small modification for Arcade outcome) ---
+    private void handleAction(int skillNumber) {
+        if (!gameRunning) return;
+        // ... (logic to determine actor/opponent, check stamina - unchanged) ...
+        CharacterStats currentActorStats;
+        double currentActorStamina;
+        // Remove opponentCurrentHp as it's not used directly here
+        String actorName;
+
+        if (isPlayer1Turn) {
+            actorName = firstPlayerCharacterName;
+            currentActorStats = player1Stats;
+            currentActorStamina = player1CurrentStamina;
+        } else {
+            if (isVsAI) { // Check includes Arcade now
+                System.out.println("Cannot manually trigger AI action.");
+                return; // Correctly prevents manual P2 action in PVC/Arcade
+            }
+            // This block only runs for human P2 in PVP
+            actorName = secondPlayerCharacterName;
+            currentActorStats = player2Stats;
+            currentActorStamina = player2CurrentStamina;
+        }
+
+        double staminaCost = currentActorStats.getSkillCost(skillNumber);
+        double damageDealt = currentActorStats.getSkillDamage(skillNumber);
+
+        System.out.printf("%s attempts Skill %d (Cost: %.1f, Damage: %.1f)%n", actorName, skillNumber, staminaCost, damageDealt);
+
+
+        if (currentActorStamina >= staminaCost) {
+            stopTurnTimer();
+            String skillAnimType = "Skill" + skillNumber;
+            int skillAnimDuration = getAnimationDuration(skillAnimType);
+
+            if (isPlayer1Turn) {
+                playAnimation(player1CharacterLabel, firstPlayerCharacterName, skillAnimType, true, player1IdleIcon);
+            } else { // Should only be human P2 here
+                playAnimation(player2CharacterLabel, secondPlayerCharacterName, skillAnimType, false, player2IdleIcon);
+            }
+
+            // Timer to apply effects *after* animation starts
+            javax.swing.Timer effectTimer = new javax.swing.Timer(skillAnimDuration, evt -> {
+                if (!gameRunning) return; // Check if game ended during animation
+
+                boolean targetIsP2 = isPlayer1Turn; // If P1's turn, target is P2
+
+                // Apply Stamina Cost & Damage
+                if (targetIsP2) { // P1's action affecting P2
+                    player1CurrentStamina -= staminaCost;
+                    player2CurrentHp -= damageDealt;
+                    System.out.printf("P1 used Skill %d...%n", skillNumber);
+                    if (damageDealt > 0) {
+                        playAnimation(player2CharacterLabel, secondPlayerCharacterName, "GetHit", false, player2IdleIcon);
+                    }
+                } else { // P2's action affecting P1 (only in PVP)
+                    player2CurrentStamina -= staminaCost;
+                    player1CurrentHp -= damageDealt;
+                    System.out.printf("P2 used Skill %d...%n", skillNumber);
+                    if (damageDealt > 0) {
+                        playAnimation(player1CharacterLabel, firstPlayerCharacterName, "GetHit", true, player1IdleIcon);
+                    }
+                }
+
+                // Update UI
+                updateHpBars();
+                updateStaminaBars();
+
+                // Check for match end condition (HP <= 0)
+                boolean p1Died = player1CurrentHp <= 0;
+                boolean p2Died = player2CurrentHp <= 0;
+
+                if (p1Died || p2Died) {
+                    gameRunning = false; // Stop game logic
+                    stopTurnTimer(); // Stop turn timer
+                    if (player1AnimTimer != null) player1AnimTimer.stop(); // Stop animation timers
+                    if (player2AnimTimer != null) player2AnimTimer.stop();
+
+                    // Determine winner for this match
+                    boolean player1WonThisMatch = p2Died; // P1 wins if P2 died
+
+                    // Play death animation
+                    if (p1Died) {
+                        playAnimation(player1CharacterLabel, firstPlayerCharacterName, "Death", true, player1IdleIcon);
+                    } else { // p2Died must be true
+                        playAnimation(player2CharacterLabel, secondPlayerCharacterName, "Death", false, player2IdleIcon);
+                    }
+
+                    // Timer after death animation finishes
+                    if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
+                        deathSequenceTimer.stop();
+                    }
+                    deathSequenceTimer = new javax.swing.Timer(getAnimationDuration("Death") + 500, e -> { // Add slight delay
+                        // <<< Call the modified transition logic >>>
+                        handleMatchEnd(player1WonThisMatch);
+                    });
+                    deathSequenceTimer.setRepeats(false);
+                    deathSequenceTimer.start();
+                    return; // Don't switch turn
+                }
+
+                // If no one died, switch turn
+                switchTurn();
+            });
+
+            effectTimer.setRepeats(false);
+            effectTimer.start();
+        } else {
+            System.out.println(actorName + ": Not enough stamina for Skill " + skillNumber);
+            // Maybe add a small visual/audio cue for insufficient stamina?
+        }
     }
 
     private void styleButton(JButton button, ImageIcon icon) {
@@ -499,13 +625,22 @@ public class GameScreen extends JPanel {
 
     public void updateWinCounters() {
         SwingUtilities.invokeLater(() -> {
-            player1WinsLabel.setText("Wins: x" + player1RoundWins);
-            player2WinsLabel.setText("Wins: x" + player2RoundWins);
-            // Force the labels to repaint immediately
-            player1WinsLabel.revalidate();
-            player1WinsLabel.repaint();
-            player2WinsLabel.revalidate();
-            player2WinsLabel.repaint();
+            if (gameMode.equals("Arcade")) {
+                // Arcade mode shows streak, which is updated between matches.
+                // Round wins aren't displayed per match.
+                player1WinsLabel.setText("Streak: " + arcadeWins);
+                player1WinsLabel.revalidate();
+                player1WinsLabel.repaint();
+                // player2WinsLabel remains hidden/unused
+            } else {
+                // Original logic for PVP/PVC round wins
+                player1WinsLabel.setText("Wins x" + player1RoundWins);
+                player2WinsLabel.setText("Wins x" + player2RoundWins);
+                player1WinsLabel.revalidate();
+                player1WinsLabel.repaint();
+                player2WinsLabel.revalidate();
+                player2WinsLabel.repaint();
+            }
         });
     }
 
@@ -660,6 +795,66 @@ public class GameScreen extends JPanel {
         }
     }
 
+    private void handleMatchEnd(boolean player1WonMatch) {
+        System.out.println("Match ended. Player 1 Won: " + player1WonMatch);
+        stopMusic();
+
+        if (gameMode.equals("Arcade")) {
+            if (player1WonMatch) {
+                // ... (Win logic - unchanged) ...
+                arcadeWins++;
+                System.out.println("Arcade win! Streak: " + arcadeWins + ". Setting up next opponent...");
+                String nextOpponent = selectRandomOpponent(firstPlayerCharacterName);
+                String nextMap = selectRandomMap();
+                if (nextOpponent == null || nextMap == null) {
+                    System.err.println("Error selecting next opponent/map. Ending Arcade run.");
+                    // Record score before ending due to error
+                    // <<< USE CORRECT PLAYER NAME VARIABLE >>>
+                    gameLog.recordArcadeRun(PlayerName.playerName, arcadeWins); // Use PlayerName.playerName
+                    transitionToResultScreen(false);
+                    return;
+                }
+                System.out.println("Next Opponent: " + nextOpponent);
+                System.out.println("Next Map: " + nextMap);
+                SwingUtilities.invokeLater(() -> {
+                    frame.setContentPane(new GameScreen(frame, firstPlayerCharacterName, nextOpponent, nextMap, "Arcade"));
+                    frame.revalidate();
+                    frame.repaint();
+                });
+            } else {
+                // Player lost the Arcade match, end the run
+                System.out.println("Arcade run ended. Final Wins: " + arcadeWins);
+
+                // <<< USE CORRECT PLAYER NAME VARIABLE >>>
+                gameLog.recordArcadeRun(PlayerName.playerName, arcadeWins); // Use PlayerName.playerName
+
+                transitionToResultScreen(false);
+            }
+        } else {
+            // PVP or PVC mode: transition normally
+            transitionToResultScreen(player1WonMatch);
+        }
+    }
+    private String selectRandomOpponent(String playerCharacter) {
+        Set<String> allNames = CharacterDataLoader.getAllCharacterNames();
+        if (allNames.isEmpty()) return null;
+        List<String> possibleOpponents = allNames.stream()
+                .filter(name -> !name.equals(playerCharacter))
+                .collect(Collectors.toList());
+        if (possibleOpponents.isEmpty()) {
+            possibleOpponents = new ArrayList<>(allNames); // Fallback
+            if (possibleOpponents.isEmpty()) return null;
+        }
+        return possibleOpponents.get(random.nextInt(possibleOpponents.size()));
+    }
+
+    private String selectRandomMap() {
+        if (mapPaths == null || mapPaths.length == 0) return null;
+        return mapPaths[random.nextInt(mapPaths.length)];
+    }
+
+
+
     // MODIFIED: Stops the timer Thread
     private void stopTurnTimer() {
         if (turnTimerThread != null && turnTimerThread.isAlive()) {
@@ -712,134 +907,13 @@ public class GameScreen extends JPanel {
 
 
     // MODIFIED: Central method to handle player actions using skill number
-    private void handleAction(int skillNumber) {
-        if (!gameRunning) return;
-
-        CharacterStats currentActorStats;
-        double currentActorStamina;
-        double opponentCurrentHp;
-        String actorName;
-
-        if (isPlayer1Turn) {
-            actorName = firstPlayerCharacterName;
-            currentActorStats = player1Stats;
-            currentActorStamina = player1CurrentStamina;
-            opponentCurrentHp = player2CurrentHp;
-        } else {
-            if (isVsAI) {
-                System.out.println("Cannot manually trigger AI action.");
-                return;
-            }
-            actorName = secondPlayerCharacterName;
-            currentActorStats = player2Stats;
-            currentActorStamina = player2CurrentStamina;
-            opponentCurrentHp = player1CurrentHp;
-        }
-
-        double staminaCost = currentActorStats.getSkillCost(skillNumber);
-        double damageDealt = currentActorStats.getSkillDamage(skillNumber);
-
-        System.out.printf("%s attempts Skill %d (Cost: %.1f, Damage: %.1f)%n", actorName, skillNumber, staminaCost, damageDealt);
-
-        if (currentActorStamina >= staminaCost) {
-            stopTurnTimer();
-
-            String skillAnimType = "Skill" + skillNumber;
-            int skillAnimDuration = getAnimationDuration(skillAnimType);
-
-            if (isPlayer1Turn) {
-                playAnimation(player1CharacterLabel, firstPlayerCharacterName, skillAnimType, true, player1IdleIcon);
-            } else {
-                playAnimation(player2CharacterLabel, secondPlayerCharacterName, skillAnimType, false, player2IdleIcon);
-            }
-
-            javax.swing.Timer effectTimer = new javax.swing.Timer(skillAnimDuration, evt -> {
-                if (isPlayer1Turn) {
-                    player1CurrentStamina -= staminaCost;
-                    player2CurrentHp -= damageDealt;
-                    System.out.printf("P1 used Skill %d...%n", skillNumber);
-
-                    if (damageDealt > 0) {
-                        playAnimation(player2CharacterLabel, secondPlayerCharacterName, "GetHit", false, player2IdleIcon);
-                    }
-                } else {
-                    player2CurrentStamina -= staminaCost;
-                    player1CurrentHp -= damageDealt;
-                    System.out.printf("P2 used Skill %d...%n", skillNumber);
-
-                    if (damageDealt > 0) {
-                        playAnimation(player1CharacterLabel, firstPlayerCharacterName, "GetHit", true, player1IdleIcon);
-                    }
-                }
-
-                updateHpBars();
-                updateStaminaBars();
-
-                boolean p1Died = player1CurrentHp <= 0;
-                boolean p2Died = player2CurrentHp <= 0;
-
-                if (p1Died || p2Died) {
-                    // Determine round winner
-                    if (p1Died) {
-                        player2RoundWins++;
-                    } else {
-                        player1RoundWins++;
-                    }
-                    updateWinCounters();
-
-                    // Play death animation
-                    if (p1Died) {
-                        playAnimation(player1CharacterLabel, firstPlayerCharacterName, "Death", true, player1IdleIcon);
-                    } else {
-                        playAnimation(player2CharacterLabel, secondPlayerCharacterName, "Death", false, player2IdleIcon);
-                    }
-
-                    // Stop timers
-                    gameRunning = false;
-                    stopTurnTimer();
-                    if (player1AnimTimer != null) player1AnimTimer.stop();
-                    if (player2AnimTimer != null) player2AnimTimer.stop();
-
-                    // Start death sequence timer
-                    if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
-                        deathSequenceTimer.stop();
-                    }
-
-                    deathSequenceTimer = new javax.swing.Timer(getAnimationDuration("Death"), e -> {
-                        // Check if match is over (someone has 2 wins)
-                        if (player1RoundWins >= ROUNDS_TO_WIN || player2RoundWins >= ROUNDS_TO_WIN) {
-                            // Only record the win when match is complete
-                            if (isVsAI) {
-                                boolean playerWon = player1RoundWins >= ROUNDS_TO_WIN;
-                                new GameLog().recordPVEGame(Player1Name.player1Name, playerWon);
-                            } else {
-                                String winner = player1RoundWins >= ROUNDS_TO_WIN ? Player1Name.player1Name : Player2Name.player2Name;
-                                new GameLog().recordGame(winner);
-                            }
-                            new GameLog().saveStatsToFile();
-                            transitionToResultScreen();
-                        } else {
-                            // Start next round
-                            resetForNewRound();
-                        }
-                    });
-                    deathSequenceTimer.setRepeats(false);
-                    deathSequenceTimer.start();
-                    return;
-                }
-
-                switchTurn();
-            });
-
-            effectTimer.setRepeats(false);
-            effectTimer.start();
-        } else {
-            System.out.println(actorName + ": Not enough stamina for Skill " + skillNumber);
-        }
-    }
 
 
     private void resetForNewRound() {
+        if(gameMode.equals("Arcade")) {
+            System.out.println("Resetting round not applicable in Arcade mode structure.");
+            return; // Should not be called between Arcade matches
+        }
         // Reset character stats
         player1CurrentHp = player1Stats.getMaxHp();
         player1CurrentStamina = player1Stats.getMaxStamina();
@@ -849,7 +923,7 @@ public class GameScreen extends JPanel {
         // Update UI
         updateHpBars();
         updateStaminaBars();
-        updateWinCounters();
+        updateWinCounters(); // Updates round wins for PVP/PVC
 
         // Reset animations
         player1CharacterLabel.setIcon(player1IdleIcon);
@@ -858,7 +932,7 @@ public class GameScreen extends JPanel {
         // Reset game state
         gameRunning = true;
 
-        // Start next round
+        // Start next round (within the same match)
         startNextRoundSequence();
     }
 
@@ -905,97 +979,113 @@ public class GameScreen extends JPanel {
     private void handleAiSkillExecution(int skillNumber) {
         if (!gameRunning || isPlayer1Turn) return; // Final check
 
-        playAnimation(player2CharacterLabel, secondPlayerCharacterName, "Skill" + skillNumber, false, player2IdleIcon);
-        playAnimation(player1CharacterLabel, firstPlayerCharacterName, "GetHit", true, player1IdleIcon);
+        System.out.printf("AI (%s) executing Skill %d...%n", secondPlayerCharacterName, skillNumber);
 
-        // --- Apply Effects ---
-        double staminaCost = player2Stats.getSkillCost(skillNumber);
-        double damageDealt = player2Stats.getSkillDamage(skillNumber);
+        String skillAnimType = "Skill" + skillNumber;
+        int skillAnimDuration = getAnimationDuration(skillAnimType);
 
-        player2CurrentStamina -= staminaCost;
-        player1CurrentHp -= damageDealt;
-        System.out.printf("AI used Skill %d...%n", skillNumber);
+        playAnimation(player2CharacterLabel, secondPlayerCharacterName, skillAnimType, false, player2IdleIcon);
 
-        // Update UI Bars
-        updateHpBars();
-        updateStaminaBars();
-        boolean p1Died = player1CurrentHp <= 0;
+        // Timer to apply effects *after* animation starts
+        javax.swing.Timer aiEffectTimer = new javax.swing.Timer(skillAnimDuration, evt -> {
+            if (!gameRunning) return; // Check if game ended during animation
 
-        if (p1Died) {
-            player2RoundWins++;
-            updateWinCounters();
-            System.out.println("Round won by Player 2. Score: " + player1RoundWins + "-" + player2RoundWins);
+            // Apply Effects
+            double staminaCost = player2Stats.getSkillCost(skillNumber);
+            double damageDealt = player2Stats.getSkillDamage(skillNumber);
 
-            gameRunning = false;
-            stopTurnTimer();
-            playAnimation(player1CharacterLabel, firstPlayerCharacterName, "Death", true, player1IdleIcon);
+            player2CurrentStamina -= staminaCost;
+            player1CurrentHp -= damageDealt;
+            System.out.printf("AI used Skill %d, dealt %.1f damage.%n", skillNumber, damageDealt);
 
-            if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
-                deathSequenceTimer.stop();
+            // Play player's GetHit animation
+            if (damageDealt > 0) {
+                playAnimation(player1CharacterLabel, firstPlayerCharacterName, "GetHit", true, player1IdleIcon);
             }
 
-            deathSequenceTimer = new javax.swing.Timer(getAnimationDuration("Death"), e -> {
-                if (player2RoundWins >= ROUNDS_TO_WIN) {
-                    // Only record the win when match is complete
-                    if (isVsAI) {
-                        new GameLog().recordPVEGame(Player1Name.player1Name, false);
-                    } else {
-                        new GameLog().recordGame(Player2Name.player2Name);
-                    }
-                    new GameLog().saveStatsToFile();
-                    transitionToResultScreen();
-                } else {
-                    resetForNewRound();
-                }
-            });
-            deathSequenceTimer.setRepeats(false);
-            deathSequenceTimer.start();
-            return;
-        }
+            // Update UI Bars
+            updateHpBars();
+            updateStaminaBars();
 
-        // Switch back to Player 1's turn AFTER AI action completes
-        SwingUtilities.invokeLater(this::switchTurn);
+            // Check for match end condition (HP <= 0)
+            boolean p1Died = player1CurrentHp <= 0;
+            // boolean p2Died = player2CurrentHp <= 0; // AI won't die from its own attack
+
+            if (p1Died) {
+                gameRunning = false; // Stop game logic
+                stopTurnTimer(); // Stop turn timer
+                if (player1AnimTimer != null) player1AnimTimer.stop(); // Stop animation timers
+                if (player2AnimTimer != null) player2AnimTimer.stop();
+
+                boolean player1WonThisMatch = false; // P1 lost if they died
+
+                // Play death animation for P1
+                playAnimation(player1CharacterLabel, firstPlayerCharacterName, "Death", true, player1IdleIcon);
+
+
+                // Timer after death animation finishes
+                if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
+                    deathSequenceTimer.stop();
+                }
+                deathSequenceTimer = new javax.swing.Timer(getAnimationDuration("Death") + 500, e -> { // Add slight delay
+                    // <<< Call the modified transition logic >>>
+                    handleMatchEnd(player1WonThisMatch);
+                });
+                deathSequenceTimer.setRepeats(false);
+                deathSequenceTimer.start();
+                return; // Don't switch turn
+            }
+
+            // If no one died, switch turn back to Player 1
+            switchTurn();
+        });
+        aiEffectTimer.setRepeats(false);
+        aiEffectTimer.start();
     }
     /**
      * Cleans up game state and switches the view to the GameOverScreen.
      */
-    private void transitionToResultScreen() {
-        System.out.println("Executing transitionToResultScreen...");
+    private void transitionToResultScreen(boolean player1WonMatch) {
+        System.out.println("Executing transitionToResultScreen... Mode: " + gameMode + ", P1 Won: " + player1WonMatch);
 
-        // Stop all timers
+        // Stop timers (already done in handleAction/handleAiSkillExecution before calling handleMatchEnd, but double-check)
         stopTurnTimer();
         if (player1AnimTimer != null) player1AnimTimer.stop();
         if (player2AnimTimer != null) player2AnimTimer.stop();
         if (deathSequenceTimer != null) deathSequenceTimer.stop();
 
-        // Determine result - only update global stats if match is complete
-        boolean player1WonMatch = player1RoundWins >= ROUNDS_TO_WIN;
-        boolean matchComplete = player1RoundWins >= ROUNDS_TO_WIN || player2RoundWins >= ROUNDS_TO_WIN;
 
-        if (matchComplete) {
-            if (player1WonMatch) {
-                GameScreen.p1Wins++;
-                GameScreen.p2Lose++;
-                GameScreen.lastWinner = 1;
-            } else {
-                GameScreen.p2Wins++;
-                GameScreen.p1Lose++;
-                GameScreen.lastWinner = 2;
+        // --- Log Game Results (Example) ---
+        if (!gameMode.equals("Arcade")) { // Only log standard modes here
+            if (isVsAI) { // PVC
+                // Ensure Player1Name is accessible or passed appropriately
+                // new GameLog().recordPVEGame(Player1Name.player1Name, player1WonMatch);
+            } else { // PVP
+                // Ensure names are accessible
+                // String winner = player1WonMatch ? Player1Name.player1Name : Player2Name.player2Name;
+                // new GameLog().recordGame(winner);
             }
+            // new GameLog().saveStatsToFile();
+        } else {
+            // Arcade loss logging happened in handleMatchEnd
+            System.out.println("Showing result screen for Arcade loss.");
         }
 
-        // Transition to ResultScreen
+
+        // --- Transition to ResultScreen UI ---
+        // ResultScreen now acts as an overlay *before* GameOverScreen
         ResultScreen resultOverlay = new ResultScreen(frame, player1WonMatch,
                 firstPlayerCharacterName, secondPlayerCharacterName,
-                selectedMapPath, gameMode);
+                selectedMapPath, gameMode); // Pass gameMode
 
         frame.getLayeredPane().add(resultOverlay, JLayeredPane.POPUP_LAYER);
+        resultOverlay.revalidate(); // Ensure layout is correct
         resultOverlay.repaint();
-        resultOverlay.showGameResult(player1WonMatch);
+        // resultOverlay.showGameResult(player1WonMatch); // This might be redundant if constructor handles it
 
-        stopMusic();
+        // The ResultScreen itself will handle the transition to GameOverScreen on click.
+        // stopMusic(); // Music was stopped in handleMatchEnd
     }
-
 
 
     // Make sure endGame is removed or no longer called on death by HP
@@ -1004,18 +1094,27 @@ public class GameScreen extends JPanel {
     // --- UI Update Helpers ---
 
     private void updateHpBars() {
-        // Ensure HP doesn't go below 0 for display purposes
+        if (player1HpBar == null || player2HpBar == null || player1Stats == null || player2Stats == null) return; // Safety check
         double p1HpDisplay = Math.max(0, player1CurrentHp);
         double p2HpDisplay = Math.max(0, player2CurrentHp);
-
         player1HpBar.setValue(p1HpDisplay / player1Stats.getMaxHp());
         player2HpBar.setValue(p2HpDisplay / player2Stats.getMaxHp());
+        // Force repaint sometimes helps with visual updates
+        player1HpBar.repaint();
+        player2HpBar.repaint();
     }
 
     private void updateStaminaBars() {
+        if (player1StaminaBar == null || player2StaminaBar == null || player1Stats == null || player2Stats == null) return; // Safety check
         player1StaminaBar.setValue(player1CurrentStamina / player1Stats.getMaxStamina());
         player2StaminaBar.setValue(player2CurrentStamina / player2Stats.getMaxStamina());
+        player1StaminaBar.repaint();
+        player2StaminaBar.repaint();
     }
+
+    // Update win counters needs adjustment for Arcade
+
+
 
 
     private void updateUIBasedOnTurn() {

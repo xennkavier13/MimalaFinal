@@ -67,49 +67,51 @@ public class StatusBar extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        Graphics2D g2d = (Graphics2D) g.create();
+        super.paintComponent(g); // Important for non-opaque components
 
-        int width = getWidth();
-        int height = getHeight();
-
-        // 1. Draw Background Image (stretched to fit component bounds)
-        if (backgroundIcon != null) {
-            g2d.drawImage(backgroundIcon.getImage(), 0, 0, width, height, this);
-        } else {
-            g2d.setColor(Color.GRAY);
-            g2d.fillRect(0, 0, width, height);
-            g2d.setColor(Color.RED);
-            g2d.drawString("BG Missing", 5, height / 2);
+        // Basic checks
+        if (backgroundIcon == null || foregroundIcon == null) {
+            // Draw a simple fallback if images aren't loaded
+            Graphics2D g2dErr = (Graphics2D) g.create();
+            g2dErr.setColor(Color.RED);
+            g2dErr.fillRect(0, 0, getWidth(), getHeight());
+            g2dErr.setColor(Color.WHITE);
+            g2dErr.drawString("Status Bar Icons Missing!", 5, getHeight() / 2);
+            g2dErr.dispose();
+            return;
         }
 
-        // 2. Draw Foreground Image (clipped based on value)
-        if (foregroundIcon != null) {
-            int foregroundWidth = (int) (width * this.value);
-            if (foregroundWidth > 0) {
-                // Use clipping for more robustness
-                // Define the clipping rectangle based on the calculated width
-                Rectangle clipRect = new Rectangle(0, 0, foregroundWidth, height);
-                g2d.setClip(clipRect);
+        int compWidth = getWidth();
+        int compHeight = getHeight();
+        int fgIconWidth = foregroundIcon.getIconWidth(); // Original width of foreground image
+        int fgIconHeight = foregroundIcon.getIconHeight(); // Original height of foreground image
 
-                // Draw the foreground image, potentially stretched to the full component size,
-                // but only the part within the clip rectangle will be visible.
-                g2d.drawImage(foregroundIcon.getImage(), 0, 0, width, height, this);
+        Graphics2D g2d = (Graphics2D) g.create(); // Create copy for safe modifications
 
-                // It's good practice to reset the clip, although g2d.dispose() should handle it.
-                g2d.setClip(null);
-            }
-        } else {
-            // Fallback if foreground is missing but value > 0
-            int foregroundWidth = (int) (width * this.value);
-            if (foregroundWidth > 0) {
-                g2d.setColor(Color.CYAN); // Example stamina color fallback
-                g2d.fillRect(0, 0, foregroundWidth, height);
-                g2d.setColor(Color.RED);
-                g2d.drawString("FG Missing", 5, height / 2 + 15);
-            }
+        // 1. Draw Background Image (Scaled to fit component bounds)
+        // We still scale the background once here. If background is static,
+        // pre-scaling it once elsewhere could be even better.
+        g2d.drawImage(backgroundIcon.getImage(), 0, 0, compWidth, compHeight, this);
+
+        // 2. Calculate the portion of the FOREGROUND image to draw
+        // How much width of the *original* foreground image corresponds to the current value?
+        int sourceFgWidth = (int) (fgIconWidth * this.value);
+
+        if (sourceFgWidth > 0) {
+            // How much width should this portion occupy *on the component*?
+            int destFgWidth = (int) (compWidth * this.value);
+
+            // Draw only the necessary part of the foreground image.
+            // This overload draws a sub-rectangle from the source image
+            // onto a destination rectangle on the component.
+            g2d.drawImage(foregroundIcon.getImage(),
+                    // Destination Rectangle (on the component panel)
+                    0, 0, destFgWidth, compHeight,
+                    // Source Rectangle (from the original foreground image file)
+                    0, 0, sourceFgWidth, fgIconHeight,
+                    this); // ImageObserver
         }
 
-        g2d.dispose();
+        g2d.dispose(); // Release the graphics copy
     }
 }
