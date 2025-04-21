@@ -1386,18 +1386,110 @@ public class GameScreen extends JPanel {
         }
     }
 
+// Inside GameScreen.java
 
-    private void transitionToPause(String mapResourcePath) {
-        if (mapResourcePath == null) return;
+    // Add a flag to track pause state
+    private volatile boolean isPaused = false;
+    // Store remaining time when paused
+    private int timeWhenPaused = 0;
 
+// --- Other GameScreen code ---
+
+    /**
+     * Stops active timers and threads, pausing the game logic.
+     */
+    public void pauseGame() {
+        if (!gameRunning || isPaused) return; // Don't pause if not running or already paused
+
+        System.out.println("Pausing game...");
+        isPaused = true;
+
+        // Stop the main turn timer thread and store remaining time
+        timeWhenPaused = remainingTime; // Store remaining time
+        stopTurnTimer(); // Stops the thread
+
+        // Stop active animation/effect timers (check if they exist and are running)
+        if (player1AnimTimer != null && player1AnimTimer.isRunning()) {
+            player1AnimTimer.stop();
+            System.out.println("Stopped P1 Anim Timer for pause.");
+        }
+        if (player2AnimTimer != null && player2AnimTimer.isRunning()) {
+            player2AnimTimer.stop();
+            System.out.println("Stopped P2 Anim Timer for pause.");
+        }
+        // Stop other timers like effectTimer or aiDelayTimer if they might be active
+        // Note: Finding references to temporary timers like 'effectTimer' or 'aiDelayTimer'
+        // created inside methods is harder. Consider making them member fields if pausing them is critical.
+        // For now, pausing the main turn timer is the most important.
+
+        if (deathSequenceTimer != null && deathSequenceTimer.isRunning()) {
+            deathSequenceTimer.stop(); // Stop death sequence if paused during it
+            System.out.println("Stopped Death Timer for pause.");
+        }
+
+
+        // Stop game music
+        stopMusic();
+
+        System.out.println("Game Paused. Remaining time stored: " + timeWhenPaused);
+    }
+
+    /**
+     * Resumes active timers and threads from their paused state.
+     */
+    public void resumeGame() {
+        if (!gameRunning || !isPaused) return; // Don't resume if not running or not paused
+
+        System.out.println("Resuming game...");
+        isPaused = false;
+
+        // Resume the main turn timer using the stored remaining time
+        remainingTime = timeWhenPaused; // Restore remaining time
+        if (remainingTime > 0) {
+            System.out.println("Restarting turn timer with " + remainingTime + " seconds.");
+            startTurnTimer(); // Restarts the thread
+        } else {
+            // If time ran out exactly when pausing, or was already 0, switch turn?
+            // Or just let it be 0. Switching turn might be complex here.
+            System.out.println("Timer was at 0 when paused, not restarting timer.");
+            // Ensure timer label reflects 0 if needed
+            SwingUtilities.invokeLater(this::updateTimerLabel);
+        }
+
+
+        // Do NOT automatically restart animation timers. They likely finished or
+        // restarting them mid-animation would look strange. Let the game flow continue.
+
+        // Resume game music
+        playMusic("assets/FightingUI/fightmusic.wav"); // Or use a variable for the current track
+
+        // Ensure the panel regains focus for keybindings
+        SwingUtilities.invokeLater(this::requestFocusInWindow);
+
+        System.out.println("Game Resumed.");
+    }
+
+
+    // --- Modify transitionToPause ---
+    private void transitionToPause(String mapResourcePath) { // mapResourcePath seems unused here?
+        // if (mapResourcePath == null) return; // Keep check if needed
+
+        if (!gameRunning || isPaused) return; // Don't allow pausing if game over or already paused
+
+        // <<< CALL pauseGame() FIRST >>>
+        pauseGame();
+
+        // Now switch the view
         SwingUtilities.invokeLater(() -> {
-            stopMusic();
-            Pause pauseScreen = new Pause(frame, this); // Pass reference to GameScreen so it can resume
+            Pause pauseScreen = new Pause(frame, this); // 'this' is the GameScreen instance
             frame.setContentPane(pauseScreen);
             frame.revalidate();
             frame.repaint();
+            // Request focus for the pause screen if it needs keyboard input
+            pauseScreen.requestFocusInWindow();
         });
     }
+
 
 
 }

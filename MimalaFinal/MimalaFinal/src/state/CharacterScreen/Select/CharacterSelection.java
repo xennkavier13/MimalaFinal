@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList; // <<< ADD IMPORT
 import java.util.List;     // <<< ADD IMPORT
 import java.util.Random;
@@ -117,85 +118,108 @@ public class CharacterSelection extends JPanel {
         return button;
     }
 
+    private ImageIcon loadImageIcon(String path) { /* ... no change ... */
+        URL imgURL = getClass().getResource(path);
+        if (imgURL != null) {
+            return new ImageIcon(imgURL);
+        } else {
+            System.err.println("Missing image resource: " + path);
+            return null;
+        }
+    }
 
     private void createCharacterButton(String characterName, String hoverImagePath, int x, int y) {
-        ImageIcon hoverIcon = new ImageIcon(getClass().getResource(hoverImagePath)); // Use getResource
+        ImageIcon hoverIcon = loadImageIcon(hoverImagePath);
+        if (hoverIcon == null) return;
 
-        JLabel button = new JLabel(); // Start with no icon
+        JLabel button = new JLabel();
         button.setBounds(x, y, hoverIcon.getIconWidth(), hoverIcon.getIconHeight());
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         button.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
                 button.setIcon(hoverIcon);
-                // Use getResource for name icon
-                ImageIcon nameIcon = new ImageIcon(getClass().getResource("/assets/CharacterSelectionScreen/CharacterNames/" + characterName + ".png"));
-                characterNameLabel.setIcon(nameIcon);
+                ImageIcon nameIcon = loadImageIcon("/assets/CharacterSelectionScreen/CharacterNames/" + characterName + ".png");
+                if (nameIcon != null) characterNameLabel.setIcon(nameIcon);
                 characterNameLabel.setVisible(true);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                button.setIcon(null); // Remove icon when mouse leaves
+                button.setIcon(null);
                 characterNameLabel.setVisible(false);
             }
 
+            //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+            // CORRECTED MOUSE CLICKED LOGIC
+            //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
             @Override
             public void mouseClicked(MouseEvent e) {
-                // Player 1 always selects their character first
-                firstPlayerSelection = characterName;
-                System.out.println("Player 1 selected: " + firstPlayerSelection);
+                System.out.println("Character clicked: " + characterName);
+                // stopMusic(); // Optional
 
-                // --- Mode Specific Logic ---
+                // --- Logic depends on mode ---
                 switch (mode) {
                     case "PVP":
-                        // Go to P2 selection screen (Needs implementing if not done)
-                        System.out.println("Transitioning to P2 Selection for PVP...");
-                        // Example: frame.setContentPane(new SecondPlayerSelection(frame, firstPlayerSelection, mode));
-                        // Make sure SecondPlayerSelection exists and handles the rest.
-                        // For now, let's assume it leads to MapSelection like PVC.
-                        frame.setContentPane(new MapSelection(frame, firstPlayerSelection, null, mode)); // P2 selection is TBD in MapSelection for PVP
+                        // In PVP, go to the specific character screen for confirmation
+                        System.out.println("Transitioning to " + characterName + " screen for P1 confirmation...");
+                        switch (characterName) {
+                            case "Pyrothar": frame.setContentPane(new PyrotharScreen(frame, mode)); break;
+                            case "Azurox": frame.setContentPane(new AzuroxScreen(frame, mode)); break;
+                            case "Zenfang": frame.setContentPane(new ZenfangScreen(frame, mode)); break;
+                            case "Auricannon": frame.setContentPane(new AuricannonScreen(frame, mode)); break;
+                            case "Vexmorth": frame.setContentPane(new VexmorthScreen(frame, mode)); break;
+                            case "Astridra": frame.setContentPane(new AstridraScreen(frame, mode)); break;
+                            case "Varkos": frame.setContentPane(new VarkosScreen(frame, mode)); break;
+                            case "Ignisveil": frame.setContentPane(new IgnisveilScreen(frame, mode)); break;
+                            default:
+                                System.err.println("No specific screen for: " + characterName);
+                                frame.setContentPane(new ModeSelection(frame)); // Fallback
+                                break;
+                        }
+                        // The character screen's "Confirm" button will handle going to SecondPlayerSelection
                         break;
 
                     case "PVC":
-                        // P1 selected, AI is opponent, go to Map Selection
+                        // In PVC, select P1 and go directly to Map Selection
+                        firstPlayerSelection = characterName;
+                        System.out.println("Player 1 selected: " + firstPlayerSelection);
                         System.out.println("Transitioning to Map Selection for PVC...");
-                        // PVC opponent name doesn't matter here, GameScreen handles AI
                         frame.setContentPane(new MapSelection(frame, firstPlayerSelection, "Computer", mode));
                         break;
 
                     case "Arcade":
-                        // P1 selected, randomly choose first AI opponent and map, start GameScreen
+                        // In Arcade, select P1, reset wins, pick opponent/map, go to GameScreen
+                        firstPlayerSelection = characterName;
+                        System.out.println("Player 1 selected: " + firstPlayerSelection);
                         System.out.println("Starting Arcade Mode...");
-                        GameScreen.arcadeWins = 0; // Reset arcade wins <<< IMPORTANT
+                        GameScreen.arcadeWins = 0;
                         String firstOpponent = selectRandomOpponent(firstPlayerSelection);
                         String firstMap = selectRandomMap();
 
-                        if (firstOpponent == null) {
-                            JOptionPane.showMessageDialog(frame, "Error: Could not select an opponent.", "Arcade Start Error", JOptionPane.ERROR_MESSAGE);
-                            return;
+                        if (firstOpponent == null || firstMap == null) {
+                            JOptionPane.showMessageDialog(frame, "Error starting Arcade mode.", "Arcade Error", JOptionPane.ERROR_MESSAGE);
+                            frame.setContentPane(new ModeSelection(frame)); // Fallback
+                        } else {
+                            System.out.println("First Arcade Opponent: " + firstOpponent);
+                            System.out.println("First Arcade Map: " + firstMap);
+                            frame.setContentPane(new GameScreen(frame, firstPlayerSelection, firstOpponent, firstMap, mode));
                         }
-                        if (firstMap == null) {
-                            JOptionPane.showMessageDialog(frame, "Error: Could not select a map.", "Arcade Start Error", JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-
-                        System.out.println("First Arcade Opponent: " + firstOpponent);
-                        System.out.println("First Arcade Map: " + firstMap);
-                        //stopMusic(); // Stop character select music
-                        frame.setContentPane(new GameScreen(frame, firstPlayerSelection, firstOpponent, firstMap, mode));
                         break;
 
                     default:
                         System.err.println("Unknown game mode in CharacterSelection: " + mode);
-                        // Optionally go back to mode select or show error
-                        frame.setContentPane(new ModeSelection(frame));
+                        frame.setContentPane(new ModeSelection(frame)); // Fallback
                         break;
                 }
 
                 frame.revalidate();
                 frame.repaint();
             }
+            //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            // END OF CORRECTED METHOD
+            //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         });
         add(button);
     }
