@@ -2,13 +2,11 @@ package state.UI;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import util.GameLog; // Use GameLog to load data
+import util.GameLog;
 
 public class ArcadeLeaderboard extends JPanel {
     private final ImageIcon background;
@@ -22,16 +20,15 @@ public class ArcadeLeaderboard extends JPanel {
         this.setLayout(null);
         this.setFocusable(true);
         this.setPreferredSize(new Dimension(1920, 1080));
-        this.setBackground(Color.BLACK); // Fallback
+        this.setBackground(Color.BLACK);
 
-        background = loadIcon("/assets/Leaderboards/ArcadeLeaderboard_mainmenu.png"); // Adjust path if needed
+        background = loadIcon("/assets/Leaderboards/ArcadeLeaderboard_mainmenu.png");
 
-        loadAndDisplayLeaderboard(); // Load data first
-        setupButtons(); // Add buttons on top
+        loadAndDisplayLeaderboard();
+        setupButtons();
     }
 
     private void setupButtons() {
-        // (Button setup code remains the same as your previous ArcadeLeaderboard version)
         JLabel backButton = createButton(
                 "/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_off.png",
                 "/assets/CharacterSelectionScreen/CharacterScreenButtons/Back/Back_hover.png",
@@ -47,7 +44,7 @@ public class ArcadeLeaderboard extends JPanel {
         JLabel leftButton = createButton(
                 "/assets/Leaderboards/Buttons/LeftBtn_off.png",
                 "/assets/Leaderboards/Buttons/LeftBtn_hover.png",
-                65, 477, // Adjust coordinates as necessary
+                65, 477,
                 () -> {
                     JPanel nextScreen = new PVELeaderboard(frame, previousScreen);
                     frame.setContentPane(nextScreen);
@@ -57,13 +54,12 @@ public class ArcadeLeaderboard extends JPanel {
         );
         add(leftButton);
 
-        // Example: Add Right button if needed
         JLabel rightButton = createButton(
                 "/assets/Leaderboards/Buttons/RightBtn_off.png",
                 "/assets/Leaderboards/Buttons/RightBtn_hover.png",
-                1749, 476, // <<< COORDINATES FROM PVELeaderboard Right Button
+                1749, 476,
                 () -> {
-                    JPanel nextScreen = new PVPLeaderboard(frame, previousScreen); // Assuming PVPLeaderboard exists
+                    JPanel nextScreen = new PVPLeaderboard(frame, previousScreen);
                     frame.setContentPane(nextScreen);
                     frame.revalidate();
                     frame.repaint();
@@ -72,63 +68,61 @@ public class ArcadeLeaderboard extends JPanel {
         add(rightButton);
     }
 
-    // Updated to match PVELeaderboard's layout logic
     private void loadAndDisplayLeaderboard() {
         GameLog tempLog = new GameLog();
         tempLog.ensureFileExists(arcadeLeaderboardFile);
         Map<String, Integer> leaderboardData = tempLog.loadSimpleLeaderboardData(arcadeLeaderboardFile);
 
-
         List<Map.Entry<String, Integer>> sortedEntries = new ArrayList<>(leaderboardData.entrySet());
         sortedEntries.sort((a, b) -> b.getValue().compareTo(a.getValue()));
 
-        // --- Layout Settings Copied from PVELeaderboard ---
         int startY = 400;
         int rowHeight = 90;
-        int rankX = 420;
-        int nameX = 900; // Adjusted from PVE for potentially longer names? Review needed.
-        int winsX = 1460;
-        int bottomMargin = 24; // Margin between rows
+        int bottomMargin = 24;
 
-        Font font = loadCustomFont("MimalaFinal/MimalaFinal/src/assets/Cinzel-Medium.ttf", 25); // Same font as PVE
+        // Define centers
+        int rankCenterX = 420;
+        int nameCenterX = 960;
+        int winsCenterX = 1470;
+
+        Font font = loadCustomFont("MimalaFinal/MimalaFinal/src/assets/Cinzel-Medium.ttf", 25);
         Color textColor = Color.WHITE;
 
-        // --- Display Header (Optional - adapt from PVE if desired) ---
-        // Font headerFont = loadCustomFont("MimalaFinal/MimalaFinal/src/assets/Cinzel-Medium.ttf", 20);
-        // Color headerColor = new Color(200, 200, 200);
-        // int headerY = startY - rowHeight; // Position header above first data row
-        // add(createLabel("Rank", rankX, headerY, headerFont, headerColor));
-        // add(createLabel("Player Name", nameX, headerY, headerFont, headerColor));
-        // add(createLabel("Wins", winsX, headerY, headerFont, headerColor));
-
-
-        // --- Loop and display top 5 entries ---
         int rank = 1;
         for (Map.Entry<String, Integer> entry : sortedEntries) {
-            if (rank > 5) { // Limit to top 5 like PVELeaderboard
-                break;
-            }
+            if (rank > 5) break;
 
             String rankStr = String.valueOf(rank);
             String playerName = entry.getKey();
             String winsStr = String.valueOf(entry.getValue());
 
-            // Calculate Y position using PVE's logic
-            int currentY = startY + (rank - 1) * (rowHeight + bottomMargin);
+            int yPosition = startY + (rank - 1) * (rowHeight + bottomMargin);
 
-            // Create and add labels for the current row using PVE's createLabel
-            // Note: PVE's createLabel sets width to 400, height to 60. Adjust if needed.
-            add(createLabel(rankStr, rankX, currentY, font, textColor));
-            add(createLabel(playerName, nameX, currentY, font, textColor));
-            add(createLabel(winsStr, winsX, currentY, font, textColor));
+            JLabel rankLabel = createCenteredLabel(rankStr, rankCenterX, yPosition, font, textColor);
+            JLabel nameLabel = createCenteredLabel(playerName, nameCenterX, yPosition, font, textColor);
+            JLabel winsLabel = createCenteredLabel(winsStr, winsCenterX, yPosition, font, textColor);
+
+            add(rankLabel);
+            add(nameLabel);
+            add(winsLabel);
 
             rank++;
         }
-
-        // No explicit refresh needed here as components are added before panel is shown typically.
     }
 
-    // Copied from PVELeaderboard
+    private JLabel createCenteredLabel(String text, int centerX, int y, Font font, Color color) {
+        JLabel label = new JLabel(text);
+        label.setFont(font);
+        label.setForeground(color);
+
+        FontMetrics metrics = label.getFontMetrics(font);
+        int textWidth = metrics.stringWidth(text);
+        int x = centerX - (textWidth / 2);
+
+        label.setBounds(x, y, textWidth, 60);
+        return label;
+    }
+
     private Font loadCustomFont(String fontPath, int fontSize) {
         try {
             File fontFile = new File(fontPath);
@@ -136,7 +130,7 @@ public class ArcadeLeaderboard extends JPanel {
                 System.err.println("Font file not found at: " + fontPath);
                 return new Font("Monospaced", Font.PLAIN, fontSize);
             }
-            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontFile).deriveFont(Font.PLAIN, (float)fontSize);
+            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontFile).deriveFont(Font.PLAIN, (float) fontSize);
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             ge.registerFont(customFont);
             return customFont;
@@ -147,20 +141,10 @@ public class ArcadeLeaderboard extends JPanel {
         }
     }
 
-    // Copied from PVELeaderboard
-    private JLabel createLabel(String text, int x, int y, Font font, Color color) {
-        JLabel label = new JLabel(text);
-        label.setFont(font);
-        label.setForeground(color);
-        label.setBounds(x, y, 400, 60); // Using PVE's fixed bounds - adjust width if names are cut off
-        return label;
-    }
-
-    // createButton method (ensure it's identical to the working one in PVELeaderboard)
     private JLabel createButton(String offPath, String hoverPath, int x, int y, Runnable action) {
         ImageIcon offIcon = loadIcon(offPath);
         ImageIcon hoverIcon = loadIcon(hoverPath);
-        JLabel button = new JLabel(); // Initialize empty
+        JLabel button = new JLabel();
 
         if (offIcon != null && offIcon.getIconWidth() > 0) {
             button.setIcon(offIcon);
@@ -210,9 +194,7 @@ public class ArcadeLeaderboard extends JPanel {
         }
     }
 
-    // loadIcon method (ensure it's identical to the working one in PVELeaderboard)
     private ImageIcon loadIcon(String path) {
-        // Ensure path starts with "/" if relative to classpath root
         if (!path.startsWith("/")) {
             path = "/" + path;
         }
@@ -221,7 +203,7 @@ public class ArcadeLeaderboard extends JPanel {
             return new ImageIcon(imgURL);
         } else {
             System.err.println("Missing image at " + path);
-            return null; // Return null if missing
+            return null;
         }
     }
 }

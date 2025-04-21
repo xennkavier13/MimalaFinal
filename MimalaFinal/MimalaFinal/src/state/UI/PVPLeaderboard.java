@@ -96,9 +96,9 @@ public class PVPLeaderboard extends JPanel {
         int rowHeight = 90; // vertical spacing between rows (adjust as needed)
 
         // Manually set the positions of rank, name, and wins
-        int rankX = 420; // X position for rank (adjust as necessary)
-        int nameX = 900; // X position for name (adjust as necessary)
-        int winsX = 1460; // X position for wins (adjust as necessary)
+        int rankCenterX = 420;
+        int nameCenterX = 960;  // Center of 1920 screen width
+        int winsCenterX = 1470;
 
         int bottomMargin = 24; // Adjust the bottom margin between each row
 
@@ -119,12 +119,10 @@ public class PVPLeaderboard extends JPanel {
                 String playerName = parts[1];
                 String wins = parts[2];
 
-                // Create and position the rank label
-                JLabel rankLabel = createLabel(String.valueOf(rank), rankX, startY + (rank - 1) * (rowHeight + bottomMargin), font, textColor);
-                // Create and position the player name label
-                JLabel nameLabel = createLabel(playerName, nameX, startY + (rank - 1) * (rowHeight + bottomMargin), font, textColor);
-                // Create and position the wins label
-                JLabel winsLabel = createLabel(wins, winsX, startY + (rank - 1) * (rowHeight + bottomMargin), font, textColor);
+                int yPosition = startY + (rank - 1) * (rowHeight + bottomMargin);
+                JLabel rankLabel = createCenteredLabel(String.valueOf(rank), rankCenterX, yPosition, font, textColor);
+                JLabel nameLabel = createCenteredLabel(playerName, nameCenterX, yPosition, font, textColor);
+                JLabel winsLabel = createCenteredLabel(wins, winsCenterX, yPosition, font, textColor);
 
                 // Add the labels to the panel
                 add(rankLabel);
@@ -140,6 +138,23 @@ public class PVPLeaderboard extends JPanel {
         revalidate();
         repaint();
     }
+
+    private JLabel createCenteredLabel(String text, int centerX, int y, Font font, Color color) {
+        JLabel label = new JLabel(text);
+        label.setFont(font);
+        label.setForeground(color);
+
+        // Calculate text width
+        FontMetrics metrics = label.getFontMetrics(font);
+        int textWidth = metrics.stringWidth(text);
+
+        // Center the label horizontally
+        int x = centerX - (textWidth / 2);
+
+        label.setBounds(x, y, textWidth, 60);
+        return label;
+    }
+
 
     private Font loadCustomFont(String fontPath, int fontSize) {
         try {
