@@ -130,7 +130,7 @@ public class GameScreen extends JPanel {
 
         // --- Set isVsAI based on gameMode ---
         isVsAI = this.gameMode.equals("PVC") || this.gameMode.equals("Arcade");
-        ResultScreen.isVsAI = isVsAI; // <<< ALSO UPDATE ResultScreen's static flag if it relies on it
+        //ResultScreen.isVsAI = isVsAI; // <<< ALSO UPDATE ResultScreen's static flag if it relies on it
 
         System.out.println("GameScreen initialized. Mode: " + this.gameMode + ", Is Vs AI: " + this.isVsAI);
         if (this.gameMode.equals("Arcade")) {
