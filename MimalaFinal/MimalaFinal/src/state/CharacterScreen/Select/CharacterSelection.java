@@ -1,8 +1,7 @@
 package state.CharacterScreen.Select;
 
-import state.*; // Import GameScreen
+import state.*;
 import state.CharacterScreen.*;
-// Remove: import state.MapSelection; // Don't need to go here for Arcade
 import state.character.CharacterDataLoader; // <<< ADD IMPORT
 
 import javax.sound.sampled.*;
@@ -10,9 +9,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList; // <<< ADD IMPORT
 import java.util.List;     // <<< ADD IMPORT
@@ -28,13 +24,16 @@ public class CharacterSelection extends JPanel {
     // Array below is now redundant for opponent selection if using CharacterDataLoader
     // private final String[] characterNames = { ... };
     private String firstPlayerSelection = null;
-    // private String player2Selection = null; // Not needed here for Arcade anymore
+    private String secondPlayerSelection = null; // Not needed here for Arcade anymore
     // private static final String AI_PLAYER_NAME = "Computer"; // No longer needed here
     private final String mode;
     private Clip music;
     private final JLabel characterNameLabel = new JLabel();
     private final Random random = new Random(); // <<< ADD Random instance field
-
+    private final String[] characterNames = {
+            "Pyrothar", "Azurox", "Zenfang", "Auricannon",
+            "Vexmorth", "Astridra", "Varkos", "Ignisveil"
+    };
     // We need the map paths here now for Arcade mode's first map
     private final String[] mapPaths = {
             "assets/StageMap/Waters.gif",
@@ -152,78 +151,73 @@ public class CharacterSelection extends JPanel {
             }
 
             //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-            // CORRECTED MOUSE CLICKED LOGIC
+            // MODIFIED MOUSE CLICKED LOGIC
             //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
             @Override
             public void mouseClicked(MouseEvent e) {
-                System.out.println("Character clicked: " + characterName);
+                System.out.println("Character clicked: " + characterName + " in Mode: " + mode);
                 // stopMusic(); // Optional
 
-                // --- Logic depends on mode ---
-                switch (mode) {
-                    case "PVP":
-                        // In PVP, go to the specific character screen for confirmation
-                        System.out.println("Transitioning to " + characterName + " screen for P1 confirmation...");
-                        switch (characterName) {
-                            case "Pyrothar": frame.setContentPane(new PyrotharScreen(frame, mode)); break;
-                            case "Azurox": frame.setContentPane(new AzuroxScreen(frame, mode)); break;
-                            case "Zenfang": frame.setContentPane(new ZenfangScreen(frame, mode)); break;
-                            case "Auricannon": frame.setContentPane(new AuricannonScreen(frame, mode)); break;
-                            case "Vexmorth": frame.setContentPane(new VexmorthScreen(frame, mode)); break;
-                            case "Astridra": frame.setContentPane(new AstridraScreen(frame, mode)); break;
-                            case "Varkos": frame.setContentPane(new VarkosScreen(frame, mode)); break;
-                            case "Ignisveil": frame.setContentPane(new IgnisveilScreen(frame, mode)); break;
-                            default:
-                                System.err.println("No specific screen for: " + characterName);
-                                frame.setContentPane(new ModeSelection(frame)); // Fallback
-                                break;
-                        }
-                        // The character screen's "Confirm" button will handle going to SecondPlayerSelection
+                // --- MODIFIED: All modes now go to the character confirmation screen first ---
+                // The firstPlayerSelection is null at this point, indicating P1 is choosing.
+                System.out.println("Transitioning to " + characterName + " screen for P1 confirmation...");
+
+                // Use your specific character screen classes or a generic one
+                // Assuming you use specific screens like PyrotharScreen, AzuroxScreen etc.
+                // If you use a generic screen (like SecondCharacterSelectionScreen) for all,
+                // adjust the 'new XScreen()' calls accordingly.
+                switch (characterName) {
+                    case "Pyrothar":
+                        // Pass null for firstPlayerSelection as P1 hasn't confirmed yet
+                        frame.setContentPane(new PyrotharScreen(frame, "Pyrothar", mode, null));
                         break;
-
-                    case "PVC":
-                        // In PVC, select P1 and go directly to Map Selection
-                        firstPlayerSelection = characterName;
-                        System.out.println("Player 1 selected: " + firstPlayerSelection);
-                        System.out.println("Transitioning to Map Selection for PVC...");
-                        frame.setContentPane(new MapSelection(frame, firstPlayerSelection, "Computer", mode));
+                    case "Azurox":
+                        frame.setContentPane(new AzuroxScreen(frame, "Azurox", mode, null));
                         break;
-
-                    case "Arcade":
-                        // In Arcade, select P1, reset wins, pick opponent/map, go to GameScreen
-                        firstPlayerSelection = characterName;
-                        System.out.println("Player 1 selected: " + firstPlayerSelection);
-                        System.out.println("Starting Arcade Mode...");
-                        GameScreen.arcadeWins = 0;
-                        String firstOpponent = selectRandomOpponent(firstPlayerSelection);
-                        String firstMap = selectRandomMap();
-
-                        if (firstOpponent == null || firstMap == null) {
-                            JOptionPane.showMessageDialog(frame, "Error starting Arcade mode.", "Arcade Error", JOptionPane.ERROR_MESSAGE);
-                            frame.setContentPane(new ModeSelection(frame)); // Fallback
-                        } else {
-                            System.out.println("First Arcade Opponent: " + firstOpponent);
-                            System.out.println("First Arcade Map: " + firstMap);
-                            frame.setContentPane(new GameScreen(frame, firstPlayerSelection, firstOpponent, firstMap, mode));
-                        }
+                    case "Zenfang":
+                        frame.setContentPane(new ZenfangScreen(frame, "Zenfang", mode, null));
                         break;
-
+                    case "Auricannon":
+                        frame.setContentPane(new AuricannonScreen(frame, "Auricannon", mode, null));
+                        break;
+                    case "Vexmorth":
+                        frame.setContentPane(new VexmorthScreen(frame, "Vexmorth", mode, null));
+                        break;
+                    case "Astridra":
+                        frame.setContentPane(new AstridraScreen(frame, "Astridra", mode, null));
+                        break;
+                    case "Varkos":
+                        frame.setContentPane(new VarkosScreen(frame, "Varkos", mode, null));
+                        break;
+                    case "Ignisveil":
+                        frame.setContentPane(new IgnisveilScreen(frame, "Ignisveil", mode, null));
+                        break;
                     default:
-                        System.err.println("Unknown game mode in CharacterSelection: " + mode);
-                        frame.setContentPane(new ModeSelection(frame)); // Fallback
+                        System.err.println("No specific screen class defined for: " + characterName);
+                        // Fallback to ModeSelection or show an error
+                        JOptionPane.showMessageDialog(frame, "Screen not found for " + characterName, "Error", JOptionPane.ERROR_MESSAGE);
+                        frame.setContentPane(new ModeSelection(frame));
                         break;
                 }
+
+                // The logic for what happens *after* confirmation is now handled
+                // within the specific character screen's confirmSelection method.
 
                 frame.revalidate();
                 frame.repaint();
             }
             //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            // END OF CORRECTED METHOD
+            // END OF MODIFIED METHOD
             //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         });
         add(button);
     }
 
+
+    private String selectRandomCharacter() {
+        Random random = new Random();
+        return characterNames[random.nextInt(characterNames.length)];
+    }
     // Updated to select from CharacterDataLoader, excluding player's choice
     private String selectRandomOpponent(String playerCharacter) {
         Set<String> allNames = CharacterDataLoader.getAllCharacterNames();

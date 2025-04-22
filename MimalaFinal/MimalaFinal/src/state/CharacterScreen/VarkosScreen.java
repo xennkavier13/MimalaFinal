@@ -6,8 +6,8 @@ import javax.swing.*;
 
 public class VarkosScreen extends CharacterSelectionScreen {
 
-    public VarkosScreen(JFrame frame, String mode) {
-        super(frame, mode);
+    public VarkosScreen(JFrame frame, String characterName, String mode, String firstPlayerSelection) {
+        super(frame, characterName, mode, firstPlayerSelection);
     }
 
     @Override

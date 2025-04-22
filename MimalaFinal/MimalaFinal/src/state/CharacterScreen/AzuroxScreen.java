@@ -6,8 +6,8 @@ import javax.swing.*;
 
 public class AzuroxScreen extends CharacterSelectionScreen {
 
-    public AzuroxScreen(JFrame frame, String mode) {
-        super(frame, mode);
+    public AzuroxScreen(JFrame frame, String characterName, String mode, String firstPlayerSelection) {
+        super(frame, characterName, mode, firstPlayerSelection);
     }
 
     @Override

@@ -194,62 +194,83 @@ public class SecondCharacterSelectionScreen extends JPanel { // Renaming suggest
 
     // *** MODIFIED confirmSelection method ***
     private void confirmSelection() {
-        String confirmedCharacter = this.characterName;
+        // This method is called when the "Choose" or "Confirm" button is clicked
+        // on the individual character screen (e.g., PyrotharScreen).
 
-        // Case 1: Player 1 is confirming (firstPlayerSelection was null when screen loaded)
+        String confirmedCharacter = this.characterName; // The character shown on this screen
+
+        // Case 1: Player 1 is confirming (firstPlayerSelection was null when this screen was created)
         if (this.firstPlayerSelection == null) {
             System.out.println("Player 1 CONFIRMED: " + confirmedCharacter);
 
-            // --- Check Game Mode ---
-            if ("PVP".equalsIgnoreCase(this.mode)) {
-                System.out.println("Mode is PVP. Proceeding to Second Player Selection.");
-                frame.setContentPane(new SecondPlayerSelection(frame, confirmedCharacter, this.mode)); // Pass P1's choice
+            // --- Handle different modes AFTER P1 confirmation ---
+            switch (this.mode) {
+                case "PVP":
+                    // P1 confirmed, now go to P2's selection grid
+                    System.out.println("Mode is PVP. Proceeding to Second Player Selection grid.");
+                    // Pass P1's choice to the next screen
+                    frame.setContentPane(new SecondPlayerSelection(frame, confirmedCharacter, this.mode));
+                    break;
 
-            } else if ("Arcade".equalsIgnoreCase(this.mode)) {
-                // <<< ARCADE MODE LOGIC >>>
-                System.out.println("Mode is Arcade. Resetting streak and starting game...");
-                GameScreen.arcadeWins = 0; // Reset streak
-                String firstOpponent = selectRandomOpponent(confirmedCharacter); // Select opponent
-                String firstMap = selectRandomMap(); // Select map
+                case "PVC":
+                    // P1 confirmed, select AI opponent placeholder, go to Map Selection
+                    System.out.println("Mode is PVC. Selecting AI and proceeding to Map Selection.");
+                    // You might want to select a specific character name for the AI here instead of "Computer"
+                    // if GameScreen expects a valid character name for stats. Let's assume GameScreen can handle it.
+                    String aiOpponentPlaceholder = "Computer"; // Or select a random character name here?
+                    // Using "Computer" might require GameScreen to select the actual AI character later.
+                    // Alternative: Select random AI now.
+                    String actualAiOpponent = selectRandomOpponent(confirmedCharacter); // Let's select the actual AI now
+                    if (actualAiOpponent == null) {
+                        JOptionPane.showMessageDialog(frame, "Error selecting AI opponent.", "Error", JOptionPane.ERROR_MESSAGE);
+                        frame.setContentPane(new ModeSelection(frame)); // Go back
+                        return;
+                    }
+                    System.out.println("AI Opponent selected: " + actualAiOpponent);
+                    // Proceed to Map Selection, passing P1's choice and the AI's character name
+                    frame.setContentPane(new MapSelection(frame, confirmedCharacter, actualAiOpponent, this.mode));
+                    break;
 
-                if (firstOpponent == null || firstMap == null) {
-                    System.err.println("Error setting up Arcade match from confirmation.");
-                    JOptionPane.showMessageDialog(frame, "Error starting Arcade mode.", "Arcade Error", JOptionPane.ERROR_MESSAGE);
-                    frame.setContentPane(new ModeSelection(frame)); // Fallback to ModeSelection
-                } else {
-                    System.out.println("Starting Arcade Game. Opponent: " + firstOpponent + ", Map: " + firstMap);
-                    frame.setContentPane(new GameScreen(frame, confirmedCharacter, firstOpponent, firstMap, this.mode)); // Start GameScreen
-                }
+                case "Arcade":
+                    // P1 confirmed, reset streak, select first opponent/map, start GameScreen
+                    System.out.println("Mode is Arcade. Resetting streak and starting game...");
+                    GameScreen.arcadeWins = 0; // Reset streak here
+                    String firstOpponent = selectRandomOpponent(confirmedCharacter); // Select opponent
+                    String firstMap = selectRandomMap(); // Select map
 
-            } else if ("PVC".equalsIgnoreCase(this.mode)) {
-                // <<< PVC MODE LOGIC >>>
-                System.out.println("Mode is PVC. Selecting AI opponent and proceeding to Map Selection.");
-                // String player2Choice = selectRandomCharacterForPVE(confirmedCharacter); // Can reuse random or just use "Computer"
-                String player2Choice = "Computer"; // Use "Computer" placeholder for stats loading in GameScreen
-                System.out.println("AI Opponent Placeholder: " + player2Choice);
-                frame.setContentPane(new MapSelection(frame, confirmedCharacter, player2Choice, this.mode));
+                    if (firstOpponent == null || firstMap == null) {
+                        System.err.println("Error setting up Arcade match from confirmation.");
+                        JOptionPane.showMessageDialog(frame, "Error starting Arcade mode.", "Arcade Error", JOptionPane.ERROR_MESSAGE);
+                        frame.setContentPane(new ModeSelection(frame)); // Fallback
+                    } else {
+                        System.out.println("Starting Arcade Game. P1: " + confirmedCharacter + ", Opponent: " + firstOpponent + ", Map: " + firstMap);
+                        // Directly start the GameScreen
+                        frame.setContentPane(new GameScreen(frame, confirmedCharacter, firstOpponent, firstMap, this.mode));
+                    }
+                    break;
 
-            } else {
-                System.err.println("Unknown mode [" + this.mode + "] during P1 confirmation. Returning to Mode Selection.");
-                frame.setContentPane(new ModeSelection(frame)); // Fallback
+                default:
+                    System.err.println("Unknown mode [" + this.mode + "] during P1 confirmation. Returning to Mode Selection.");
+                    frame.setContentPane(new ModeSelection(frame)); // Fallback
+                    break;
             }
         }
-        // Case 2: Player 2 is confirming (firstPlayerSelection is NOT null)
+        // Case 2: Player 2 is confirming (firstPlayerSelection is NOT null) - Only happens in PVP
         else {
-            // This block only runs in PVP mode after P1 has chosen.
+            // This block only runs in PVP mode when P2 confirms their choice.
             String player2Choice = confirmedCharacter;
             System.out.println("Player 2 CONFIRMED: " + player2Choice);
             System.out.println("Player 1 was: " + this.firstPlayerSelection);
 
-            // Optional: Prevent P2 choosing same character as P1 one last time
+            // Optional check: Prevent P2 choosing the same character as P1
             if (player2Choice.equals(this.firstPlayerSelection)) {
                 JOptionPane.showMessageDialog(frame, "Player 2 cannot choose the same character as Player 1.", "Character Already Selected", JOptionPane.WARNING_MESSAGE);
-                removeConfirmation(); // Remove confirmation panel without proceeding
-                return;
+                removeConfirmation(); // Just close the confirmation overlay
+                return; // Don't proceed
             }
 
-
-            System.out.println("Both players confirmed. Proceeding to Map Selection.");
+            // Both players confirmed in PVP, go to Map Selection
+            System.out.println("Both players confirmed (PVP). Proceeding to Map Selection.");
             frame.setContentPane(new MapSelection(frame, this.firstPlayerSelection, player2Choice, this.mode));
         }
 
@@ -278,15 +299,14 @@ public class SecondCharacterSelectionScreen extends JPanel { // Renaming suggest
     // --- Helper for PVE AI selection (Renamed for clarity) ---
     // This is now only used for Arcade opponent selection
     private String selectRandomOpponent(String playerCharacter) {
-        // Use CharacterDataLoader if available, otherwise fallback to local list
         Set<String> allNames = null;
-        try { // Defensively get names
+        try {
             allNames = CharacterDataLoader.getAllCharacterNames();
         } catch (Exception e) {
             System.err.println("Error getting names from CharacterDataLoader: " + e.getMessage());
         }
 
-        // Use local list as fallback or if loader failed
+        // Fallback to static list if loader fails or is empty
         List<String> characterPool = (allNames != null && !allNames.isEmpty())
                 ? new ArrayList<>(allNames)
                 : List.of(ALL_CHARACTER_NAMES); // Use static list as fallback
@@ -297,18 +317,19 @@ public class SecondCharacterSelectionScreen extends JPanel { // Renaming suggest
         }
 
         List<String> possibleOpponents = characterPool.stream()
-                .filter(name -> !name.equals(playerCharacter))
+                .filter(name -> !name.equals(playerCharacter)) // Exclude P1's choice
                 .collect(Collectors.toList());
+
         if (possibleOpponents.isEmpty()) {
-            // Fallback: If only one character exists or P1 chose the only other one
-            System.out.println("Warning: No opponents other than player's character found. Allowing self-match or picking first.");
+            // If filtering leaves no opponents (e.g., only 1 character total, or P1 picked the only other one)
+            System.out.println("Warning: No opponents other than player's character found. Selecting from full list.");
             possibleOpponents = new ArrayList<>(characterPool); // Use the full pool
-            if (possibleOpponents.isEmpty()) return null;
+            if (possibleOpponents.isEmpty()) return null; // Should not happen if pool wasn't empty
         }
         return possibleOpponents.get(random.nextInt(possibleOpponents.size()));
     }
 
-    // --- Helper for Random Map Selection ---
+    // Helper for Random Map Selection
     private String selectRandomMap() {
         if (mapPaths == null || mapPaths.length == 0) {
             System.err.println("Error: No map paths available!");
@@ -316,6 +337,7 @@ public class SecondCharacterSelectionScreen extends JPanel { // Renaming suggest
         }
         return mapPaths[random.nextInt(mapPaths.length)];
     }
+
 
 
     // --- paintComponent (Keep as is) ---

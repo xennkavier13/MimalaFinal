@@ -6,14 +6,9 @@ import javax.swing.JFrame;
 
 public class VexmorthScreen extends CharacterSelectionScreen {
 
-    public VexmorthScreen(JFrame frame, String mode) {
-        super(frame, mode);
+    public VexmorthScreen(JFrame frame, String characterName, String mode, String firstPlayerSelection) {
+        super(frame, characterName, mode, firstPlayerSelection);
     }
-
-    public VexmorthScreen(JFrame frame, String mode, String firstPlayerSelection) {
-        super(frame, mode, firstPlayerSelection);
-    }
-
     @Override
     protected String getGifPath() {
         return "/assets/CharacterSelectionScreen/CharacterScreen/vexmorthSelection.gif";

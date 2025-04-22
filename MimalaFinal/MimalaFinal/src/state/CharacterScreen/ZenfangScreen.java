@@ -6,8 +6,8 @@ import javax.swing.*;
 
 public class ZenfangScreen extends CharacterSelectionScreen {
 
-    public ZenfangScreen(JFrame frame, String mode) {
-        super(frame, mode);
+    public ZenfangScreen(JFrame frame, String characterName, String mode, String firstPlayerSelection) {
+        super(frame, characterName, mode, firstPlayerSelection);
     }
 
     @Override

@@ -6,8 +6,8 @@ import javax.swing.*;
 
 public class AuricannonScreen extends CharacterSelectionScreen {
 
-    public AuricannonScreen(JFrame frame, String mode) {
-        super(frame, mode);
+    public AuricannonScreen(JFrame frame, String characterName, String mode, String firstPlayerSelection) {
+        super(frame, characterName, mode, firstPlayerSelection);
     }
 
     @Override

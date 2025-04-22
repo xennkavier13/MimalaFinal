@@ -56,6 +56,14 @@ public class GameLog {
         updatePvELeaderboard(playerName, won); // Pass player name directly
     }
 
+    public void recordArcadeWin(String playerName) {
+        String p1 = (playerName != null && !playerName.trim().isEmpty()) ? playerName : "Player 1";
+        // Log details to the main game log file
+        // We use GameScreen.arcadeWins here, assuming it was incremented *before* calling this
+        logToFile(LocalDate.now(), p1 + " won Arcade match (Streak: " + GameScreen.arcadeWins + ")");
+        System.out.println("Logged Arcade match win for " + p1);
+    }
+
     // --- logToFile (unchanged) ---
     private void logToFile(LocalDate date, String winner) {
         // ... (existing code) ...
@@ -63,7 +71,7 @@ public class GameLog {
             LocalDateTime now = LocalDateTime.now();
             writer.write("DateTime: " + now.format(dateFormatter) + " --- Winner/Info: " + winner + "\n");
             // Logging static GameScreen wins here might be inaccurate if runs overlap
-            // writer.write("Player 1 - Wins: " + GameScreen.p1Wins + ", Losses: " + GameScreen.p1Lose + "\n");
+            // writer.write("Player 1 - W   ins: " + GameScreen.p1Wins + ", Losses: " + GameScreen.p1Lose + "\n");
             // writer.write("Player 2 - Wins: " + GameScreen.p2Wins + ", Losses: " + GameScreen.p2Lose + "\n");
             writer.write("--------------------------------------------------\n\n");
         } catch (IOException e) {

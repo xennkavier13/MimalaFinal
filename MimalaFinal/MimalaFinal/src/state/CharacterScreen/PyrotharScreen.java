@@ -6,8 +6,8 @@ import javax.swing.*;
 
 public class PyrotharScreen extends CharacterSelectionScreen {
 
-    public PyrotharScreen(JFrame frame, String mode) {
-        super(frame, mode);
+    public PyrotharScreen(JFrame frame, String characterName, String mode, String firstPlayerSelection) {
+        super(frame, characterName, mode, firstPlayerSelection);
     }
 
     @Override

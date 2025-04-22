@@ -6,8 +6,8 @@ import javax.swing.*;
 
 public class IgnisveilScreen extends CharacterSelectionScreen {
 
-    public IgnisveilScreen(JFrame frame, String mode) {
-        super(frame, mode);
+    public IgnisveilScreen(JFrame frame, String characterName, String mode, String firstPlayerSelection) {
+        super(frame, characterName, mode, firstPlayerSelection);
     }
 
     @Override
