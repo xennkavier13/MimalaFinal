@@ -342,7 +342,7 @@ public class GameScreen extends JPanel {
         roundDisplayLabel.setForeground(new Color(255, 255, 0)); // Off-white or goldish?
         roundDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        Font playerWinsFont = loadCustomFont("MimalaFinal/MimalaFinal/src/assets/Cinzel-Medium.ttf", 70); // CINZEL FONT
+        Font playerWinsFont = loadCustomFont("MimalaFinal/MimalaFinal/src/assets/Cinzel-Medium.ttf", 60); // CINZEL FONT
 
         // --- Win Counters ---
         // Modify labels for Arcade mode to show current streak
@@ -614,8 +614,8 @@ public class GameScreen extends JPanel {
         int winLabelY = panelHeight - 105; // 40px from the bottom
 
 
-        player1WinsLabel.setBounds(PADDING + 43, winLabelY, winLabelWidth, winLabelHeight);
-        player2WinsLabel.setBounds(panelWidth - winLabelWidth - PADDING - 43, winLabelY, winLabelWidth, winLabelHeight);
+        player1WinsLabel.setBounds(PADDING + 57, winLabelY, winLabelWidth, winLabelHeight);
+        player2WinsLabel.setBounds(panelWidth - winLabelWidth - PADDING - 65, winLabelY, winLabelWidth, winLabelHeight);
 
         // --- Center HUD Positions ---
         int timerWidth = 100; int timerHeight = 100;
