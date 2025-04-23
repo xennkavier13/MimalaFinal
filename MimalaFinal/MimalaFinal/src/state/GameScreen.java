@@ -62,7 +62,7 @@ public class GameScreen extends JPanel {
 
     private JLabel timerDisplayLabel;
     private JLabel turnIndicatorLabel;
-    //private JLabel roundDisplayLabel; // New label for rounds
+    private JLabel roundDisplayLabel; // New label for rounds
 
     // --- Layout Constants --- (Keep as they are)
     private static final int PADDING = 30;
@@ -77,7 +77,7 @@ public class GameScreen extends JPanel {
     private static final int SKILL_BUTTON_HEIGHT = 60;
     private static final int SKILL_SPACING = 10;
     private static final int SKILL_AREA_BOTTOM_MARGIN = 30;
-    // ... (rest of the layout constants)
+
 
     // --- Asset Path Constants --- (Keep as they are)
     private static final String HP_BAR_BG_BASE_PATH = "/assets/FightingUI/HealthBarBorder.png";
@@ -111,10 +111,6 @@ public class GameScreen extends JPanel {
     private JLabel player1WinsLabel;
     private JLabel player2WinsLabel;
 
-    public static int p1Wins = 0;
-    public static int p1Lose = 0;
-    public static int p2Wins = 0;
-    public static int p2Lose = 0;
     public static int lastWinner = 0; // 1 = Player 1 wins, 2 = Player 2 wins
     private JLabel arcadeStreakLabel;
 
@@ -122,9 +118,8 @@ public class GameScreen extends JPanel {
     // Inside GameScreen class fields
     private int player1RoundWins = 0;
     private int player2RoundWins = 0;
-    private static final int ROUNDS_TO_WIN = 2; // Best of 3 (First to 2 wins)
-    // Remove MAX_ROUNDS_PER_MATCH if RoundManager doesn't use it, or keep if needed for timeout
-    private static final int MAX_ROUNDS_PER_MATCH = (ROUNDS_TO_WIN * 2) - 1; // Max 3 rounds // Best of 3 (first to 2 wins)
+    private static final int ROUNDS_TO_WIN = 2; // Best of 3 (First to 2 wins
+    private int currentMatchRound = 1;
 
     public GameScreen(JFrame frame, String firstPlayerCharacter, String secondPlayerCharacter, String selectedMapResourcePath, String gameMode) {
         this.frame = frame;
@@ -339,6 +334,14 @@ public class GameScreen extends JPanel {
         timerDisplayLabel.setForeground(Color.WHITE);
         timerDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
+
+        roundDisplayLabel = new JLabel("Round " + currentMatchRound);
+        // Use a similar font or a distinct one. Let's use Cinzel like the wins, but smaller.
+        Font roundFont = loadCustomFont("MimalaFinal/MimalaFinal/src/assets/Cinzel-Medium.ttf", 45); // Adjust size as needed
+        roundDisplayLabel.setFont(roundFont);
+        roundDisplayLabel.setForeground(new Color(255, 255, 0)); // Off-white or goldish?
+        roundDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
         Font playerWinsFont = loadCustomFont("MimalaFinal/MimalaFinal/src/assets/Cinzel-Medium.ttf", 70); // CINZEL FONT
 
         // --- Win Counters ---
@@ -367,6 +370,7 @@ public class GameScreen extends JPanel {
         this.add(player1WinsLabel);
         this.add(player2WinsLabel); // Add it even if hidden later
         this.add(arcadeStreakLabel);
+        this.add(roundDisplayLabel);
         player1IdleIcon = (ImageIcon) player1CharacterLabel.getIcon();
         player2IdleIcon = (ImageIcon) player2CharacterLabel.getIcon();
 
@@ -615,7 +619,16 @@ public class GameScreen extends JPanel {
 
         // --- Center HUD Positions ---
         int timerWidth = 100; int timerHeight = 100;
-        timerDisplayLabel.setBounds(panelWidth / 2 - timerWidth / 2, PADDING + 50, timerWidth, timerHeight);
+        int timerX = panelWidth / 2 - timerWidth / 2;
+        int timerY = PADDING + 50; // Keep timer position
+        timerDisplayLabel.setBounds(timerX, timerY, timerWidth, timerHeight);
+
+        int roundLabelWidth = 300; // Adjust width as needed
+        int roundLabelHeight = 50; // Adjust height as needed
+        int roundLabelX = panelWidth / 2 - roundLabelWidth / 2;
+        // Position it slightly above the timer
+        int roundLabelY = timerY - roundLabelHeight - 5; // 5px spacing above timer
+        roundDisplayLabel.setBounds(roundLabelX, roundLabelY, roundLabelWidth, roundLabelHeight);
 
         int indicatorWidth = 300; int indicatorHeight = 40;
         int streakLabelWidth = 300;
@@ -626,7 +639,6 @@ public class GameScreen extends JPanel {
         // Move turn indicator down slightly to make room for round display
         //turnIndicatorLabel.setBounds(panelWidth / 2 - indicatorWidth / 2, PADDING + timerHeight + BAR_SPACING + 25, indicatorWidth, indicatorHeight);
 
-        int roundLabelWidth = 250; int roundLabelHeight = 40;
         // Position round display above timer
         //roundDisplayLabel.setBounds(panelWidth / 2 - roundLabelWidth / 2, PADDING - roundLabelHeight + 15 , roundLabelWidth, roundLabelHeight);
 
@@ -776,6 +788,7 @@ public class GameScreen extends JPanel {
             handleRoundTimeout();
             return;
         }
+
 
         // 2. Apply Stamina Recovery (if applicable, handled within RoundManager)
         double[] newStaminas = roundManager.applyStaminaRecovery(
@@ -1104,6 +1117,15 @@ public class GameScreen extends JPanel {
         updateStaminaBars();
         updateWinCounters(); // Show current round wins
 
+        currentMatchRound++; // Increment for the next round
+        final int roundToShow = currentMatchRound; // Capture for lambda
+        SwingUtilities.invokeLater(() -> {
+            roundDisplayLabel.setText("Round " + roundToShow);
+            roundDisplayLabel.revalidate();
+            roundDisplayLabel.repaint();
+        });
+        System.out.println("Match round incremented to: " + roundToShow);
+
         // Reset animations to idle
         if (player1IdleIcon != null) player1CharacterLabel.setIcon(player1IdleIcon);
         if (player2IdleIcon != null) player2CharacterLabel.setIcon(player2IdleIcon);
@@ -1429,10 +1451,10 @@ public class GameScreen extends JPanel {
         // Add the win counters
         this.add(player1WinsLabel);
         this.add(player2WinsLabel);
-
+        this.add(roundDisplayLabel);
         // Add the timer display
         this.add(timerDisplayLabel);
-
+        this.add(arcadeStreakLabel);
         // (Add any other components like background images, special UI elements, etc.)
     }
 
