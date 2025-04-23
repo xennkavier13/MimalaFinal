@@ -1,11 +1,2 @@
-Rank  Player Name          Score     
-1     liblablaplapan       9         
-2     IMISSYOUBIBIKO       7         
-3     bumalikkanababy      5         
-4     bibiko kain kana uwu 4         
-5     babyimissu           4         
-6     Player 1             3         
-7     ilabC123xd           2         
-8     laplapantayopls      1         
-9     babycomebackimissu   1         
-10    adsa                 1         
+Rank	Player Name	Score
+1	liblablabhanan	2

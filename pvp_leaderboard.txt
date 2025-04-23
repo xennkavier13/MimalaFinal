@@ -1,6 +1,2 @@
-Rank  Player Name          Score     
-1     terter               15        
-2     xorreur              7         
-3     dadoy                6         
-4     xennkavier           5         
-5     galaxy               4         
+Rank	Player Name	Wins
+1	KISSDEPRIVED	2

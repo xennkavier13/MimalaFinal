@@ -1,15 +1,17 @@
 package util;
 
-import state.ModeSelection; // <<< Import the screen to go back to
+import state.ModeSelection; // Import the screen to go back to
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent; // <<< Import ActionEvent
-import java.awt.event.KeyEvent;  // <<< Import KeyEvent
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+// Remove unused imports: import java.io.File; import java.io.IOException;
 
 public class PlayerName extends JPanel {
 
-    public static String playerName = ""; // Used in leaderboard
+    // This static variable is used for PVC/Arcade leaderboards
+    public static String playerName = ""; // Default value or load previously saved?
 
     private JTextField nameField;
     private JButton submitButton;
@@ -19,15 +21,13 @@ public class PlayerName extends JPanel {
     public PlayerName(JFrame frame, String mode, Runnable onSubmit) {
         this.mode = mode; // "PVC" or "Arcade"
         setLayout(null); // Manual layout
-        setFocusable(true); // <<< Ensure panel can get focus for key bindings
+        setFocusable(true); // Ensure panel can get focus for key bindings
 
-        // --- Load background image --- (Ensure paths are correct / use getResource)
+        // --- Load background image ---
         try {
-            String bgPath = "assets/InputName/player_entername.png"; // Default path
-            // Consider mode-specific backgrounds if they exist
-            if (mode.equals("Arcade")) {
-                // bgPath = "assets/InputName/arcade_entername.png"; // Example
-            }
+            // Use a generic name or mode-specific if available
+            String bgPath = "assets/InputName/player_entername.png";
+            // Example: if (mode.equals("Arcade")) bgPath = "assets/InputName/arcade_entername.png";
             java.net.URL imgUrl = getClass().getClassLoader().getResource(bgPath);
             if (imgUrl != null) {
                 backgroundImg = new ImageIcon(imgUrl).getImage();
@@ -64,26 +64,35 @@ public class PlayerName extends JPanel {
         if (hoverIcon != null) submitButton.setRolloverIcon(hoverIcon);
 
 
+        // --- MODIFIED ACTION LISTENER ---
         submitButton.addActionListener(e -> {
             String enteredName = nameField.getText().trim(); // Use local variable
-            if (!enteredName.isEmpty()) {
-                playerName = enteredName; // Set static variable only on success
-                System.out.println("Player Name (" + mode + "): " + playerName);
-                onSubmit.run(); // Move to the next screen
-            } else {
+
+            if (enteredName.isEmpty()) {
+                // Check if empty first
                 JOptionPane.showMessageDialog(this, "Please enter a name.");
+            } else if (enteredName.contains(" ")) {
+                // THEN check if it contains any spaces
+                JOptionPane.showMessageDialog(this, "Name cannot contain spaces. Please enter a valid name.");
+            } else {
+                // Only if BOTH checks pass: Assign static variable and proceed
+                PlayerName.playerName = enteredName; // Set the static variable for this class
+                System.out.println("Player Name set for " + mode + ": '" + PlayerName.playerName + "'");
+                onSubmit.run(); // Move to the next screen (CharacterSelection)
             }
         });
+        // --- END OF MODIFIED ACTION LISTENER ---
+
         add(submitButton);
 
         // --- Setup Key Bindings ---
-        setupEscapeKeyBinding(frame); // <<< CALL a new method
+        setupEscapeKeyBinding(frame);
 
         // Request focus AFTER components are added and panel is setup
         SwingUtilities.invokeLater(this::requestFocusInWindow);
     }
 
-    // <<< NEW METHOD for ESC key binding >>>
+    // Escape Key Binding Method (no changes needed here)
     private void setupEscapeKeyBinding(JFrame frame) {
         InputMap im = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap am = getActionMap();
@@ -96,28 +105,29 @@ public class PlayerName extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Escape pressed on PlayerName screen. Going back to ModeSelection.");
-                // Go back to ModeSelection screen
                 frame.setContentPane(new ModeSelection(frame));
                 frame.revalidate();
                 frame.repaint();
             }
         });
     }
-    // Helper to load icons safely
+
+    // Helper to load icons safely (no changes needed here)
     private ImageIcon loadIcon(String path) {
         java.net.URL imgURL = getClass().getClassLoader().getResource(path);
         if (imgURL != null) return new ImageIcon(imgURL);
         System.err.println("Missing image at " + path);
-        return null; // Return null if not found
+        return null;
     }
 
+    // paintComponent (no changes needed here)
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         if (backgroundImg != null) {
             g.drawImage(backgroundImg, 0, 0, getWidth(), getHeight(), this);
         } else {
-            g.setColor(Color.DARK_GRAY); // Fallback background
+            g.setColor(Color.DARK_GRAY);
             g.fillRect(0, 0, getWidth(), getHeight());
             g.setColor(Color.WHITE);
             g.drawString("Background Missing", 50, 50);

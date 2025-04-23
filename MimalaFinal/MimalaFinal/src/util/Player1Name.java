@@ -60,14 +60,23 @@ public class Player1Name extends JPanel {
 
 
         submitButton.addActionListener(e -> {
-            String enteredName = nameField.getText().trim(); // Use local variable
-            if (!enteredName.isEmpty()) {
-                player1Name = enteredName; // Set static variable only on success
-                System.out.println("Player 1 Name: " + player1Name);
-                onSubmit.run(); // Call next screen
-            } else {
+            String enteredName = nameField.getText().trim(); // Trim leading/trailing spaces
+
+            // --- MODIFIED CHECKS ---
+            if (enteredName.isEmpty()) {
+                // Check if empty first
                 JOptionPane.showMessageDialog(this, "Please enter a name.");
+            } else if (enteredName.contains(" ")) {
+                // THEN check if it contains any spaces
+                JOptionPane.showMessageDialog(this, "Name cannot contain spaces. Please enter a valid name.");
+            } else {
+                // Only if BOTH checks pass: Assign and proceed
+                player1Name = enteredName; // Set static variable
+                System.out.println("[DEBUG Player1Name] Name set to: '" + player1Name + "'");
+                System.out.println("[DEBUG Player1Name] Static Player1Name.player1Name is now: '" + Player1Name.player1Name + "'");
+                onSubmit.run(); // Call next screen
             }
+            // --- END OF MODIFIED CHECKS ---
         });
         add(submitButton);
 

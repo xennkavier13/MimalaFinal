@@ -1,5 +1,4 @@
-Rank  Player Name          Score     
-1     Player 1             5         
-2     xennkavier           2         
-3     kennxavier           1         
-4     test                 0         
+Rank	Player Name	Wins
+1	Player 1	2
+2	hihellogoodmorningimy	1
+3	misskonasiyabibiko	1

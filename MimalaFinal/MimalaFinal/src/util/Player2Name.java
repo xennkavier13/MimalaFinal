@@ -57,15 +57,25 @@ public class Player2Name extends JPanel {
         if (offIcon != null) submitButton.setIcon(offIcon);
         if (hoverIcon != null) submitButton.setRolloverIcon(hoverIcon);
 
+        // Inside Player2Name.java constructor
+
         submitButton.addActionListener(e -> {
-            String enteredName = nameField.getText().trim(); // Use local variable
-            if (!enteredName.isEmpty()) {
-                player2Name = enteredName; // Set static variable only on success
+            String enteredName = nameField.getText().trim(); // Trim leading/trailing spaces
+
+            // --- MODIFIED CHECKS ---
+            if (enteredName.isEmpty()) {
+                // Check if empty first
+                JOptionPane.showMessageDialog(this, "Please enter a name.");
+            } else if (enteredName.contains(" ")) {
+                // THEN check if it contains any spaces
+                JOptionPane.showMessageDialog(this, "Name cannot contain spaces. Please enter a valid name.");
+            } else {
+                // Only if BOTH checks pass: Assign and proceed
+                player2Name = enteredName; // Set static variable
                 System.out.println("Player 2 Name: " + player2Name);
                 onSubmit.run(); // Proceed to character selection
-            } else {
-                JOptionPane.showMessageDialog(this, "Please enter a name.");
             }
+            // --- END OF MODIFIED CHECKS ---
         });
         add(submitButton);
 

@@ -941,36 +941,51 @@ public class GameScreen extends JPanel {
 
     private void handleMatchCompletion(boolean player1WonMatch) {
         System.out.println("Handling Match Completion. Player 1 Won Match: " + player1WonMatch);
-        stopMusic();
+        stopMusic(); // Stop fight music here
 
         if (gameMode.equals("Arcade")) {
             if (player1WonMatch) {
                 arcadeWins++; // Increment streak
-
-                // <<< ADDED: Directly update streak label text >>>
-                final int currentStreak = arcadeWins; // Capture current value for EDT
-                SwingUtilities.invokeLater(() -> {
-                    if (arcadeStreakLabel != null) { // Check if label exists
-                        arcadeStreakLabel.setText("Streak: " + currentStreak);
-                    }
-                });
-                // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-                // gameLog.recordArcadeWin(Player1Name.playerName); // Optional logging
+                updateWinCounters(); // Update streak display (if separate label)
+                gameLog.recordArcadeWin(PlayerName.playerName); // Optional intermediate log
                 System.out.println("Arcade match win! Streak: " + arcadeWins + ". Showing victory screen...");
                 showTemporaryVictoryOverlayWithClickListener(); // Show overlay, wait for click
 
             } else {
-                // ... (Loss logic: recordArcadeRun, transitionToResultScreen) ...
+                // Player LOST Arcade Match
                 System.out.println("Arcade run ended. Final Wins: " + arcadeWins);
-                gameLog.recordArcadeRun(Player1Name.player1Name, arcadeWins);
-                transitionToResultScreen(false);
+                // Log final score BEFORE transitioning
+                gameLog.recordArcadeRun(PlayerName.playerName, arcadeWins);
+                transitionToResultScreen(false); // Show standard defeat result screen
             }
         } else {
-            // ... (PvP/PvC logic: Call correct GameLog method, transitionToResultScreen) ...
+            // --- PVP or PVC mode ---
             System.out.println("Standard match completed.");
-            gameLog.recordGame(Player1Name.player1Name);// Use your specific log methods here
-            transitionToResultScreen(player1WonMatch);
+
+            // <<< FIX: Set lastWinner BEFORE logging >>>
+            GameScreen.lastWinner = player1WonMatch ? 1 : 2;
+            // --- End of FIX ---
+
+            // Now call the correct GameLog method
+            if (isVsAI) { // PVC Game
+                System.out.println("[DEBUG GameScreen] Calling recordPVEGame for player: '" + PlayerName.playerName + "'");
+                gameLog.recordPVEGame(PlayerName.playerName, player1WonMatch);
+                if (player1WonMatch) GameScreen.p1Wins++; else GameScreen.p1Lose++;
+            } else { // PVP Game
+                String winnerName = player1WonMatch ? PlayerName.playerName : Player2Name.player2Name;
+                if (winnerName != null && !winnerName.trim().isEmpty()) {
+                    gameLog.recordGame(winnerName); // This calls updatePvPLeaderboard
+                    // Update static PvP win/loss counts (consider refactoring later)
+                    if (player1WonMatch) { GameScreen.p1Wins++; GameScreen.p2Lose++; }
+                    else { GameScreen.p1Lose++; GameScreen.p2Wins++; }
+                } else {
+                    System.err.println("Could not record PvP game: Winner name is null or empty.");
+                    // Log placeholder if needed: gameLog.recordGame(player1WonMatch ? "Player 1" : "Player 2");
+                }
+            }
+            // gameLog.saveStatsToFile(); // Optional: Save potentially inaccurate static counts
+
+            transitionToResultScreen(player1WonMatch); // Transition AFTER logging
         }
     }
 

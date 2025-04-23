@@ -153,79 +153,81 @@ public class GameLog {
     public Map<String, Integer> loadSimpleLeaderboardData(String filename) {
         Map<String, Integer> leaderboard = new HashMap<>();
         ensureFileExists(filename);
+        System.out.println("[LOAD DEBUG] Attempting to load: " + filename); // <<< ADDED
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
-            // Read and potentially discard the header line
             String header = reader.readLine();
-            if (header == null || !header.trim().startsWith("Rank")) {
-                // If no header or unexpected header, maybe log a warning or reset pointer
-                System.out.println("Leaderboard file " + filename + " might be missing a header.");
-                // If header was null, file is empty, return empty map
-                if(header == null) return leaderboard;
-                // If header wasn't null but unexpected, we still try to process from the first line read
-                line = header; // Process the first line if it wasn't the expected header
-            } else {
-                line = reader.readLine(); // Read the first actual data line if header was present
+            System.out.println("[LOAD DEBUG] Header Line: [" + header + "]"); // <<< ADDED
+            if (header == null) {
+                System.out.println("[LOAD DEBUG] File is empty."); // <<< ADDED
+                return leaderboard;
             }
 
-
-            while (line != null) {
+            int lineNum = 1; // <<< ADDED line counter
+            while ((line = reader.readLine()) != null) {
+                lineNum++; // <<< Increment line counter
+                System.out.println("[LOAD DEBUG] Reading Line " + lineNum + ": [" + line + "]"); // <<< ADDED
                 if (line.trim().isEmpty()) {
-                    line = reader.readLine(); // Read next line
-                    continue; // Skip empty lines
+                    System.out.println("[LOAD DEBUG] Skipping empty line."); // <<< ADDED
+                    continue;
                 }
 
-                // Split by one or more whitespace characters
-                String[] parts = line.trim().split("\\s+");
+                String[] parts = line.split("\t"); // Split by Tab
+                System.out.println("[LOAD DEBUG] Parts found: " + parts.length); // <<< ADDED
 
-                // Expect at least 3 parts: Rank, Name (at least one part), Score
-                if (parts.length >= 3) {
-                    // Score is the LAST part
-                    String scoreStr = parts[parts.length - 1];
-                    // Name is everything between Rank (parts[0]) and Score (last part)
-                    StringBuilder nameBuilder = new StringBuilder();
-                    for (int i = 1; i < parts.length - 1; i++) {
-                        nameBuilder.append(parts[i]).append(" ");
-                    }
-                    String name = nameBuilder.toString().trim(); // Reconstruct name
+                if (parts.length == 3) {
+                    String rankStr = parts[0].trim();
+                    String name = parts[1].trim();    // Name is second part
+                    String scoreStr = parts[2].trim(); // Score is third part
+                    // <<< ADDED Print extracted parts >>>
+                    System.out.println("[LOAD DEBUG] Extracted -> Rank:'" + rankStr + "' Name:'" + name + "' Score:'" + scoreStr + "'");
 
                     if (name.isEmpty()) {
-                        System.err.println("Skipping line with empty name in " + filename + ": " + line);
+                        System.err.println("Skipping line " + lineNum + " with empty name: " + line);
                     } else {
                         try {
+                            int rank = Integer.parseInt(rankStr);
                             int score = Integer.parseInt(scoreStr);
                             leaderboard.put(name, score);
+                            System.out.println("[LOAD DEBUG] Successfully loaded entry: Name='" + name + "', Score=" + score); // <<< ADDED
                         } catch (NumberFormatException e) {
-                            System.err.println("Skipping corrupted line in " + filename + ": [" + line + "] - Invalid score part: '" + scoreStr + "'");
+                            System.err.println("Skipping corrupted line " + lineNum + " in " + filename + ": [" + line + "] - Invalid rank or score part.");
                         }
                     }
                 } else {
-                    System.err.println("Skipping malformed line in " + filename + " (less than 3 parts): [" + line + "]");
+                    System.err.println("Skipping malformed line " + lineNum + " in " + filename + " (expected 3 tab-separated parts): [" + line + "]");
                 }
-                line = reader.readLine(); // Read next line
             }
         } catch (IOException e) {
-            System.out.println("Error reading leaderboard file " + filename + ". Starting fresh or returning empty.");
+            System.out.println("Error reading leaderboard file " + filename + ". Error: " + e.getMessage());
         }
+        System.out.println("[LOAD DEBUG] Finished loading " + filename + ". Entries loaded: " + leaderboard.size()); // <<< ADDED
         return leaderboard;
     }
 
 
     // --- saveSimpleLeaderboardData (can be reused for Arcade) ---
     // Saves data sorted by score (descending)
+    // Inside GameLog.java
     private void saveSimpleLeaderboardData(String filename, Map<String, Integer> leaderboard, String title) {
         List<Map.Entry<String, Integer>> sorted = new ArrayList<>(leaderboard.entrySet());
-        // Sort by value (score) descending
         sorted.sort((a, b) -> b.getValue().compareTo(a.getValue()));
 
-        try (FileWriter writer = new FileWriter(filename)) {
-            // Write header
-            writer.write(String.format("%-5s %-20s %-10s\n", "Rank", "Player Name", "Score"));
+        System.out.println("[SAVE DEBUG] Attempting to save: " + filename + " (" + title + ")"); // <<< ADDED
+        ensureFileExists(filename);
+        try (FileWriter writer = new FileWriter(filename, false)) { // Overwrite mode
+            String scoreHeader = title.contains("Stage") || title.contains("Arcade") ? "Score" : "Wins"; // Use Score for Arcade
+            String headerLine = "Rank\tPlayer Name\t" + scoreHeader + "\n";
+            System.out.print("[SAVE DEBUG] Writing Header: " + headerLine.replace("\t", "\\t")); // <<< ADDED (print \t for clarity)
+            writer.write(headerLine);
+
             int rank = 1;
             for (Map.Entry<String, Integer> entry : sorted) {
-                writer.write(String.format("%-5d %-20s %-10d\n", rank++, entry.getKey(), entry.getValue()));
+                String lineToWrite = String.format("%d\t%s\t%d\n", rank++, entry.getKey(), entry.getValue());
+                System.out.print("[SAVE DEBUG] Writing Line " + (rank-1) + ": " + lineToWrite.replace("\t", "\\t")); // <<< ADDED (print \t for clarity)
+                writer.write(lineToWrite);
             }
-            System.out.println(title + " updated successfully.");
+            System.out.println("\n" + title + " updated successfully using Tab format."); // Add newline before this
         } catch (IOException e) {
             System.out.println("Failed to write " + title + " to " + filename + ": " + e.getMessage());
         }

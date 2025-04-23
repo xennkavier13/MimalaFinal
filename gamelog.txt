@@ -782,3 +782,114 @@ DateTime: 2025-04-24 03:01:39 --- Winner/Info: Player 1
 DateTime: 2025-04-24 03:01:39 --- Winner/Info: Player 1 (PvE Win)
 --------------------------------------------------
 
+DateTime: 2025-04-24 06:38:10 --- Winner/Info: Player 1
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:38:10 --- Winner/Info: Player 1 (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:41:12 --- Winner/Info: Player 1 (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:41:12 --- Winner/Info: Player 1 (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:42:35 --- Winner/Info: Player 1 (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:42:35 --- Winner/Info: Player 1 (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:46:13 --- Winner/Info: AI (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:47:01 --- Winner/Info: asd (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:47:01 --- Winner/Info: Player 1 (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:51:21 --- Winner/Info: Player 1 won Arcade match (Streak: 1)
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:51:37 --- Winner/Info: Player 1 won Arcade match (Streak: 2)
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:51:54 --- Winner/Info: Player 1 won Arcade match (Streak: 3)
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:52:38 --- Winner/Info: Player 1 achieved Arcade score: 3
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:53:53 --- Winner/Info: blaxbergsparkplag won Arcade match (Streak: 1)
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:54:42 --- Winner/Info: blaxbergsparkplag achieved Arcade score: 1
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:55:11 --- Winner/Info: i miss u bibiko (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:55:11 --- Winner/Info: Player 1 (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:57:40 --- Winner/Info: aaa aaa aa (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:57:40 --- Winner/Info: Player 1 (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:59:50 --- Winner/Info: dsda (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 06:59:50 --- Winner/Info: Player 1 (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 07:04:06 --- Winner/Info: sadas sdada asda (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 07:04:06 --- Winner/Info: Player 1 (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 07:04:56 --- Winner/Info: asda asda (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 07:04:56 --- Winner/Info: Player 1 (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 07:07:15 --- Winner/Info: AI (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 07:09:04 --- Winner/Info: dadsdda asdasda (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 07:09:04 --- Winner/Info: Player 1 (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 07:16:40 --- Winner/Info: misskonasiyabibiko (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 07:16:40 --- Winner/Info: Player 1 (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 07:17:28 --- Winner/Info: hihellogoodmorningimy (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 07:17:28 --- Winner/Info: Player 1 (PvE Win)
+--------------------------------------------------
+
+DateTime: 2025-04-24 07:18:18 --- Winner/Info: liblablabhanan won Arcade match (Streak: 1)
+--------------------------------------------------
+
+DateTime: 2025-04-24 07:18:34 --- Winner/Info: liblablabhanan won Arcade match (Streak: 2)
+--------------------------------------------------
+
+DateTime: 2025-04-24 07:20:04 --- Winner/Info: liblablabhanan achieved Arcade score: 2
+--------------------------------------------------
+
+DateTime: 2025-04-24 07:21:44 --- Winner/Info: liblablabhanan
+--------------------------------------------------
+
+DateTime: 2025-04-24 07:21:44 --- Winner/Info: KISSDEPRIVED
+--------------------------------------------------
+
