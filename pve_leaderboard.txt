@@ -1,5 +1,5 @@
 Rank  Player Name          Score     
-1     xennkavier           2         
-2     Player 1             2         
+1     Player 1             5         
+2     xennkavier           2         
 3     kennxavier           1         
 4     test                 0         

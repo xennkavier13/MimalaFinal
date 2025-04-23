@@ -131,6 +131,7 @@ public class GameScreen extends JPanel {
     private boolean hasShownRound2 = false;
     private boolean hasShownRound3 = false;
 
+    private boolean isRoundImageVisible = false;
 
     public GameScreen(JFrame frame, String firstPlayerCharacter, String secondPlayerCharacter, String selectedMapResourcePath, String gameMode) {
         this.frame = frame;
@@ -346,12 +347,12 @@ public class GameScreen extends JPanel {
         timerDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
 
-        roundDisplayLabel = new JLabel("Round " + currentMatchRound);
+        //roundDisplayLabel = new JLabel("Round " + currentMatchRound);
         // Use a similar font or a distinct one. Let's use Cinzel like the wins, but smaller.
         Font roundFont = loadCustomFont("MimalaFinal/MimalaFinal/src/assets/Cinzel-Medium.ttf", 45); // Adjust size as needed
-        roundDisplayLabel.setFont(roundFont);
-        roundDisplayLabel.setForeground(new Color(255, 255, 0)); // Off-white or goldish?
-        roundDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        //roundDisplayLabel.setFont(roundFont);
+        //roundDisplayLabel.setForeground(new Color(255, 255, 0)); // Off-white or goldish?
+        //roundDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         Font playerWinsFont = loadCustomFont("MimalaFinal/MimalaFinal/src/assets/Cinzel-Medium.ttf", 60); // CINZEL FONT
 
@@ -381,7 +382,7 @@ public class GameScreen extends JPanel {
         this.add(player1WinsLabel);
         this.add(player2WinsLabel); // Add it even if hidden later
         this.add(arcadeStreakLabel);
-        this.add(roundDisplayLabel);
+        //this.add(roundDisplayLabel);
         player1IdleIcon = (ImageIcon) player1CharacterLabel.getIcon();
         player2IdleIcon = (ImageIcon) player2CharacterLabel.getIcon();
 
@@ -639,7 +640,7 @@ public class GameScreen extends JPanel {
         int roundLabelX = panelWidth / 2 - roundLabelWidth / 2;
         // Position it slightly above the timer
         int roundLabelY = timerY - roundLabelHeight - 5; // 5px spacing above timer
-        roundDisplayLabel.setBounds(roundLabelX, roundLabelY, roundLabelWidth, roundLabelHeight);
+        //roundDisplayLabel.setBounds(roundLabelX, roundLabelY, roundLabelWidth, roundLabelHeight);
 
         int indicatorWidth = 300; int indicatorHeight = 40;
         int streakLabelWidth = 300;
@@ -677,12 +678,14 @@ public class GameScreen extends JPanel {
         InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap actionMap = getActionMap();
 
-        // Skill bindings
+        // Skill bindings (Only enabled if no round image is visible)
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_1, 0), "skill1Action");
         actionMap.put("skill1Action", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                handleAction(1);
+                if (!isRoundImageVisible) {
+                    handleAction(1);
+                }
             }
         });
 
@@ -690,7 +693,9 @@ public class GameScreen extends JPanel {
         actionMap.put("skill2Action", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                handleAction(2);
+                if (!isRoundImageVisible) {
+                    handleAction(2);
+                }
             }
         });
 
@@ -698,25 +703,26 @@ public class GameScreen extends JPanel {
         actionMap.put("skill3Action", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                handleAction(3);
+                if (!isRoundImageVisible) {
+                    handleAction(3);
+                }
             }
         });
 
-        // Skip turn binding (Spacebar)
+        // Skip turn binding (Spacebar) - Disabled if round image is visible
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "skipTurnAction");
         actionMap.put("skipTurnAction", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!gameRunning) return;
-
-                boolean isHumanTurn = "PVP".equals(gameMode) || isPlayer1Turn;
-
-                if (isHumanTurn) {
-                    System.out.println("Player " + (isPlayer1Turn ? "1" : "2") + " skipped turn.");
-                    stopTurnTimer();
-                    switchTurn();
-                } else {
-                    System.out.println("Cannot skip turn (Not a human player's turn).");
+                if (!isRoundImageVisible && gameRunning) {
+                    boolean isHumanTurn = "PVP".equals(gameMode) || isPlayer1Turn;
+                    if (isHumanTurn) {
+                        System.out.println("Player " + (isPlayer1Turn ? "1" : "2") + " skipped turn.");
+                        stopTurnTimer();
+                        switchTurn();
+                    } else {
+                        System.out.println("Cannot skip turn (Not a human player's turn).");
+                    }
                 }
             }
         });
@@ -726,13 +732,14 @@ public class GameScreen extends JPanel {
         actionMap.put("pauseGame", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                transitionToPause(selectedMapPath);
+                if (!isRoundImageVisible) {
+                    transitionToPause(selectedMapPath);
+                }
             }
         });
 
         System.out.println("Key bindings set up.");
     }
-
 
     // MODIFIED: Uses Thread instead of Timer
     private void startTurnTimer() {
@@ -786,7 +793,7 @@ public class GameScreen extends JPanel {
 
     private void startTurnTimerWithDelay() {
         // Wait for 3 seconds after the round image is shown
-        Timer delayTimer = new Timer(3000, e -> {
+        Timer delayTimer = new Timer(2000, e -> {
             startTurnTimer(); // After 3 seconds, start the timer
         });
         delayTimer.setRepeats(false); // Don't repeat, only run once after 3 seconds
@@ -841,16 +848,16 @@ public class GameScreen extends JPanel {
 
     private void showRoundImage(int currentMatchRound, int player1Wins, int player2Wins) {
         String imagePath = "";
+        int xOffset = 0;
+        int yOffset = 0;
+        isRoundImageVisible = true;
 
-        // Logic to select the image based on the number of wins
+        // Get the image based on the round
         if (currentMatchRound == 1 && (player1Wins == 0 && player2Wins == 0)) {
-            // Round 1: Show before the first fight (both have 0 wins)
             imagePath = "MimalaFinal/MimalaFinal/src/assets/FightingUI/round1.png";
         } else if (currentMatchRound == 2 && (player1Wins == 1 || player2Wins == 1)) {
-            // Round 2: Show after either player wins 1 match
             imagePath = "MimalaFinal/MimalaFinal/src/assets/FightingUI/round2.png";
         } else if (currentMatchRound == 3 && (player1Wins == 1 && player2Wins == 1)) {
-            // Round 3: Show when both players have 1 win (tied)
             imagePath = "MimalaFinal/MimalaFinal/src/assets/FightingUI/round3.png";
         }
 
@@ -859,33 +866,48 @@ public class GameScreen extends JPanel {
             ImageIcon icon = new ImageIcon(imagePath);
             JLabel roundLabel = new JLabel(icon);
 
-            // Adjust the position manually (adjust xOffset and yOffset as needed)
-            int centerX = (getWidth() - icon.getIconWidth()) / 2;
-            int centerY = (getHeight() - icon.getIconHeight()) / 2;
+            // Define the bounds (adjust these as needed for each round)
+            switch (currentMatchRound) {
+                case 1:
+                    // Round 1: Manually set position (e.g., offset for center position)
+                    xOffset = (getWidth()) / 2;  // Center horizontally
+                    yOffset = (getHeight()) / 2; // Custom Y position
+                    break;
 
-            roundLabel.setBounds(
-                    centerX,  // Center horizontally
-                    centerY,  // Center vertically
-                    icon.getIconWidth(),
-                    icon.getIconHeight()
-            );
+                case 2:
+                    // Round 2: Adjust if needed
+                    xOffset = (getWidth() - icon.getIconWidth()) / 2;  // Center horizontally
+                    yOffset = (getHeight() - icon.getIconHeight()) / 3 * 2; // Move to a different position
+                    break;
 
+                case 3:
+                    // Round 3: Adjust if needed
+                    xOffset = (getWidth() - icon.getIconWidth()) / 2;  // Center horizontally
+                    yOffset = (getHeight() - icon.getIconHeight()) / 2; // Center vertically
+                    break;
+            }
 
+            // Apply bounds with the calculated offsets
+            roundLabel.setBounds(xOffset, yOffset, icon.getIconWidth(), icon.getIconHeight());
+
+            // Center label horizontally, if needed
             roundLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-            // Add to layered pane so it floats above everything
+            // Add to layered pane
             frame.getLayeredPane().add(roundLabel, JLayeredPane.POPUP_LAYER);
             frame.getLayeredPane().repaint();
 
-            // Remove after 3 seconds (adjust as needed)
-            Timer fadeTimer = new Timer(3000, e -> {
+            // Remove after 3 seconds
+            Timer fadeTimer = new Timer(2000, e -> {
                 frame.getLayeredPane().remove(roundLabel);
                 frame.getLayeredPane().repaint();
+                isRoundImageVisible = false;
             });
             fadeTimer.setRepeats(false);
             fadeTimer.start();
         }
     }
+
 
     private void handleRoundTimeout() {
         System.out.println("Handling Round Timeout (Max Rounds Reached)...");
@@ -1191,9 +1213,9 @@ public class GameScreen extends JPanel {
         currentMatchRound++; // Increment for the next round
         final int roundToShow = currentMatchRound; // Capture for lambda
         SwingUtilities.invokeLater(() -> {
-            roundDisplayLabel.setText("Round " + roundToShow);
-            roundDisplayLabel.revalidate();
-            roundDisplayLabel.repaint();
+            //roundDisplayLabel.setText("Round " + roundToShow);
+            //roundDisplayLabel.revalidate();
+            //roundDisplayLabel.repaint();
         });
         System.out.println("Match round incremented to: " + roundToShow);
 
@@ -1405,17 +1427,14 @@ public class GameScreen extends JPanel {
             } else if(gameMode.equals("PVC")){
                 if (player1RoundWins >= ROUNDS_TO_WIN || player2RoundWins >= ROUNDS_TO_WIN) {
                     // Only record the win when match is complete
-                    if (isVsAI) {
+                    if (didP1WinThisRound) {
+                        GameScreen.p1Wins++;
+                        GameScreen.p2Lose++;
+                        GameScreen.lastWinner = 1;
                         boolean playerWon = player1RoundWins >= ROUNDS_TO_WIN;
                         new GameLog().recordPVEGame(Player1Name.player1Name, playerWon);
-                    } else {
-                        String winner = player1RoundWins >= ROUNDS_TO_WIN ? Player1Name.player1Name : Player2Name.player2Name;
-                        new GameLog().recordGame(winner);
                     }
-                    new GameLog().saveStatsToFile();
                 } else {
-                    // Start next round
-                    // Start next round
                     resetForNewRound();
                 }
             }
@@ -1559,7 +1578,7 @@ public class GameScreen extends JPanel {
         // Add the win counters
         this.add(player1WinsLabel);
         this.add(player2WinsLabel);
-        this.add(roundDisplayLabel);
+        //this.add(roundDisplayLabel);
         // Add the timer display
         this.add(timerDisplayLabel);
         this.add(arcadeStreakLabel);

@@ -1,5 +1,5 @@
 Rank  Player Name          Score     
-1     terter               12        
+1     terter               15        
 2     xorreur              7         
 3     dadoy                6         
 4     xennkavier           5         
