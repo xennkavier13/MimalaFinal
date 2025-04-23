@@ -610,8 +610,8 @@ public class GameScreen extends JPanel {
         int winLabelY = panelHeight - 105; // 40px from the bottom
 
 
-        player1WinsLabel.setBounds(PADDING + 55, winLabelY, winLabelWidth, winLabelHeight);
-        player2WinsLabel.setBounds(panelWidth - winLabelWidth - PADDING - 60, winLabelY, winLabelWidth, winLabelHeight);
+        player1WinsLabel.setBounds(PADDING + 43, winLabelY, winLabelWidth, winLabelHeight);
+        player2WinsLabel.setBounds(panelWidth - winLabelWidth - PADDING - 43, winLabelY, winLabelWidth, winLabelHeight);
 
         // --- Center HUD Positions ---
         int timerWidth = 100; int timerHeight = 100;
