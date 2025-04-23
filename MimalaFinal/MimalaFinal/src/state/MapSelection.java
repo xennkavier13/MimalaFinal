@@ -10,6 +10,16 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Random;
+import java.awt.event.KeyEvent;
+import javax.swing.InputMap;
+import javax.swing.ActionMap;
+import javax.swing.KeyStroke;
+import javax.swing.AbstractAction;
+import java.awt.event.ActionEvent;
+import state.CharacterScreen.*; // Imports PyrotharScreen, AzuroxScreen etc.
+import state.CharacterScreen.Select.SecondPlayerSelection; // For going back in PvP
+import state.CharacterScreen.Select.CharacterSelectionScreen; // Superclass might be needed
+import state.ModeSelection;
 
 public class MapSelection extends JPanel {
     private final ImageIcon mapSelectionBg;
@@ -62,6 +72,13 @@ public class MapSelection extends JPanel {
 
         setupComponents();
 //        playMusic("/assets/MainMenuScreen/Sounds/MimalaMainMenuMusic.wav");
+
+        setFocusable(true);
+
+        setupEscapeKeyBinding(); // Add the escape key functionality
+
+        // <<< ADD THIS LINE (at the very end of constructor preferably) >>>
+        SwingUtilities.invokeLater(this::requestFocusInWindow); // Request focus
     }
 
     @Override
@@ -221,6 +238,76 @@ public class MapSelection extends JPanel {
             if (mapNames[i].equals(mapName)) return i;
         }
         return -1;
+    }
+
+    private void setupEscapeKeyBinding() {
+        InputMap im = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = getActionMap();
+
+        KeyStroke escapeKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        String actionKey = "goBackFromMapSelect";
+
+        im.put(escapeKey, actionKey);
+        am.put(actionKey, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("Escape pressed on Map Selection. Going back...");
+                stopMusic(); // Stop music if any was playing
+
+                // Determine the previous screen based on game mode
+                if ("PVP".equalsIgnoreCase(gameMode)) {
+                    // Go back to Player 2's character selection grid
+                    System.out.println("Going back to SecondPlayerSelection screen.");
+                    frame.setContentPane(new SecondPlayerSelection(frame, firstPlayerSelection, gameMode));
+                } else { // PVC or Arcade mode
+                    // Go back to Player 1's character *confirmation* screen
+                    String p1Character = firstPlayerSelection;
+                    System.out.println("Going back to confirmation screen for P1: " + p1Character);
+                    JPanel previousScreen = null;
+                    // Use a switch to instantiate the correct character screen
+                    // Assumes you have classes like PyrotharScreen, AzuroxScreen etc.
+                    if (p1Character == null) { // Safety check if P1 name is somehow null
+                        System.err.println("Cannot go back: Player 1 character unknown. Returning to Mode Selection.");
+                        previousScreen = new ModeSelection(frame);
+                    } else {
+                        switch (p1Character) {
+                            case "Pyrothar":
+                                previousScreen = new PyrotharScreen(frame, p1Character, gameMode, null); // Pass null for P1 selection arg
+                                break;
+                            case "Azurox":
+                                previousScreen = new AzuroxScreen(frame, p1Character, gameMode, null);
+                                break;
+                            case "Zenfang":
+                                previousScreen = new ZenfangScreen(frame, p1Character, gameMode, null);
+                                break;
+                            case "Auricannon":
+                                previousScreen = new AuricannonScreen(frame, p1Character, gameMode, null);
+                                break;
+                            case "Vexmorth":
+                                previousScreen = new VexmorthScreen(frame, p1Character, gameMode, null);
+                                break;
+                            case "Astridra":
+                                previousScreen = new AstridraScreen(frame, p1Character, gameMode, null);
+                                break;
+                            case "Varkos":
+                                previousScreen = new VarkosScreen(frame, p1Character, gameMode, null);
+                                break;
+                            case "Ignisveil":
+                                previousScreen = new IgnisveilScreen(frame, p1Character, gameMode, null);
+                                break;
+                            default:
+                                System.err.println("Cannot go back: Unknown character '" + p1Character + "'. Returning to Mode Selection.");
+                                previousScreen = new ModeSelection(frame); // Fallback
+                                break;
+                        }
+                    }
+                    frame.setContentPane(previousScreen);
+                }
+                frame.revalidate();
+                frame.repaint();
+            }
+        });
+        System.out.println("Escape key binding set up for MapSelection.");
     }
 
     private void transitionToGameScreen(String mapResourcePath) {

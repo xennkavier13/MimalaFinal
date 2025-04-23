@@ -105,7 +105,7 @@ public class GameScreen extends JPanel {
     private static final int MAX_ROUNDS = 10;
     private RoundManager roundManager;
     private static final double STAMINA_RECOVERY_PER_ROUND = 10.0; // Recover 30 stamina points
-
+    private volatile boolean matchCompletionHandled = false;
     private Pause pause;
 
     private Clip music;
@@ -972,7 +972,7 @@ public class GameScreen extends JPanel {
                 gameLog.recordPVEGame(PlayerName.playerName, player1WonMatch);
                 if (player1WonMatch) GameScreen.p1Wins++; else GameScreen.p1Lose++;
             } else { // PVP Game
-                String winnerName = player1WonMatch ? PlayerName.playerName : Player2Name.player2Name;
+                String winnerName = player1WonMatch ? Player1Name.player1Name : Player2Name.player2Name;
                 if (winnerName != null && !winnerName.trim().isEmpty()) {
                     gameLog.recordGame(winnerName); // This calls updatePvPLeaderboard
                     // Update static PvP win/loss counts (consider refactoring later)
@@ -1392,9 +1392,14 @@ public class GameScreen extends JPanel {
         boolean matchIsOver = player1RoundWins >= ROUNDS_TO_WIN || player2RoundWins >= ROUNDS_TO_WIN;
 
         if (matchIsOver) {
-            System.out.println("Match score limit reached.");
-            boolean player1WonMatch = player1RoundWins >= ROUNDS_TO_WIN;
-            handleMatchCompletion(player1WonMatch); // <<< CALL Renamed method >>>
+            if (!matchCompletionHandled) {
+                matchCompletionHandled = true; // Set flag immediately
+                System.out.println("Match score limit reached. Handling completion...");
+                boolean player1WonMatch = player1RoundWins >= ROUNDS_TO_WIN;
+                handleMatchCompletion(player1WonMatch);
+            } else {
+                System.out.println("Match completion already handled, ignoring duplicate trigger.");
+            }
         } else {
             System.out.println("Match continues to next round.");
             // Match not over, reset characters and start next round
