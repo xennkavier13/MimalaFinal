@@ -20,7 +20,7 @@ public class RoundManager {
             throw new IllegalArgumentException("Max rounds must be positive.");
         }
         this.maxRounds = maxRounds;
-        this.currentRound = 0;
+        this.currentRound = 1;
     }
 
     /**
@@ -89,4 +89,8 @@ public class RoundManager {
         return currentRound;
     }
 
+    public boolean isBetweenRounds() {
+        // Between rounds = both players took their turn, but next round not yet started
+        return isRoundComplete() && !isRoundLimitReached();
+    }
 }

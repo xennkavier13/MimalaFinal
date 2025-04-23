@@ -16,6 +16,8 @@ import java.util.stream.Collectors; // <<< ADD IMPORT
 import javax.swing.SwingUtilities;
 import javax.swing.JLayeredPane;
 import javax.swing.Timer;
+import util.Player1Name;
+import util.Player2Name;
 
 import state.UI.Pause;
 import state.UI.ResultScreen;
@@ -111,6 +113,10 @@ public class GameScreen extends JPanel {
     private JLabel player1WinsLabel;
     private JLabel player2WinsLabel;
 
+    public static int p1Wins = 0;
+    public static int p1Lose = 0;
+    public static int p2Wins = 0;
+    public static int p2Lose = 0;
     public static int lastWinner = 0; // 1 = Player 1 wins, 2 = Player 2 wins
     private JLabel arcadeStreakLabel;
 
@@ -120,6 +126,11 @@ public class GameScreen extends JPanel {
     private int player2RoundWins = 0;
     private static final int ROUNDS_TO_WIN = 2; // Best of 3 (First to 2 wins
     private int currentMatchRound = 1;
+
+    private boolean hasShownRound1 = false;
+    private boolean hasShownRound2 = false;
+    private boolean hasShownRound3 = false;
+
 
     public GameScreen(JFrame frame, String firstPlayerCharacter, String secondPlayerCharacter, String selectedMapResourcePath, String gameMode) {
         this.frame = frame;
@@ -565,7 +576,7 @@ public class GameScreen extends JPanel {
         switch (animationType) {
             case "Skill1": return 2000; // 2 seconds
             case "Skill2": return 2000; // 2 seconds
-            case "Skill3": return 2500; // 2.5 seconds
+            case "Skill3": return 2000; // 2 seconds
             case "GetHit": return 1000;  // 1 seconds
             case "Death":  return 1000;// Death animation duration not needed here as we don't auto-revert it
             default:       return 1000; // Default duration
@@ -773,46 +784,106 @@ public class GameScreen extends JPanel {
         timerDisplayLabel.setText(String.valueOf(remainingTime));
     }
 
+    private void startTurnTimerWithDelay() {
+        // Wait for 3 seconds after the round image is shown
+        Timer delayTimer = new Timer(3000, e -> {
+            startTurnTimer(); // After 3 seconds, start the timer
+        });
+        delayTimer.setRepeats(false); // Don't repeat, only run once after 3 seconds
+        delayTimer.start();
+    }
+
     private void startNextRoundSequence() {
         if (!gameRunning) {
             System.out.println("startNextRoundSequence called but game not running.");
             return;
         }
+
+        // 🧠 Check if we should show any round image based on state and flags
+        if (currentMatchRound == 1 && player1RoundWins == 0 && player2RoundWins == 0 && !hasShownRound1) {
+            showRoundImage(currentMatchRound, player1RoundWins, player2RoundWins);
+            hasShownRound1 = true;
+        } else if (currentMatchRound == 2 && (player1RoundWins == 1 || player2RoundWins == 1) &&
+                (player1RoundWins + player2RoundWins == 1) && !hasShownRound2) {
+            showRoundImage(currentMatchRound, player1RoundWins, player2RoundWins);
+            hasShownRound2 = true;
+        } else if (currentMatchRound == 3 && (player1RoundWins == 1 && player2RoundWins == 1 && !hasShownRound3)) {
+            showRoundImage(currentMatchRound,player1RoundWins, player2RoundWins);
+            hasShownRound3 = true;
+        }
+
+        startTurnTimerWithDelay();
+
         System.out.println("Starting next round sequence...");
 
-        // 1. Attempt to start the next round within the current match
         if (!roundManager.startNextRound()) {
-            // Max rounds reached for this match
             System.out.println("Max rounds reached for the match. Handling round timeout.");
-            // <<< CHANGE HERE: Call handleRoundTimeout instead of endGame >>>
             handleRoundTimeout();
             return;
         }
 
-
-        // 2. Apply Stamina Recovery (if applicable, handled within RoundManager)
         double[] newStaminas = roundManager.applyStaminaRecovery(
                 player1Stats, player2Stats,
                 player1CurrentStamina, player2CurrentStamina
         );
         player1CurrentStamina = newStaminas[0];
         player2CurrentStamina = newStaminas[1];
-        updateStaminaBars(); // Update UI with potentially recovered stamina
+        updateStaminaBars();
 
-        // 3. Determine who starts *this* round randomly
         isPlayer1Turn = roundManager.determineStartingPlayer();
+        updateUIBasedOnTurn();
 
-        // 4. Update UI for the new round and starting player
-        //roundDisplayLabel.setText("Round: " + roundManager.getCurrentRound() + "/" + roundManager.getMaxRounds());
-        updateUIBasedOnTurn(); // Set enabled buttons, highlights, turn indicator
-
-        // 5. Start the first turn of the round
-        startTurnTimer(); // Start the timer for the randomly chosen starting player
-
-        // 6. If AI starts, trigger its action
         if (!isPlayer1Turn && isVsAI) {
-            System.out.println("[Log] AI starts round " + roundManager.getCurrentRound() + ". Triggering AI action..."); // ADD LOG
+            System.out.println("[Log] AI starts round " + roundManager.getCurrentRound() + ". Triggering AI action...");
             SwingUtilities.invokeLater(this::performAiAction);
+        }
+    }
+
+    private void showRoundImage(int currentMatchRound, int player1Wins, int player2Wins) {
+        String imagePath = "";
+
+        // Logic to select the image based on the number of wins
+        if (currentMatchRound == 1 && (player1Wins == 0 && player2Wins == 0)) {
+            // Round 1: Show before the first fight (both have 0 wins)
+            imagePath = "MimalaFinal/MimalaFinal/src/assets/FightingUI/round1.png";
+        } else if (currentMatchRound == 2 && (player1Wins == 1 || player2Wins == 1)) {
+            // Round 2: Show after either player wins 1 match
+            imagePath = "MimalaFinal/MimalaFinal/src/assets/FightingUI/round2.png";
+        } else if (currentMatchRound == 3 && (player1Wins == 1 && player2Wins == 1)) {
+            // Round 3: Show when both players have 1 win (tied)
+            imagePath = "MimalaFinal/MimalaFinal/src/assets/FightingUI/round3.png";
+        }
+
+        // Only show image if it's a valid image path
+        if (!imagePath.isEmpty()) {
+            ImageIcon icon = new ImageIcon(imagePath);
+            JLabel roundLabel = new JLabel(icon);
+
+            // Adjust the position manually (adjust xOffset and yOffset as needed)
+            int centerX = (getWidth() - icon.getIconWidth()) / 2;
+            int centerY = (getHeight() - icon.getIconHeight()) / 2;
+
+            roundLabel.setBounds(
+                    centerX,  // Center horizontally
+                    centerY,  // Center vertically
+                    icon.getIconWidth(),
+                    icon.getIconHeight()
+            );
+
+
+            roundLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+            // Add to layered pane so it floats above everything
+            frame.getLayeredPane().add(roundLabel, JLayeredPane.POPUP_LAYER);
+            frame.getLayeredPane().repaint();
+
+            // Remove after 3 seconds (adjust as needed)
+            Timer fadeTimer = new Timer(3000, e -> {
+                frame.getLayeredPane().remove(roundLabel);
+                frame.getLayeredPane().repaint();
+            });
+            fadeTimer.setRepeats(false);
+            fadeTimer.start();
         }
     }
 
@@ -1296,6 +1367,7 @@ public class GameScreen extends JPanel {
     /**
      * Cleans up game state and switches the view to the GameOverScreen.
      */
+
     private void transitionToResultScreen(boolean player1WonMatch) {
         System.out.println("Executing transitionToResultScreen... Mode: " + gameMode + ", P1 Won: " + player1WonMatch);
 
@@ -1305,10 +1377,49 @@ public class GameScreen extends JPanel {
         if (player2AnimTimer != null) player2AnimTimer.stop();
         if (deathSequenceTimer != null) deathSequenceTimer.stop();
 
+        boolean didP1WinThisRound = player2CurrentHp <= 0 && player1CurrentHp > 0;
+        boolean didP2WinThisRound  = player1CurrentHp <= 0 && player2CurrentHp > 0;
+        // Determine result
+        boolean p1WinsBool = player2CurrentHp <= 0 && player1CurrentHp > 0;
+        boolean p2WinsBool = player1CurrentHp <= 0 && player2CurrentHp > 0;
+
+        boolean player1Won = p1WinsBool;
+        boolean player2Won = p2WinsBool;
+
         // --- Log Game Results (if needed, e.g., for PVP/PVC) ---
         // ... (logging logic if applicable to non-arcade or arcade loss) ...
         if (!gameMode.equals("Arcade")) { // Log non-arcade results
             // Example: Log PVP/PVC results here using GameLog
+            if(gameMode.equals("PVP")){
+                if (didP1WinThisRound) {
+                    GameScreen.p1Wins++;
+                    GameScreen.p2Lose++;
+                    GameScreen.lastWinner = 1;
+                    new GameLog().recordGame(Player1Name.player1Name);
+                } else if (didP2WinThisRound) {
+                    GameScreen.p2Wins++;
+                    GameScreen.p1Lose++;
+                    GameScreen.lastWinner = 2;
+                    new GameLog().recordGame(Player2Name.player2Name);
+                }
+            } else if(gameMode.equals("PVC")){
+                if (player1RoundWins >= ROUNDS_TO_WIN || player2RoundWins >= ROUNDS_TO_WIN) {
+                    // Only record the win when match is complete
+                    if (isVsAI) {
+                        boolean playerWon = player1RoundWins >= ROUNDS_TO_WIN;
+                        new GameLog().recordPVEGame(Player1Name.player1Name, playerWon);
+                    } else {
+                        String winner = player1RoundWins >= ROUNDS_TO_WIN ? Player1Name.player1Name : Player2Name.player2Name;
+                        new GameLog().recordGame(winner);
+                    }
+                    new GameLog().saveStatsToFile();
+                } else {
+                    // Start next round
+                    // Start next round
+                    resetForNewRound();
+                }
+            }
+
         } else { // This is an Arcade Loss
             System.out.println("Showing final result screen for Arcade loss.");
             // Arcade score was already logged in handleMatchEnd
@@ -1354,9 +1465,6 @@ public class GameScreen extends JPanel {
     }
 
     // Update win counters needs adjustment for Arcade
-
-
-
 
     private void updateUIBasedOnTurn() {
         if (!gameRunning) return; // Don't update if game over

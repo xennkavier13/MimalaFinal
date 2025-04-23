@@ -51,6 +51,19 @@ public class PVPLeaderboard extends JPanel {
                 }
         );
         add(rightButton);
+
+        JLabel leftButton = createButton(
+                "assets/Leaderboards/Buttons/LeftBtn_off.png",
+                "assets/Leaderboards/Buttons/LeftBtn_hover.png",
+                65, 477,
+                () -> {
+                    JPanel nextScreen = new ArcadeLeaderboard(frame, previousScreen);
+                    frame.setContentPane(nextScreen);
+                    frame.revalidate();
+                    frame.repaint();
+                }
+        );
+        add(leftButton);
     }
 
     private JLabel createButton(String offPath, String hoverPath, int x, int y, Runnable action) {
