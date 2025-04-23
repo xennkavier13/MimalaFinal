@@ -41,7 +41,7 @@ public class CharacterDataLoader {
                 100.0, 100.0, // Max HP, Max Stamina
                 23.0, 25.0,   // Skill 1 Damage, Cost
                 28.0, 30.0,   // Skill 2 Damage, Cost
-                100.0, 40.0    // Skill 3 Damage, Cost
+                33.0, 40.0    // Skill 3 Damage, Cost
         ));
         characterStatsMap.put("Pyrothar", new CharacterStats("Pyrothar",
                 100.0, 100.0, // Max HP, Max Stamina

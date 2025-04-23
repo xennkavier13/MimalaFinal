@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -276,6 +277,23 @@ public class GameScreen extends JPanel {
         return new ImageIcon(img);
     }
 
+    private Font loadCustomFont(String fontPath, int fontSize) {
+        try {
+            File fontFile = new File(fontPath);
+            if (!fontFile.exists()) {
+                System.err.println("Font file not found at: " + fontPath);
+                return new Font("Monospaced", Font.PLAIN, fontSize);
+            }
+            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontFile).deriveFont(Font.PLAIN, (float) fontSize);
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            ge.registerFont(customFont);
+            return customFont;
+        } catch (Exception e) {
+            System.err.println("Error loading custom font: " + fontPath);
+            e.printStackTrace();
+            return new Font("Monospaced", Font.PLAIN, fontSize);
+        }
+    }
 
     private void initializeUIComponents() {
         // ... (Load HP/Stamina bars, GIFs, Skill Buttons - unchanged) ...
@@ -321,20 +339,26 @@ public class GameScreen extends JPanel {
         timerDisplayLabel.setForeground(Color.WHITE);
         timerDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
+        Font playerWinsFont = loadCustomFont("MimalaFinal/MimalaFinal/src/assets/Cinzel-Medium.ttf", 70); // CINZEL FONT
+
         // --- Win Counters ---
         // Modify labels for Arcade mode to show current streak
         player1WinsLabel = new JLabel("Wins: x0"); // Initialize to 0
-        player1WinsLabel.setFont(new Font("Arial", Font.BOLD, 70));
+        player1WinsLabel.setFont(playerWinsFont);
+
         player1WinsLabel.setForeground(new Color(79, 57, 51));
         player1WinsLabel.setHorizontalAlignment(SwingConstants.LEFT);
 
         player2WinsLabel = new JLabel("Wins: x0"); // Initialize to 0
-        player2WinsLabel.setFont(new Font("Arial", Font.BOLD, 70));
+        player2WinsLabel.setFont(playerWinsFont);
         player2WinsLabel.setForeground(new Color(79, 57, 51));
         player2WinsLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 
+
+        Font wins = loadCustomFont("MimalaFinal/MimalaFinal/src/assets/Cinzel-Medium.ttf", 40);
+
         arcadeStreakLabel = new JLabel("Streak: " + arcadeWins); // Use static arcadeWins
-        arcadeStreakLabel.setFont(new Font("Arial", Font.BOLD, 48)); // Smaller font than round wins
+        arcadeStreakLabel.setFont(wins); // Smaller font than round wins
         arcadeStreakLabel.setForeground(Color.YELLOW); // Different color?
         arcadeStreakLabel.setHorizontalAlignment(SwingConstants.CENTER);
         arcadeStreakLabel.setVisible(gameMode.equals("Arcade")); // Only visible in Arcade mode
